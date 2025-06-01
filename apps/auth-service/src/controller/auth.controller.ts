@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { checkOtpRestrictions, sendOtp, trackOtpRequests, validateRegistrationData } from "../utils/auth.helper";
+import { checkOtpRestrictions, sendOtp, trackOtpRequests, validateRegistrationData, verifyOtp } from "../utils/auth.helper";
 import prisma from "@packages/libs/prisma";
-import { ValidationError } from "@packages/error-handler";
+import { AuthError, ValidationError } from "@packages/error-handler";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { setCookie } from "../utils/cookies/setCookie";
 
 //Register a new user
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
@@ -28,3 +31,90 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
 } 
 
 //Verify OTP and activate user account
+export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, otp, password, name } = req.body;
+        if(!email || !otp || !password || !name) {
+            return next(new ValidationError("All fields are required"));
+        }
+
+        const existingUser = await prisma.users.findUnique({ where: { email } });
+        if (existingUser) {
+            return next(new ValidationError("A User already exists with this email"));
+        }
+
+        await verifyOtp(email, otp, next);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.users.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            message: "User registered successfully"
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Login User
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return next(new ValidationError("Email and password are required"));
+        }
+
+        const user = await prisma.users.findUnique({ where: { email } });
+
+        if (!user) {
+            return next(new AuthError("User does not exist"));
+        }
+
+        //Verify password
+        const isMatch = await bcrypt.compare(password, user.password!);
+        if (!isMatch) {
+            return next(new AuthError("Invalid email or password"));
+        }
+
+        //Generate access and refresh tokens
+        const accessToken = jwt.sign(
+            {
+                id: user.id,
+                role: "user"
+            },
+            process.env.ACCESS_TOKEN_SECET as string,
+            { expiresIn: "15m" }
+        )
+
+        const refreshToken = jwt.sign(
+            {
+                id: user.id,
+                role: "user"
+            },
+            process.env.REFRESH_TOKEN_SECET as string,
+            { expiresIn: "7d" }
+        )
+
+        //Store refresh and access token in httpOnly secure cookie
+        setCookie(res, "access_token", accessToken);
+        setCookie(res, "refresh_token", refreshToken);
+
+        res.status(200).json({
+            message: "Login successful",
+            user: {id: user.id, name: user.name, email: user.email},
+        })
+
+    } catch (error) {
+        return next(error);
+        
+    }
+}
