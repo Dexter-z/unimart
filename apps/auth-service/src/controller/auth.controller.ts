@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { checkOtpRestrictions, sendOtp, trackOtpRequests, validateRegistrationData, verifyOtp } from "../utils/auth.helper";
+import { checkOtpRestrictions, handleForgotPassword, sendOtp, trackOtpRequests, validateRegistrationData, verifyForgotPasswordOtp, verifyOtp } from "../utils/auth.helper";
 import prisma from "@packages/libs/prisma";
 import { AuthError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
@@ -112,6 +112,58 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             message: "Login successful",
             user: {id: user.id, name: user.name, email: user.email},
         })
+
+    } catch (error) {
+        return next(error);
+        
+    }
+}
+
+//User forgot password
+export const userForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await handleForgotPassword(req, res, next, "user");
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Verify OTP for forgot password
+export const verifyUserForgotPasswordOtp = async (req: Request, res: Response, next: NextFunction) => {
+    await verifyForgotPasswordOtp(req, res, next);
+}
+
+//Reset user password
+export const resetUserPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return next(new ValidationError("Email and new password are required"));
+        }
+
+        const user = await prisma.users.findUnique({ where: { email } });
+        if (!user) {
+            return next(new ValidationError("User not found"));
+        }
+
+        //Compare new password with existing password
+        const isSamePassword = await bcrypt.compare(newPassword, user.password!);
+        if (isSamePassword) {
+            return next(new ValidationError("New password cannot be the same as the old password"));
+        }
+
+        //Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        //Update user password
+        await prisma.users.update({
+            where: { email },
+            data: { password: hashedPassword }
+        });
+
+        res.status(200).json({
+            message: "Password reset successfully"
+        });
 
     } catch (error) {
         return next(error);
