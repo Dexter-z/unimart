@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { checkOtpRestrictions, sendOtp, trackOtpRequests, validateRegistrationData } from "../utils/auth.helper";
-import prisma from "../../../../packages/libs/prisma";
-import { ValidationError } from "../../../../packages/error-handler";
+import prisma from "@packages/libs/prisma";
+import { ValidationError } from "@packages/error-handler";
 
 //Register a new user
 export const userRegistration = async (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +9,7 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
         validateRegistrationData(req.body, "user")
         const { name, email } = req.body
 
-        const existingUser = await prisma.users.findUnique({ where: email })
+        const existingUser = await prisma.users.findUnique({ where: {email} })
 
         if (existingUser) {
             return next(new ValidationError("A User already exists with this email"))
@@ -17,7 +17,7 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
 
         await checkOtpRestrictions(email, next)
         await trackOtpRequests(email, next)
-        await sendOtp(email, name, "user-activation-mail")
+        await sendOtp(name, email, "user-activation-mail")
 
         res.status(200).json({
             message: "OTP sent to email. Please verify your account"
@@ -26,3 +26,5 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
         return next(error)
     }
 } 
+
+//Verify OTP and activate user account
