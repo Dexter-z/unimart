@@ -81,5 +81,13 @@
         "^build"
       ]
     }
+  },
+  "generators": {
+    "@nx/next": {
+      "application": {
+        "style": "tailwind",
+        "linter": "none"
+      }
+    }
   }
 }
