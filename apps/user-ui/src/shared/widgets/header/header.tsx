@@ -9,7 +9,7 @@ const Header = () => {
             <div className="w-[80%] py-5 m-auto flex items-center justify-between">
                 <div>
                     <Link href={"/"}>
-                        <span className='text-3xl font-[500]'>Unimart</span>
+                        <span className='text-3xl font-[500]'>Unimart UNN</span>
                     </Link>
                 </div>
                 <div className='w-[50%] relative'>
