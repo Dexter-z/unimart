@@ -1,5 +1,5 @@
 "use client"
-import GoogleButton from 'apps/user-ui/src/shared/components/google-button';
+import GoogleButton from '@/shared/components/google-button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'

@@ -1,6 +1,6 @@
 'use client'
 
-import { navItems } from 'apps/user-ui/src/configs/constants';
+import { navItems } from '@/configs/constants';
 import { AlignLeft, ChevronDown, HeartIcon, ShoppingCart, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
