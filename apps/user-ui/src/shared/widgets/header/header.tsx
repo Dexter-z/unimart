@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { CarTaxiFrontIcon, Heart, HeartIcon, LucideShoppingCart, Search, ShoppingCart, ShoppingCartIcon, UserRound } from 'lucide-react';
+import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
 
 const Header = () => {
