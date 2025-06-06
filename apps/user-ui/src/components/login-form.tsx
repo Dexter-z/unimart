@@ -35,9 +35,15 @@ export function LoginForm({
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
+  const onSubmit = async (data: FormData) => {
+    // try {
+    //   console.log(data);
+    //   setServerError(null);
+    // } catch (err) {
+    //   setServerError("Invalid email or password."); // Or use err.message
+    // }
   };
+  
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
