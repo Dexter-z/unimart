@@ -36,6 +36,7 @@ export function LoginForm({
   } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
+    console.log(data);
     // try {
     //   console.log(data);
     //   setServerError(null);
@@ -43,7 +44,7 @@ export function LoginForm({
     //   setServerError("Invalid email or password."); // Or use err.message
     // }
   };
-  
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -63,7 +64,7 @@ export function LoginForm({
                     id="email"
                     type="email"
                     placeholder="m@example.com"
-                    required
+                    {...register("email", { required: "Email is required" })}
                   />
                 </div>
                 <div className="grid gap-3">
