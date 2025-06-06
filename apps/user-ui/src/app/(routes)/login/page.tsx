@@ -1,5 +1,7 @@
 "use client"
+import { LoginForm } from '@/components/login-form';
 import GoogleButton from '@/shared/components/google-button';
+import { GalleryVerticalEnd } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
@@ -28,30 +30,15 @@ const Login = () => {
     }
 
     return (
-        <div className='w-full py-10 min-h-[85vh] bg-[#f1f1f1]'>
-            <h1 className='text-4xl font-Poppins font-semibold text-black text-center'>
-                Login
-            </h1>
-
-            <p className='text-center text-lg font-medium py-3 text-[#00000099]'>
-                Home . Login
-            </p>
-
-            <div className='w-full flex justify-center'>
-                <div className='md:w-[480px] p-8 bg-white shadow rounded-lg'>
-                    <h3 className='text-3xl font-semibold text-center mb-2'>
-                        Login to Your Account
-                    </h3>
-
-                    <p className='text-center text-gray-500 mb-4'>
-                        Don't have an account? {""}
-                        <Link href={"/sign-up"} className='text-blue-500'>
-                            Sign Up
-                        </Link>
-                    </p>
-
-                    <GoogleButton />
-                </div>
+        <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+            <div className="flex w-full max-w-sm flex-col gap-6">
+                <a href="#" className="flex items-center gap-2 self-center font-medium">
+                    <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
+                        <GalleryVerticalEnd className="size-4" />
+                    </div>
+                    UniMart UNN
+                </a>
+                <LoginForm />
             </div>
         </div>
     )
