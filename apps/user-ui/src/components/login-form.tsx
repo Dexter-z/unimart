@@ -20,6 +20,7 @@ import React, { useState } from "react";
 type FormData = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export function LoginForm({
@@ -109,6 +110,17 @@ export function LoginForm({
                 {serverError && (
                   <div className="text-red-500 text-sm text-center mb-2">{serverError}</div>
                 )}
+                <div className="flex items-center gap-2">
+                  <input
+                    id="rememberMe"
+                    type="checkbox"
+                    {...register("rememberMe")}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="rememberMe" className="text-sm font-medium">
+                    Remember me
+                  </Label>
+                </div>
                 <Button type="submit" className="w-full bg-[#3489FF]">
                   Login
                 </Button>
