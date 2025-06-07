@@ -121,7 +121,7 @@ export function LoginForm({
                     Remember me
                   </Label>
                 </div>
-                <Button type="submit" className="w-full bg-[#3489FF]">
+                <Button type="submit" className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
                   Login
                 </Button>
               </div>
