@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import axios, {AxiosError} from "axios";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 
 type FormData = {
@@ -41,6 +42,8 @@ export function SignUpForm({
     const [userData, setUserData] = useState<FormData | null>(null);
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const router = useRouter();
 
     const {
         register,
@@ -77,6 +80,22 @@ export function SignUpForm({
         }
     })
 
+    const verifyOtpMutation = useMutation({
+        mutationFn: async () => {
+            if (!userData) return
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
+                {
+                    ...userData, //To spread the name, email and password instead of using them as an object
+                    otp: otp.join("") // Join the OTP array into a string
+                }
+            )
+            return response.data;
+        },
+        onSuccess: () => {
+            router.push("/login");
+        }
+    })
+
     const handleOtpChange = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Allow only digits
         const newOtp = [...otp];
@@ -93,7 +112,7 @@ export function SignUpForm({
         }
     }
 
-    const resendOtp = () => {}
+    const resendOtp = () => { }
 
     const onSubmit = async (data: FormData) => {
         console.log(data);
@@ -209,8 +228,8 @@ export function SignUpForm({
                                     )}
                                 </div>
 
-                                <Button type="submit" className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
-                                    Sign Up
+                                <Button type="submit" disabled={signUpMutation.isPending} className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
+                                    {signUpMutation.isPending ? "Signing up..." : "Sign Up"}
                                 </Button>
                             </div>
                             <div className="text-center text-sm">
@@ -240,9 +259,13 @@ export function SignUpForm({
                                     />
                                 ))}
                             </div>
-                            
-                            <button className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                                Verify OTP
+
+                            <button
+                                className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                disabled={verifyOtpMutation.isPending}
+                                onClick={() => verifyOtpMutation.mutate()}
+                            >
+                                {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
                             </button>
 
                             <p className="text-center text-sm mt-4">
@@ -250,13 +273,21 @@ export function SignUpForm({
                                     <button
                                         onClick={resendOtp}
                                         className="text-blue-500 hover:underline"
-                                        >
+                                    >
                                         Resend OTP
                                     </button>
-                                ) : 
+                                ) :
                                     `Resend OTP in ${timer} seconds`
                                 }
                             </p>
+                            {
+                                verifyOtpMutation.isError && verifyOtpMutation.error instanceof AxiosError && (
+                                    <p className="text-red-500 text-sm text-center mt-2">
+                                        {verifyOtpMutation.error.response?.data?.message || verifyOtpMutation.error.message}
+
+                                    </p>
+                                )
+                            }
                         </div>
                     )}
 
