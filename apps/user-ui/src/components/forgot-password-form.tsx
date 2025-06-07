@@ -192,6 +192,62 @@ export function ForgotPasswordForm({
                 </CardContent>
             </Card>)}
 
+            {step === "otp" && (
+                <div>
+                    <h3 className="text-xl font-semibold text-center mb-4">
+                        Enter OTP
+                    </h3>
+                    <div className="flex justify-center gap-6">
+                        {otp?.map((digit, index) => (
+                            <input key={index} type="text" ref={(el) => {
+                                if (el) {
+                                    inputRefs.current[index] = el;
+                                }
+                            }}
+                                maxLength={1}
+                                className="w-12 h-12 text-center border border-gray-300 outline-none !rounded"
+                                value={digit}
+                                onChange={(e) => { handleOtpChange(index, e.target.value); }}
+                                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                        disabled={verifyOtpMutation.isPending}
+                        onClick={() => verifyOtpMutation.mutate()}
+                    >
+                        {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
+                    </button>
+
+                    <p className="text-center text-sm mt-4">
+                        {canResend ? (
+                            <button
+                                onClick={() => requestOtpMutation.mutate({ email: userEmail! })}
+                                className="text-blue-500 hover:underline"
+                            >
+                                Resend OTP
+                            </button>
+                        ) :
+                            `Resend OTP in ${timer} seconds`
+                        }
+                    </p>
+                    {
+                        verifyOtpMutation.isError && verifyOtpMutation.error instanceof AxiosError && (
+                            <p className="text-red-500 text-sm text-center mt-2">
+                                {
+                                    ((verifyOtpMutation.error as AxiosError).response?.data as { message?: string })?.message
+                                    || verifyOtpMutation.error.message
+                                }
+                            </p>
+                        )
+                    }
+                </div>
+            )}
+
+            
+
             <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
                 By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
                 and <a href="#">Privacy Policy</a>.
