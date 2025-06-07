@@ -1,0 +1,201 @@
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import { useForm } from "react-hook-form";
+
+
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+import { Eye, EyeOff } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosError } from "axios";
+import { TurborepoAccessTraceResult } from "next/dist/build/turborepo-access-trace";
+import toast from "react-hot-toast";
+
+
+type FormData = {
+    email: string;
+};
+
+export function ForgotPasswordForm({
+    className,
+    ...props
+}: React.ComponentProps<"div">) {
+    const [step, setStep] = useState<"email" | "otp" | "reset">("email");
+    const [otp, setOtp] = useState(["", "", "", ""]);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [canResend, setCanResend] = useState(true);
+    const [serverError, setServerError] = useState<string | null>(null);
+    const [timer, setTimer] = useState(60);
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const router = useRouter();
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<FormData>();
+
+    const startResendTimer = () => {
+        const interval = setInterval(() => {
+            setTimer((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    setCanResend(true);
+                    return 0; // Reset timer
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    }
+
+    const requestOtpMutation = useMutation({
+        mutationFn: async ({ email }: { email: string }) => {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/forgot-password-user`,
+                { email },
+            );
+            return response.data;
+        },
+        onSuccess: (_, { email }) => {
+            setUserEmail(email);
+            setStep("otp");
+            setServerError(null);
+            setCanResend(false);
+            setTimer(60); // Reset timer to 60 seconds
+            startResendTimer();
+        },
+        onError: (error: AxiosError) => {
+            const errorMessage = (error.response?.data as { message?: string })?.message || "Invalid OTP, Please try again.";
+            setServerError(errorMessage);
+        }
+    })
+
+    const verifyOtpMutation = useMutation({
+        mutationFn: async () => {
+            if (!userEmail) return;
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-forgot-password-user`,
+                { email: userEmail, otp: otp.join("") },
+            )
+            return response.data;
+        },
+        onSuccess: () => {
+            setStep("reset");
+            setServerError(null);
+        },
+
+        onError: (error: AxiosError) => {
+            const errorMessage = (error.response?.data as { message?: string })?.message || "Invalid OTP, Please try again.";
+            setServerError(errorMessage);
+        }
+    })
+
+    const resetPasswordMutation = useMutation({
+        mutationFn: async ({ password }: { password: string }) => {
+            if (!password) return;
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/reset-forgot-password-user`,
+                { email: userEmail, newPassword: password },
+            )
+            return response.data;
+        },
+        onSuccess: () => {
+            setStep("email");
+            toast.success("Password reset successfully. You can now log in with your new password.");
+            setServerError(null);
+            router.push("/login");
+        },
+
+        onError: (error: AxiosError) => {
+            const errorMessage = (error.response?.data as { message?: string })?.message || "Failed to reset password, Please try again.";
+            setServerError(errorMessage);
+        }
+    })
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (!/^[0-9]?$/.test(value)) return; // Allow only digits
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        if (value && index < inputRefs.current.length - 1) {
+            inputRefs.current[index + 1]?.focus(); // Move to next input
+        }
+    }
+
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus(); // Move to previous input
+        }
+    }
+
+    const onSubmitEmail = async ({ email }: { email: string }) => {
+        requestOtpMutation.mutate({ email });
+    }
+
+    const onSubmitPassword = async ({ password }: { password: string }) => {
+        resetPasswordMutation.mutate({ password });
+    }
+
+
+    return (
+        <div className={cn("flex flex-col gap-6", className)} {...props}>
+            {step === "email" && (<Card>
+                <CardHeader className="text-center">
+                    <CardTitle className="text-xl">Reset Password</CardTitle>
+                    <CardDescription>
+                        Input the Email you signed up with to reset your password.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmitEmail)}>
+                        <div className="grid gap-6">
+                            <div className="grid gap-6">
+                                <div className="grid gap-3">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="m@example.com"
+                                        {...register("email", { required: "Email is required" })}
+                                    />
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
+                                    disabled={requestOtpMutation.isPending}>
+                                    {requestOtpMutation.isPending ? "Logging in..." : "Send Reset Email"}
+                                </Button>
+                            </div>
+                            <div className="text-center text-sm">
+                                Don't have an account?{" "}
+                                <a href="/sign-up" className="underline underline-offset-4">
+                                    Sign up
+                                </a>
+                            </div>
+                            <div className="text-center text-sm">
+                                Go back to login?{" "}
+                                <a href="/login" className="underline underline-offset-4">
+                                    Login
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>)}
+
+            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
+                By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+                and <a href="#">Privacy Policy</a>.
+            </div>
+        </div>
+    )
+}

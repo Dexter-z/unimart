@@ -112,7 +112,11 @@ export function SignUpForm({
         }
     }
 
-    const resendOtp = () => { }
+    const resendOtp = () => {
+        if(userData) {
+            signUpMutation.mutate(userData);
+        }
+    }
 
     const onSubmit = async (data: FormData) => {
         console.log(data);
