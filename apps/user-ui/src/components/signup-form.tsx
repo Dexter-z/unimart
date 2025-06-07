@@ -34,7 +34,7 @@ export function SignUpForm({
     const [serverError, setServerError] = useState<string | null>(null);
     const [canResend, setCanResend] = useState(true);
     const [timer, setTimer] = useState(60);
-    const [showOtp, setShowOtp] = useState(false);
+    const [showOtp, setShowOtp] = useState(true);
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [userData, setUserData] = useState<FormData | null>(null);
 
@@ -46,6 +46,22 @@ export function SignUpForm({
         formState: { errors },
         watch,
     } = useForm<FormData>();
+
+    const handleOtpChange = (index:number, value:string) => {
+        if(!/^[0-9]?$/.test(value)) return; // Allow only digits
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        if (value && index < inputRefs.current.length - 1) {
+            inputRefs.current[index + 1]?.focus(); // Move to next input
+        }
+    }
+
+    const handleOtpKeyDown = (index:number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if(e.key === "Backspace" && !otp[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus(); // Move to previous input
+        }
+    }
 
     const onSubmit = async (data: FormData) => {
         console.log(data);
@@ -67,8 +83,7 @@ export function SignUpForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {!showOtp ? ("") : ("")}
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    {!showOtp ? (<form onSubmit={handleSubmit(onSubmit)}>
                         <div className="grid gap-6">
                             <div className="grid gap-6">
                                 <div className="grid gap-3">
@@ -172,7 +187,29 @@ export function SignUpForm({
                                 </a>
                             </div>
                         </div>
-                    </form>
+                    </form>) : (
+                        <div>
+                            <h3 className="text-xl font-semibold text-center mb-4">
+                                Enter OTP
+                            </h3>
+                            <div className="flex justify-center gap-6">
+                                {otp?.map((digit, index) => (
+                                    <input key={index} type="text" ref={(el) => {
+                                        if(el) {
+                                            inputRefs.current[index] = el;
+                                        }
+                                    }} 
+                                    maxLength={1}
+                                    className="w-12 h-12 text-center border border-gray-300 outline-none !rounded"
+                                    value={digit}
+                                    onChange={(e) => {handleOtpChange(index, e.target.value);}}
+                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 </CardContent>
             </Card>
             <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
