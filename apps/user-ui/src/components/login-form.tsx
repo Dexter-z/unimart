@@ -15,6 +15,9 @@ import { Label } from "@/components/ui/label"
 
 import { Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosError } from "axios";
 
 
 type FormData = {
@@ -30,20 +33,35 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
 
+  const loginMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-user`,
+        data,
+        { withCredentials: true } // To make sure cookies are sent with the request
+      )
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setServerError(null);
+      router.push("/")
+    },
+    onError: (error: AxiosError) => {
+      const errorMessage = (error.response?.data as { message?: string })?.message || "Invalid email or password.";
+      setServerError(errorMessage);
+    }
+  })
+
   const onSubmit = async (data: FormData) => {
     console.log(data);
-    // try {
-    //   console.log(data);
-    //   setServerError(null);
-    // } catch (err) {
-    //   setServerError("Invalid email or password."); // Or use err.message
-    // }
+    loginMutation.mutate(data);
   };
 
   return (
@@ -121,8 +139,11 @@ export function LoginForm({
                     Remember me
                   </Label>
                 </div>
-                <Button type="submit" className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
-                  Login
+                <Button
+                  type="submit"
+                  className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
+                  disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
               </div>
               <div className="text-center text-sm">

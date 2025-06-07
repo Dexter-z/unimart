@@ -34,7 +34,7 @@ export function SignUpForm({
 }: React.ComponentProps<"div">) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [serverError, setServerError] = useState<string | null>(null);
+    //const [serverError, setServerError] = useState<string | null>(null);
     const [canResend, setCanResend] = useState(true);
     const [timer, setTimer] = useState(60);
     const [showOtp, setShowOtp] = useState(false);
@@ -194,9 +194,7 @@ export function SignUpForm({
                                         <span className="text-red-500 text-xs">{errors.password.message}</span>
                                     )}
                                 </div>
-                                {serverError && (
-                                    <div className="text-red-500 text-sm text-center mb-2">{serverError}</div>
-                                )}
+                                
 
                                 <div className="grid gap-3">
                                     <Label htmlFor="confirmPassword">Confirm Password</Label>
