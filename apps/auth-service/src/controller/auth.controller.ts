@@ -3,7 +3,7 @@ import { checkOtpRestrictions, handleForgotPassword, sendOtp, trackOtpRequests, 
 import prisma from "@packages/libs/prisma";
 import { AuthError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookie";
 
 //Register a new user
@@ -12,7 +12,7 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
         validateRegistrationData(req.body, "user")
         const { name, email } = req.body
 
-        const existingUser = await prisma.users.findUnique({ where: {email} })
+        const existingUser = await prisma.users.findUnique({ where: { email } })
 
         if (existingUser) {
             return next(new ValidationError("A User already exists with this email"))
@@ -28,13 +28,13 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
     } catch (error) {
         return next(error)
     }
-} 
+}
 
 //Verify OTP and activate user account
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, otp, password, name } = req.body;
-        if(!email || !otp || !password || !name) {
+        if (!email || !otp || !password || !name) {
             return next(new ValidationError("All fields are required"));
         }
 
@@ -110,12 +110,53 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
         res.status(200).json({
             message: "Login successful",
-            user: {id: user.id, name: user.name, email: user.email},
+            user: { id: user.id, name: user.name, email: user.email },
         })
 
     } catch (error) {
         return next(error);
-        
+
+    }
+}
+
+//Refresh User Token
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies.refresh_token;
+        if (!refreshToken) {
+            return new ValidationError("Unauthorized access, No refresh Token");
+        }
+
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECET as string) as { id: string, role: string };
+
+        if (!decoded || !decoded.id || !decoded.role) {
+            return new JsonWebTokenError("Forbidden!, Invalid refresh token");
+        }
+
+        // let account;
+        // if(decoded.role === "user") {
+        //     account = await prisma.users.findUnique({ where: { id: decoded.id } });
+        // } else {
+        //     return next(new AuthError("Forbidden!, Invalid role"));
+        // }
+
+        const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+        if(!user) {
+            return (new AuthError("Forbidden!!!, User/Seller not found"));
+        }
+
+        const newAccessToken = jwt.sign(
+            {id:decoded.id, role: decoded.role},
+            process.env.ACCESS_TOKEN_SECET as string,
+            { expiresIn: "15m" }
+        )
+
+        setCookie(res, "access_token", newAccessToken);
+        return res.status(201).json({success: true})
+
+
+    } catch (error) {
+        return next(error);
     }
 }
 
@@ -167,6 +208,6 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
 
     } catch (error) {
         return next(error);
-        
+
     }
 }
