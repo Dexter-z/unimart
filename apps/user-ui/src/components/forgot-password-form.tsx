@@ -18,18 +18,19 @@ import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { TurborepoAccessTraceResult } from "next/dist/build/turborepo-access-trace";
 import toast from "react-hot-toast";
 
 
 type FormData = {
     email: string;
+    password: string;
 };
 
 export function ForgotPasswordForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const [showPassword, setShowPassword] = useState(false);
     const [step, setStep] = useState<"email" | "otp" | "reset">("email");
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -172,9 +173,14 @@ export function ForgotPasswordForm({
                                     type="submit"
                                     className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
                                     disabled={requestOtpMutation.isPending}>
-                                    {requestOtpMutation.isPending ? "Logging in..." : "Send Reset Email"}
+                                    {requestOtpMutation.isPending ? "Sending Reset Email..." : "Send Reset Email"}
                                 </Button>
                             </div>
+
+                            {serverError && (
+                                <div className="text-red-500 text-sm text-center mb-2">{serverError}</div>
+                            )}
+
                             <div className="text-center text-sm">
                                 Don't have an account?{" "}
                                 <a href="/sign-up" className="underline underline-offset-4">
@@ -246,7 +252,59 @@ export function ForgotPasswordForm({
                 </div>
             )}
 
-            
+            {step === "reset" && (
+                <div>
+                    <h3 className="text-xl font-semibold text-center mb-4">
+                        Reset Your Password
+                    </h3>
+                    <form onSubmit={handleSubmit(onSubmitPassword)}>
+                        <div className="grid gap-3">
+                            <Label htmlFor="password">New Password</Label>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter new password"
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 6,
+                                            message: "Password must be at least 6 characters",
+                                        },
+                                        pattern: {
+                                            value: /^(?=.*[A-Z])(?=.*\d).+$/,
+                                            message: "Password must contain an uppercase letter and a number",
+                                        },
+                                    })}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <span className="text-red-500 text-xs">{errors.password.message}</span>
+                            )}
+                            {serverError && (
+                                <span className="text-red-500 text-xs text-center">{serverError}</span>
+                            )}
+
+                            <Button
+                                type="submit"
+                                className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
+                                disabled={resetPasswordMutation.isPending}
+                                onClick={() => { console.log() }}
+                            >
+                                {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            )}
 
             <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
                 By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
