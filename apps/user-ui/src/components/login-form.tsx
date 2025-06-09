@@ -47,6 +47,7 @@ export function LoginForm({
         data,
         { withCredentials: true } // To make sure cookies are sent with the request
       )
+      console.log(response.data)
       return response.data;
     },
     onSuccess: (data) => {

@@ -14,7 +14,7 @@ const useUser = () => {
         data: user,
         isLoading,
         isError,
-        refetch
+        refetch,
     } = useQuery({
         queryKey: ["user"],
         queryFn: fetchUser,

@@ -1,9 +1,16 @@
+"use client"
+
 import Link from 'next/link'
 import React from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
+import useUser from '@/hooks/useUser';
 
 const Header = () => {
+    //const {user, isLoading} = useUser()
+
+    //console.log(user)
+
     return (
         <div className='w-full bg-white'>
             <div className="w-[80%] py-5 m-auto flex items-center justify-between">
