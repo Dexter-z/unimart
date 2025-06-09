@@ -160,6 +160,19 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+//Get logged in user
+export const getUser = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user; // User is set by isAuthenticated middleware
+        res.status(200).json({
+            success: true,
+            user,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
 //User forgot password
 export const userForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
