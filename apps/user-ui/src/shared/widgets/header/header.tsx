@@ -38,7 +38,7 @@ const Header = () => {
                                     <span className='font-semibold inline-block h-5 w-20 bg-gray-200 rounded animate-pulse'></span>
                                 </div>
                             </>
-                        ) : user ? (
+                            ) : user ? (
                             <>
                                 <Link href={"/profile"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
                                     <UserRound />
@@ -48,7 +48,7 @@ const Header = () => {
                                     <span className='font-semibold'>{user?.name?.split(" ")[0]}</span>
                                 </Link>
                             </>
-                        ) : (
+                            ) : (
                             <>
                                 <Link href={"/login"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
                                     <UserRound />
