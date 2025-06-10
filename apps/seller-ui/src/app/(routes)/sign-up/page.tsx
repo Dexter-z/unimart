@@ -1,10 +1,11 @@
 "use client"
-import { LoginForm } from '@/components/login-form';
+import { SignUpForm } from '@/components/signup-form';
 import { GalleryVerticalEnd } from 'lucide-react';
 import React from 'react'
 
 
-const Login = () => {
+const Signup = () => {
+
     return (
         <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <div className="flex w-full max-w-sm flex-col gap-6">
@@ -14,10 +15,10 @@ const Login = () => {
                     </div>
                     UniMart UNN
                 </a>
-                <LoginForm />
+                <SignUpForm />
             </div>
         </div>
     )
 }
 
-export default Login
+export default Signup
