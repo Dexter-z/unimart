@@ -7,9 +7,9 @@ import HeaderBottom from './header-bottom';
 import useUser from '@/hooks/useUser';
 
 const Header = () => {
-    //const {user, isLoading} = useUser()
+    const { user, isLoading } = useUser()
 
-    //console.log(user)
+    console.log(user)
 
     return (
         <div className='w-full bg-white'>
@@ -28,14 +28,29 @@ const Header = () => {
 
                 <div className='flex items-center gap-8'>
                     <div className='flex items-center gap-2'>
-                        <Link href={"/login"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
-                            <UserRound />
-                        </Link>
+                        {!isLoading && user ? (
+                            <>
+                                <Link href={"/profile"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
+                                    <UserRound />
+                                </Link>
 
-                        <Link href={"/login"}>
-                            <span className='block font-medium'>Hello,</span>
-                            <span className='font-semibold'>Sign in</span>
-                        </Link>
+                                <Link href={"/profile"}>
+                                    <span className='block font-medium'>Hello,</span>
+                                    <span className='font-semibold'>{user?.name?.split(" ")[0]}</span>
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link href={"/login"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
+                                    <UserRound />
+                                </Link>
+
+                                <Link href={"/login"}>
+                                    <span className='block font-medium'>Hello,</span>
+                                    <span className='font-semibold'>Sign in</span>
+                                </Link>
+                            </>
+                        )}
                     </div>
                     <div className='flex items-center gap-5'>
                         <Link href={"/wishlist"} className='relative'>
@@ -55,11 +70,11 @@ const Header = () => {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </div >
 
             <div className='border-b border-b-[#99999938]' />
             <HeaderBottom />
-        </div>
+        </div >
 
     )
 }
