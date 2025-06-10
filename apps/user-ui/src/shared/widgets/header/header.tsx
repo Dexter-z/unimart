@@ -28,12 +28,21 @@ const Header = () => {
 
                 <div className='flex items-center gap-8'>
                     <div className='flex items-center gap-2'>
-                        {!isLoading && user ? (
+                        {isLoading ? (
+                            <>
+                                <div className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a] animate-pulse bg-gray-200'>
+                                    <UserRound className="opacity-50" />
+                                </div>
+                                <div>
+                                    <span className='block font-medium'>Hello,</span>
+                                    <span className='font-semibold inline-block h-5 w-20 bg-gray-200 rounded animate-pulse'></span>
+                                </div>
+                            </>
+                        ) : user ? (
                             <>
                                 <Link href={"/profile"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
                                     <UserRound />
                                 </Link>
-
                                 <Link href={"/profile"}>
                                     <span className='block font-medium'>Hello,</span>
                                     <span className='font-semibold'>{user?.name?.split(" ")[0]}</span>
@@ -44,7 +53,6 @@ const Header = () => {
                                 <Link href={"/login"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
                                     <UserRound />
                                 </Link>
-
                                 <Link href={"/login"}>
                                     <span className='block font-medium'>Hello,</span>
                                     <span className='font-semibold'>Sign in</span>
