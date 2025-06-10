@@ -91,7 +91,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
                 id: user.id,
                 role: "user"
             },
-            process.env.ACCESS_TOKEN_SECET as string,
+            process.env.ACCESS_TOKEN_SECRET as string,
             { expiresIn: "15m" }
         )
 
@@ -100,7 +100,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
                 id: user.id,
                 role: "user"
             },
-            process.env.REFRESH_TOKEN_SECET as string,
+            process.env.REFRESH_TOKEN_SECRET as string,
             { expiresIn: "7d" }
         )
 
@@ -164,7 +164,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
     try {
         const user = req.user; // User is set by isAuthenticated middleware
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             user,
         })
