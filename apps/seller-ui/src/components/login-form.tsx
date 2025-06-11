@@ -18,6 +18,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
+import useSeller from "@/hooks/useSeller";
 
 
 type FormData = {
@@ -34,6 +35,7 @@ export function LoginForm({
   const [serverError, setServerError] = useState<string | null>(null);
 
   const router = useRouter();
+  const {refetch} = useSeller()
 
   const {
     register,
@@ -52,6 +54,7 @@ export function LoginForm({
     },
     onSuccess: (data) => {
       setServerError(null);
+      refetch();
       router.push("/")
     },
     onError: (error: AxiosError) => {

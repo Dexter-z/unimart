@@ -1,17 +1,22 @@
 import axiosInstance from "@/utils/axiosInstance"
-import {useQuery} from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 
 
-//Fetch user data from API
+//Fetch Seller data from API
 const fetchSeller = async () => {
-    const response = await axiosInstance.get("/api/logged-in-seller")
-    console.log("Fetch Seller Response: " + response.data)
-
-    return response.data.seller;
-}
+    try {
+        const response = await axiosInstance.get("/api/logged-in-seller");
+        return response.data.seller;
+    } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+            // Not logged in, treat as error
+            throw new Error("Not authenticated");
+        }
+        throw error;
+    }
+};
 
 const useSeller = () => {
-    console.log("In the useSeller block")
     const {
         data: seller,
         isLoading,
@@ -21,12 +26,11 @@ const useSeller = () => {
         queryKey: ["seller"],
         queryFn: fetchSeller,
         staleTime: 1000 * 60 * 5,
-        retry: 1,
+        retry: false,
     })
 
-    console.log("I am returning ", seller)
 
-    return {seller, isLoading, isError, refetch}
+    return { seller, isLoading, isError, refetch }
 }
 
 export default useSeller;

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     try {
+        console.log("In isAuthenticated function")
         const token = req.cookies["user_access_token"] || req.cookies["seller_access_token"] || req.headers.authorization?.split(" ")[1];
 
         if (!token) {
@@ -32,7 +33,9 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
                 where: { id: decoded.id },
                 include: {shop:true} 
             });
+            
             req.seller = account
+            console.log("Account: ", account)
         }
 
         

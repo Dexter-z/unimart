@@ -125,7 +125,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 }
 
 //Refresh User Token
-export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshUserToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const refreshToken = req.cookies.refresh_token;
         if (!refreshToken) {
@@ -156,7 +156,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
             { expiresIn: "15m" }
         )
 
-        setCookie(res, "access_token", newAccessToken);
+        setCookie(res, "user_access_token", newAccessToken);
         return res.status(201).json({ success: true })
 
 
@@ -346,6 +346,41 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
     } catch (error) {
         return next(error);
 
+    }
+}
+
+//Refresh Seller Token
+export const refreshSellerToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies.refresh_token;
+        if (!refreshToken) {
+            return new ValidationError("Unauthorized access, No refresh Token");
+        }
+
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECET as string) as { id: string, role: string };
+
+        if (!decoded || !decoded.id || !decoded.role) {
+            return new JsonWebTokenError("Forbidden!, Invalid refresh token");
+        }
+
+
+        const seller = await prisma.sellers.findUnique({ where: { id: decoded.id } });
+        if (!seller) {
+            return (new AuthError("Forbidden!!!, User/Seller not found"));
+        }
+
+        const newAccessToken = jwt.sign(
+            { id: decoded.id, role: decoded.role },
+            process.env.ACCESS_TOKEN_SECET as string,
+            { expiresIn: "15m" }
+        )
+
+        setCookie(res, "seller_access_token", newAccessToken);
+        return res.status(201).json({ success: true })
+
+
+    } catch (error) {
+        return next(error);
     }
 }
 
