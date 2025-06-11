@@ -141,18 +141,18 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         // }
 
         const user = await prisma.users.findUnique({ where: { id: decoded.id } });
-        if(!user) {
+        if (!user) {
             return (new AuthError("Forbidden!!!, User/Seller not found"));
         }
 
         const newAccessToken = jwt.sign(
-            {id:decoded.id, role: decoded.role},
+            { id: decoded.id, role: decoded.role },
             process.env.ACCESS_TOKEN_SECET as string,
             { expiresIn: "15m" }
         )
 
         setCookie(res, "access_token", newAccessToken);
-        return res.status(201).json({success: true})
+        return res.status(201).json({ success: true })
 
 
     } catch (error) {
@@ -225,21 +225,25 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
     }
 }
 
+
+
 //Register a new seller
 export const registerSeller = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.log("Here")
         validateRegistrationData(req.body, "seller")
         const { name, email } = req.body
+        
 
-        const existingUser = await prisma.users.findUnique({ where: { email } })
+        const existingSeller = await prisma.sellers.findUnique({ where: { email } })
 
-        if (existingUser) {
+        if (existingSeller) {
             return next(new ValidationError("A User already exists with this email"))
         }
 
         await checkOtpRestrictions(email, next)
         await trackOtpRequests(email, next)
-        await sendOtp(name, email, "user-activation-mail")
+        await sendOtp(name, email, "seller-activation-mail")
 
         res.status(200).json({
             message: "OTP sent to email. Please verify your account"
@@ -248,3 +252,76 @@ export const registerSeller = async (req: Request, res: Response, next: NextFunc
         return next(error)
     }
 }
+
+//Verify Seller with otp
+export const verifySeller = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, otp, password, name, phone_number, country } = req.body;
+        if (!email || !otp || !password || !name || !phone_number || !country) {
+            return next(new ValidationError("All fields are required"));
+        }
+
+        const existingSeller = await prisma.sellers.findUnique({ where: { email } });
+        if (existingSeller) {
+            return next(new ValidationError("A Seller already exists with this email"));
+        }
+
+        await verifyOtp(email, otp, next);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.sellers.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+                phone_number,
+                country
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            message: "Seller registered successfully"
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Create Shop 
+export const createShop = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, bio, address, opening_hours, website, category, sellerId } = req.body
+        if (!name || !bio || !address || !opening_hours || !category || !sellerId) {
+            return next(new ValidationError("Please fill in the required fields"))
+        }
+
+        const shopData: any = {
+            name,
+            bio,
+            address, 
+            opening_hours, 
+            category, 
+            sellerId
+        }
+
+        if(website && website.trim() != ""){
+            shopData.website = website;
+        }
+
+        const shop = await prisma.shops.create({
+            data: shopData,
+        })
+
+        res.status(201).json({
+            success: true,
+            shop
+        })
+
+    } catch (error) {
+        return next(error)
+    }
+}
+
+//Create stripe connect account link. Not necessary for unimart, maybe with paystack

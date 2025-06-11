@@ -24,7 +24,7 @@ import { countries } from "@/utils/countries";
 type FormData = {
     name: string;
     email: string;
-    phone: string;
+    phone_number: string;
     country: string;
     password: string;
     confirmPassword: string;
@@ -42,8 +42,9 @@ export function SignUpForm({
     const [timer, setTimer] = useState(60);
     const [showOtp, setShowOtp] = useState(false);
     const [otp, setOtp] = useState(["", "", "", ""]);
-    const [userData, setUserData] = useState<FormData | null>(null);
-    const [activeStep, setActiveStep] = useState(1); // 1, 2, or 3
+    const [sellerData, setSellerData] = useState<FormData | null>(null);
+    const [activeStep, setActiveStep] = useState(2); // 1, 2, or 3
+    const [sellerId, setSellerId] = useState("")
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -71,12 +72,12 @@ export function SignUpForm({
 
     const signUpMutation = useMutation({
         mutationFn: async (data: FormData) => {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`, data)
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`, data)
 
             return response.data;
         },
         onSuccess: (_, formData) => {
-            setUserData(formData);
+            setSellerData(formData);
             setShowOtp(true);
             setCanResend(false);
             setTimer(60);
@@ -84,19 +85,32 @@ export function SignUpForm({
         }
     })
 
+    const shopCreateMutation = useMutation({
+        mutationFn: async (data: FormData) => {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-shop`, data)
+
+            return response.data;
+        },
+
+        onSuccess: () => {
+            setActiveStep(3)
+        }
+    })
+
     const verifyOtpMutation = useMutation({
         mutationFn: async () => {
-            if (!userData) return
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
+            if (!sellerData) return
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-seller`,
                 {
-                    ...userData, //To spread the name, email and password instead of using them as an object
+                    ...sellerData, //To spread the name, email and password instead of using them as an object
                     otp: otp.join("") // Join the OTP array into a string
                 }
             )
             return response.data;
         },
-        onSuccess: () => {
-            router.push("/login");
+        onSuccess: (data) => {
+            setSellerId(data?.seller?.id)
+            setActiveStep(2)
         }
     })
 
@@ -117,14 +131,20 @@ export function SignUpForm({
     }
 
     const resendOtp = () => {
-        if (userData) {
-            signUpMutation.mutate(userData);
+        if (sellerData) {
+            signUpMutation.mutate(sellerData);
         }
     }
 
     const onSubmit = async (data: FormData) => {
-        console.log(data);
         signUpMutation.mutate(data);
+    };
+
+    const onShopSubmit = async (data: any) => {
+        const shopData = { ...data, sellerId }
+        shopCreateMutation.mutate(shopData);
+        console.log(data)
+        console.log(shopData)
         // try {
         //   console.log(data);
         //   setServerError(null);
@@ -140,14 +160,17 @@ export function SignUpForm({
                 <CardContent>
                     <div className="relative flex flex-col items-center w-full mb-8">
                         {/* Stepper track */}
-                        <div className="absolute left-0 right-0 top-1/2 h-1 bg-gray-300 -translate-y-1/2 rounded" style={{ margin: '0 10%' }} />
+                        <div
+                            className="absolute left-0 right-0 top-1/2 h-1 bg-gray-300 -translate-y-1/2 rounded"
+                            style={{ margin: '0 10%' }}
+                        />
                         {/* Sliding active bar */}
                         <div
-                            className="absolute left-0 top-1/2 h-1 bg-blue-500 rounded transition-all duration-300"
+                            className="absolute top-1/2 h-1 bg-blue-500 rounded transition-all duration-300"
                             style={{
-                                width: "33.33%",
-                                left: `calc(10% + ${(activeStep - 1) * 33.33}% )`,
-                                transform: "translateY(-50%)",
+                                width: '26.66%', // 33.33% of 80% (track width) = 26.66% of 100%
+                                left: `calc(10% + ${(activeStep - 1) * 26.66}%)`,
+                                transform: 'translateY(-50%)',
                             }}
                         />
                     </div>
@@ -158,163 +181,165 @@ export function SignUpForm({
 
                     {/*Steps content */}
                     <div>
+                        {/* First step */}
                         {activeStep === 1 && (
                             <div>
-                                {!showOtp ? (<form onSubmit={handleSubmit(onSubmit)}>
-                                    <h3 className="text-2xl font-semibold text-center mb-4">
-                                        Create Account
-                                    </h3>
-                                    <div className="grid gap-6">
+                                {!showOtp ? (
+                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                        <h3 className="text-2xl font-semibold text-center mb-4">
+                                            Create Account
+                                        </h3>
                                         <div className="grid gap-6">
+                                            <div className="grid gap-6">
 
-                                            <div className="grid gap-3">
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    type="text"
-                                                    placeholder="Full name"
-                                                    {...register("name", { required: "Name is required" })}
-                                                />
-                                                {errors.name && (
-                                                    <span className="text-red-500 text-xs">{errors.name.message}</span>
-                                                )}
-                                            </div>
-
-                                            <div className="grid gap-3">
-                                                <Label htmlFor="email">Email</Label>
-                                                <Input
-                                                    id="email"
-                                                    type="email"
-                                                    placeholder="m@example.com"
-                                                    {...register("email", { required: "Email is required" })}
-                                                />
-                                            </div>
-
-                                            <div className="grid gap-3">
-                                                <Label htmlFor="phone">Phone Number</Label>
-                                                <Input
-                                                    id="phone"
-                                                    type="tel"
-                                                    placeholder="e.g. +2348012345678"
-                                                    {...register("phone", {
-                                                        required: "Phone number is required",
-                                                        pattern: {
-                                                            value: /^\+?[0-9]{7,15}$/,
-                                                            message: "Enter a valid phone number",
-                                                        },
-                                                    })}
-                                                />
-                                                {errors.phone && (
-                                                    <span className="text-red-500 text-xs">{errors.phone.message}</span>
-                                                )}
-                                            </div>
-
-                                            <div className="grid gap-3">
-                                                <Label htmlFor="country">Country</Label>
-                                                <select
-                                                    id="country"
-                                                    {...register("country", { required: "Country is required" })}
-                                                    className={`border rounded w-full py-2 ${!watch("country") ? "text-gray-400" : "text-black"}`}
-                                                    defaultValue=""
-                                                >
-                                                    <option value="" disabled>
-                                                        Select your country
-                                                    </option>
-                                                    {countries.map((country) => (
-                                                        <option key={country.code} value={country.code} className="text-black">
-                                                            {country.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                {errors.country && (
-                                                    <span className="text-red-500 text-xs">{errors.country.message}</span>
-                                                )}
-                                            </div>
-
-                                            <div className="grid gap-3">
-                                                <div className="flex items-center">
-                                                    <Label htmlFor="password">Password</Label>
-
-                                                </div>
-                                                <div className="relative">
+                                                <div className="grid gap-3">
+                                                    <Label htmlFor="name">Name</Label>
                                                     <Input
-                                                        id="password"
-                                                        type={showPassword ? "text" : "password"}
-                                                        {...register("password", {
-                                                            required: "Password is required",
-                                                            minLength: {
-                                                                value: 6,
-                                                                message: "Password must be at least 6 characters",
-                                                            },
+                                                        id="name"
+                                                        type="text"
+                                                        placeholder="Full name"
+                                                        {...register("name", { required: "Name is required" })}
+                                                    />
+                                                    {errors.name && (
+                                                        <span className="text-red-500 text-xs">{errors.name.message}</span>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid gap-3">
+                                                    <Label htmlFor="email">Email</Label>
+                                                    <Input
+                                                        id="email"
+                                                        type="email"
+                                                        placeholder="m@example.com"
+                                                        {...register("email", { required: "Email is required" })}
+                                                    />
+                                                </div>
+
+                                                <div className="grid gap-3">
+                                                    <Label htmlFor="phone_number">Phone Number</Label>
+                                                    <Input
+                                                        id="phone_number"
+                                                        type="tel"
+                                                        placeholder="e.g. +2348012345678"
+                                                        {...register("phone_number", {
+                                                            required: "Phone number is required",
                                                             pattern: {
-                                                                value: /^(?=.*[A-Z])(?=.*\d).+$/,
-                                                                message: "Password must contain an uppercase letter and a number",
+                                                                value: /^\+?[0-9]{7,15}$/,
+                                                                message: "Enter a valid phone number",
                                                             },
                                                         })}
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword((v) => !v)}
-                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                                        tabIndex={-1}
-                                                    >
-                                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                                    </button>
+                                                    {errors.phone_number && (
+                                                        <span className="text-red-500 text-xs">{errors.phone_number.message}</span>
+                                                    )}
                                                 </div>
-                                                {errors.password && (
-                                                    <span className="text-red-500 text-xs">{errors.password.message}</span>
+
+                                                <div className="grid gap-3">
+                                                    <Label htmlFor="country">Country</Label>
+                                                    <select
+                                                        id="country"
+                                                        {...register("country", { required: "Country is required" })}
+                                                        className={`border rounded w-full py-2 ${!watch("country") ? "text-gray-400" : "text-black"}`}
+                                                        defaultValue=""
+                                                    >
+                                                        <option value="" disabled>
+                                                            Select your country
+                                                        </option>
+                                                        {countries.map((country) => (
+                                                            <option key={country.code} value={country.code} className="text-black">
+                                                                {country.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    {errors.country && (
+                                                        <span className="text-red-500 text-xs">{errors.country.message}</span>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid gap-3">
+                                                    <div className="flex items-center">
+                                                        <Label htmlFor="password">Password</Label>
+
+                                                    </div>
+                                                    <div className="relative">
+                                                        <Input
+                                                            id="password"
+                                                            type={showPassword ? "text" : "password"}
+                                                            {...register("password", {
+                                                                required: "Password is required",
+                                                                minLength: {
+                                                                    value: 6,
+                                                                    message: "Password must be at least 6 characters",
+                                                                },
+                                                                pattern: {
+                                                                    value: /^(?=.*[A-Z])(?=.*\d).+$/,
+                                                                    message: "Password must contain an uppercase letter and a number",
+                                                                },
+                                                            })}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPassword((v) => !v)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                                            tabIndex={-1}
+                                                        >
+                                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
+                                                    {errors.password && (
+                                                        <span className="text-red-500 text-xs">{errors.password.message}</span>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid gap-3">
+                                                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            id="confirmPassword"
+                                                            type={showConfirmPassword ? "text" : "password"}
+                                                            {...register("confirmPassword", {
+                                                                required: "Please confirm your password",
+                                                                validate: (value) =>
+                                                                    value === watch("password") || "Passwords do not match",
+                                                            })}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowConfirmPassword((v) => !v)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                                            tabIndex={-1}
+                                                        >
+                                                            {showConfirmPassword ? (
+                                                                <EyeOff className="w-5 h-5" />
+                                                            ) : (
+                                                                <Eye className="w-5 h-5" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                    {errors.confirmPassword && (
+                                                        <span className="text-red-500 text-xs">{errors.confirmPassword.message}</span>
+                                                    )}
+                                                </div>
+
+                                                <Button type="submit" disabled={signUpMutation.isPending} className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
+                                                    {signUpMutation.isPending ? "Signing up..." : "Sign Up"}
+                                                </Button>
+
+                                                {/* Show signup mutation error */}
+                                                {signUpMutation.isError && signUpMutation.error instanceof AxiosError && (
+                                                    <div className="mb-4 text-center text-red-500 text-sm">
+                                                        {signUpMutation.error.response?.data?.message || signUpMutation.error.message}
+                                                    </div>
                                                 )}
                                             </div>
-
-                                            <div className="grid gap-3">
-                                                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                                <div className="relative">
-                                                    <Input
-                                                        id="confirmPassword"
-                                                        type={showConfirmPassword ? "text" : "password"}
-                                                        {...register("confirmPassword", {
-                                                            required: "Please confirm your password",
-                                                            validate: (value) =>
-                                                                value === watch("password") || "Passwords do not match",
-                                                        })}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowConfirmPassword((v) => !v)}
-                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                                        tabIndex={-1}
-                                                    >
-                                                        {showConfirmPassword ? (
-                                                            <EyeOff className="w-5 h-5" />
-                                                        ) : (
-                                                            <Eye className="w-5 h-5" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                {errors.confirmPassword && (
-                                                    <span className="text-red-500 text-xs">{errors.confirmPassword.message}</span>
-                                                )}
+                                            <div className="text-center text-sm">
+                                                Already have an account?{" "}
+                                                <a href="/login" className="underline underline-offset-4">
+                                                    Login
+                                                </a>
                                             </div>
-
-                                            <Button type="submit" disabled={signUpMutation.isPending} className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
-                                                {signUpMutation.isPending ? "Signing up..." : "Sign Up"}
-                                            </Button>
-
-                                            {/* Show signup mutation error */}
-                                            {signUpMutation.isError && signUpMutation.error instanceof AxiosError && (
-                                                <div className="mb-4 text-center text-red-500 text-sm">
-                                                    {signUpMutation.error.response?.data?.message || signUpMutation.error.message}
-                                                </div>
-                                            )}
                                         </div>
-                                        <div className="text-center text-sm">
-                                            Already have an account?{" "}
-                                            <a href="/login" className="underline underline-offset-4">
-                                                Login
-                                            </a>
-                                        </div>
-                                    </div>
-                                </form>) : (
+                                    </form>) : (
                                     <div>
                                         <h3 className="text-xl font-semibold text-center mb-4">
                                             Enter OTP
@@ -365,6 +390,19 @@ export function SignUpForm({
                                         }
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Second step */}
+                        {activeStep === 2 && (
+                            <div>
+                                <form onSubmit={handleSubmit(onShopSubmit)}>
+                                    <h3 className="text-2xl font-semibold text-center mb-4">
+                                        Setup New Store
+                                    </h3>
+
+
+                                </form>
                             </div>
                         )}
                     </div>
