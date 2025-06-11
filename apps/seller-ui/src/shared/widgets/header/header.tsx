@@ -4,12 +4,12 @@ import Link from 'next/link'
 import React from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
-import useUser from '@/hooks/useSeller';
+import useSeller from '@/hooks/useSeller';
 
 const Header = () => {
-    const { user, isLoading } = useUser()
+    const { seller, isLoading } = useSeller()
 
-    console.log(user)
+    console.log("From the header: ", seller)
 
     return (
         <div className='w-full bg-white'>
@@ -38,14 +38,14 @@ const Header = () => {
                                     <span className='font-semibold inline-block h-5 w-20 bg-gray-200 rounded animate-pulse'></span>
                                 </div>
                             </>
-                            ) : user ? (
+                            ) : seller ? (
                             <>
                                 <Link href={"/profile"} className='border-2 w-[50px] h-[50px] flex items-center justify-center rounded-full border-[#010f1c1a]'>
                                     <UserRound />
                                 </Link>
                                 <Link href={"/profile"}>
                                     <span className='block font-medium'>Hello,</span>
-                                    <span className='font-semibold'>{user?.name?.split(" ")[0]}</span>
+                                    <span className='font-semibold'>{seller?.name?.split(" ")[0]}</span>
                                 </Link>
                             </>
                             ) : (
