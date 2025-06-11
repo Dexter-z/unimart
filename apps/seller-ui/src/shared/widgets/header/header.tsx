@@ -4,7 +4,7 @@ import Link from 'next/link'
 import React from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
-import useUser from '@/hooks/useUser';
+import useUser from '@/hooks/useSeller';
 
 const Header = () => {
     const { user, isLoading } = useUser()

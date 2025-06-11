@@ -19,6 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { countries } from "@/utils/countries";
+import { shopCategories } from "@/utils/categories";
 
 
 type FormData = {
@@ -29,6 +30,12 @@ type FormData = {
     password: string;
     confirmPassword: string;
     rememberMe?: boolean;
+    store_name: string;
+    bio: string;
+    address: string;
+    openingHours: string;
+    website?: string;
+    category: string;
 };
 
 export function SignUpForm({
@@ -43,7 +50,7 @@ export function SignUpForm({
     const [showOtp, setShowOtp] = useState(false);
     const [otp, setOtp] = useState(["", "", "", ""]);
     const [sellerData, setSellerData] = useState<FormData | null>(null);
-    const [activeStep, setActiveStep] = useState(2); // 1, 2, or 3
+    const [activeStep, setActiveStep] = useState(1); // 1, 2, or 3
     const [sellerId, setSellerId] = useState("")
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -109,6 +116,7 @@ export function SignUpForm({
             return response.data;
         },
         onSuccess: (data) => {
+            console.log("Seller data: " + data?.seller?.id)
             setSellerId(data?.seller?.id)
             setActiveStep(2)
         }
@@ -152,6 +160,18 @@ export function SignUpForm({
         //   setServerError("Invalid email or password."); // Or use err.message
         // }
     };
+
+    const connectStripe = async () => {
+        try {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`, { sellerId })
+
+            if (response.data.url) {
+                window.location.href = response.data.url
+            }
+        } catch (error) {
+            console.log("Stripe Connection Error: ", error)
+        }
+    }
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -396,13 +416,153 @@ export function SignUpForm({
                         {/* Second step */}
                         {activeStep === 2 && (
                             <div>
-                                <form onSubmit={handleSubmit(onShopSubmit)}>
+                                <form
+                                    onSubmit={handleSubmit(onShopSubmit)}
+                                >
                                     <h3 className="text-2xl font-semibold text-center mb-4">
                                         Setup New Store
                                     </h3>
+                                    <div className="grid gap-6">
+                                        {/* Store name */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="store_name">Store Name *</Label>
+                                            <Input
+                                                id="store_name"
+                                                type="text"
+                                                placeholder="Enter your store name"
+                                                className="w-full"
+                                                {...register("store_name", { required: "Store name is required" })}
+                                            />
+                                            {errors.store_name && (
+                                                <span className="text-red-500 text-xs">{errors.store_name.message}</span>
+                                            )}
+                                        </div>
 
+                                        {/* Bio */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="bio">Bio *</Label>
+                                            <Input
+                                                id="bio"
+                                                type="text"
+                                                placeholder="Short description about your store"
+                                                className="w-full"
+                                                {...register("bio", { required: "Bio is required" })}
+                                            />
+                                            {errors.bio && (
+                                                <span className="text-red-500 text-xs">{errors.bio.message}</span>
+                                            )}
+                                        </div>
 
+                                        {/* Address */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="address">Address *</Label>
+                                            <Input
+                                                id="address"
+                                                type="text"
+                                                placeholder="Store address"
+                                                className="w-full"
+                                                {...register("address", { required: "Address is required" })}
+                                            />
+                                            {errors.address && (
+                                                <span className="text-red-500 text-xs">{errors.address.message}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Opening Hours */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="openingHours">Opening Hours *</Label>
+                                            <Input
+                                                id="openingHours"
+                                                type="text"
+                                                placeholder="e.g. Mon-Fri 9am-5pm"
+                                                className="w-full"
+                                                {...register("openingHours", { required: "Opening hours are required" })}
+                                            />
+                                            {errors.openingHours && (
+                                                <span className="text-red-500 text-xs">{errors.openingHours.message}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Website */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="website">Website</Label>
+                                            <Input
+                                                id="website"
+                                                type="url"
+                                                placeholder="https://yourstore.com"
+                                                className="w-full"
+                                                {...register("website", {
+                                                    pattern: {
+                                                        value: /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i,
+                                                        message: "Please enter a valid URL",
+                                                    },
+                                                })}
+                                            />
+                                            {errors.website && (
+                                                <span className="text-red-500 text-xs">{errors.website.message}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Category */}
+                                        <div className="grid gap-3">
+                                            <Label htmlFor="category">Category *</Label>
+                                            <select
+                                                id="category"
+                                                className={`border rounded w-full py-2 ${!watch("category") ? "text-gray-400" : "text-black"}`}
+                                                {...register("category", { required: "Category is required" })}
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>
+                                                    Select a category
+                                                </option>
+                                                {shopCategories.map((category) => (
+                                                    <option key={category.value} value={category.value} className="text-black">
+                                                        {category.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {errors.category && (
+                                                <span className="text-red-500 text-xs">{errors.category.message}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Global required fields error */}
+                                        {(errors.store_name || errors.bio || errors.address || errors.openingHours || errors.category) && (
+                                            <div className="mb-2 text-center text-red-500 text-sm">
+                                                Please fill in the required fields
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            type="submit"
+                                            disabled={shopCreateMutation.isPending}
+                                            className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
+                                        >
+                                            {shopCreateMutation.isPending ? "Creating Store..." : "Create Store"}
+                                        </Button>
+                                        {shopCreateMutation.isError && shopCreateMutation.error instanceof AxiosError && (
+                                            <div className="mb-4 text-center text-red-500 text-sm">
+                                                {shopCreateMutation.error.response?.data?.message || shopCreateMutation.error.message}
+                                            </div>
+                                        )}
+                                    </div>
                                 </form>
+                            </div>
+                        )}
+
+                        {/* Third step */}
+                        {activeStep === 3 && (
+                            <div className="text-center">
+                                <h3 className="text-2xl font-semibold text-center mb-4">
+                                    Withdrawal method
+                                </h3>
+                                <Button
+                                    className="bg-[#635bff] hover:bg-[#7a6fff] text-white mt-6"
+                                    onClick={connectStripe}
+                                >
+                                    Connect Stripe {/*Stripe logo here */}
+                                </Button>
+                                <br />
                             </div>
                         )}
                     </div>
