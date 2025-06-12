@@ -1,23 +1,24 @@
-import { Sidebar } from '@/components/ui/sidebar'
-import React from 'react'
+"use client"
+import React, { useEffect } from 'react'
 
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+
 import { Separator } from "@/components/ui/separator"
 import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { usePathname } from 'next/navigation'
+import useSeller from '@/hooks/useSeller'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+    // const pathName = usePathname()
+    // const {seller} = useSeller()
+
+    // console.log(seller)
+
+
     return (
         <div className='dark'>
             <SidebarProvider>
@@ -27,19 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                         <div className="flex items-center gap-2 px-3">
                             <SidebarTrigger />
                             <Separator orientation="vertical" className="mr-2 h-4" />
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem className="hidden md:block">
-                                        <BreadcrumbLink href="#">
-                                            Building Your Application
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden md:block" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
+                            
                         </div>
                     </header>
                     <div className="flex flex-1 flex-col gap-4 p-4">

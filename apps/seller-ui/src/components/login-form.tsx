@@ -55,7 +55,7 @@ export function LoginForm({
     onSuccess: (data) => {
       setServerError(null);
       refetch();
-      router.push("/")
+      router.push("/dashboard")
     },
     onError: (error: AxiosError) => {
       const errorMessage = (error.response?.data as { message?: string })?.message || "Invalid email or password.";

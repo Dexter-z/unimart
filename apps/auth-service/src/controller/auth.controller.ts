@@ -90,6 +90,9 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             return next(new AuthError("Invalid email or password"));
         }
 
+        res.clearCookie("user_access_token")
+        res.clearCookie("user_refresh_token")
+
         //Generate access and refresh tokens
         const accessToken = jwt.sign(
             {
@@ -110,8 +113,8 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         )
 
         //Store refresh and access token in httpOnly secure cookie
-        setCookie(res, "user_access_token", accessToken);
-        setCookie(res, "user_refresh_token", refreshToken);
+        setCookie(res, "seller_access_token", accessToken);
+        setCookie(res, "seller_refresh_token", refreshToken);
 
         res.status(200).json({
             message: "Login successful",
@@ -315,6 +318,9 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
             return next(new AuthError("Invalid email or password"));
         }
 
+        res.clearCookie("user_access_token")
+        res.clearCookie("user_refresh_token")
+
         //Generate access and refresh tokens
         const accessToken = jwt.sign(
             {
@@ -461,7 +467,7 @@ export const createStripeConnectLink = async (req: Request, res: Response, next:
             where: {
                 id: sellerId
             },
-            data:{
+            data: {
                 stripeId: account.id
             }
         })

@@ -18,4 +18,5 @@ export const isUser = (req: any, res: Response, next: NextFunction) => {
     if (req.role != "user") {
         return next(new AuthError("Access Denied: Users only"))
     }
+    next();
 }
