@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { BellPlus, CalendarPlus, GalleryVerticalEnd, Home, List, PackageSearch, SquarePlus, Wallet } from "lucide-react"
+import { BellPlus, BellRing, CalendarPlus, GalleryVerticalEnd, Headset, Home, LayoutDashboard, List, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent, Wallet } from "lucide-react"
 
 import {
   Sidebar,
@@ -36,9 +36,9 @@ type SidebarItem = {
 const data: { navMain: SidebarItem[] } = {
   navMain: [
     {
-      title: "Home",
+      title: "Dashboard",
       url: "/dashboard",
-      icon: <Home />
+      icon: <LayoutDashboard />
     },
 
     {
@@ -91,6 +91,48 @@ const data: { navMain: SidebarItem[] } = {
           icon: <BellPlus />,
           title: "All Events",
           url: "/dashboard/all-events",
+        },
+      ],
+    },
+
+    {
+      title: "Controllers",
+      url: "",
+      items: [
+        {
+          icon: <Mail />,
+          title: "Inbox",
+          url: "/dashboard/inbox",
+        },
+
+        {
+          icon: <Settings />,
+          title: "Settings",
+          url: "/dashboard/settings",
+        },
+
+        {
+          icon: <BellRing />,
+          title: "Notifications",
+          url: "/dashboard/notifications",
+        },
+      ],
+    },
+
+    {
+      title: "Extras",
+      url: "",
+      items: [
+        {
+          icon: <TicketPercent />,
+          title: "Discount Codes",
+          url: "/dashboard/discount-codes",
+        },
+
+        {
+          icon: <LogOut />,
+          title: "Logout",
+          url: "/dashboard/logout",
         },
       ],
     },
