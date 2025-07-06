@@ -3,6 +3,7 @@ import ImagePlaceHolder from '@/components/image-placeholder';
 import { ChevronRight } from 'lucide-react';
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
+import Input from '../../../../../../../packages/components/input';
 
 const page = () => {
     const {
@@ -105,7 +106,11 @@ const page = () => {
                     <div className='w-full flex gap-6'>
                         {/* Product title input */}
                         <div className='w-2/4'>
-                        
+                            <Input 
+                                label='Product Title *'
+                                placeholder='Enter Product Title'
+                                {... register("title", {required: "Title is required"})}
+                            />
                         </div>
                     </div>
                 </div>
