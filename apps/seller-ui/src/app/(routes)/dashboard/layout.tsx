@@ -20,6 +20,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                             <div className="flex items-center gap-2 px-3">
                                 <SidebarTrigger />
                                 <Separator orientation="vertical" className="mr-2 h-4" />
+
+                                <h1 className='text-white'>Hi</h1>
                             </div>
                         </header>
                         {children}
