@@ -81,6 +81,7 @@ const page = () => {
                             small={false}
                             index={0}
                             onImageChange={handleImageChange}
+                            onRemove={handleRemoveImage}
                         />
                     )}
                 </div>
@@ -94,6 +95,7 @@ const page = () => {
                             small={true}
                             index={index + 1}
                             onImageChange={handleImageChange}
+                            onRemove={handleRemoveImage}
                         />
                     ))}
                 </div>
