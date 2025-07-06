@@ -99,8 +99,8 @@ const page = () => {
                 </div>
 
                 {/* Middle and Right side for rest of form input */}
-                <div className='w-65%'>
-                    <div className='mt-6 flex justify-end gap-3'>
+                <div className='md:w-[65%]'>
+                    <div className='w-full flex gap-6'>
 
                     </div>
                 </div>
