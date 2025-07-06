@@ -24,6 +24,7 @@ const ImagePlaceHolder = ({
         }
     }
     return (
+        // <div className={`relative ${small ? "h-[7vh]" : "h-[15vh]"} w-full cursor-pointer bg-[#1e1e1e1e] border border-gray-600 rounded-lg flex flex-col justify-center items-center`}></div>
         <div className={`relative ${small ? "h-[180px]" : "h-[450px]"} w-full cursor-pointer bg-[#1e1e1e1e] border border-gray-600 rounded-lg flex flex-col justify-center items-center`}>
             <input type="file"
                 accept='image/*'

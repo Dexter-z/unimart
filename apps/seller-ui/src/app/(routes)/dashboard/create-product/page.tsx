@@ -103,7 +103,10 @@ const page = () => {
                 {/* Middle and Right side for rest of form input */}
                 <div className='md:w-[65%]'>
                     <div className='w-full flex gap-6'>
-
+                        {/* Product title input */}
+                        <div className='w-2/4'>
+                        
+                        </div>
                     </div>
                 </div>
 
