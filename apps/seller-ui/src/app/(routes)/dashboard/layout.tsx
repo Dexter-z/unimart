@@ -22,10 +22,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                                 <Separator orientation="vertical" className="mr-2 h-4" />
                             </div>
                         </header>
-                    </SidebarInset>
-                    <main className="flex-1 overflow-auto">
                         {children}
-                    </main>
+                    </SidebarInset>
                 </div>
             </SidebarProvider>
         </div>
