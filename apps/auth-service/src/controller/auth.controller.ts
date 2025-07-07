@@ -130,12 +130,12 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 //Refresh User Token
 export const refreshUserToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies.refresh_token;
+        const refreshToken = req.cookies.user_refresh_token;
         if (!refreshToken) {
             return new ValidationError("Unauthorized access, No refresh Token");
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECET as string) as { id: string, role: string };
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as { id: string, role: string };
 
         if (!decoded || !decoded.id || !decoded.role) {
             return new JsonWebTokenError("Forbidden!, Invalid refresh token");
@@ -155,7 +155,7 @@ export const refreshUserToken = async (req: Request, res: Response, next: NextFu
 
         const newAccessToken = jwt.sign(
             { id: decoded.id, role: decoded.role },
-            process.env.ACCESS_TOKEN_SECET as string,
+            process.env.ACCESS_TOKEN_SECRET as string,
             { expiresIn: "15m" }
         )
 
@@ -358,12 +358,12 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
 //Refresh Seller Token
 export const refreshSellerToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies.refresh_token;
+        const refreshToken = req.cookies.seller_refresh_token;
         if (!refreshToken) {
             return new ValidationError("Unauthorized access, No refresh Token");
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECET as string) as { id: string, role: string };
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as { id: string, role: string };
 
         if (!decoded || !decoded.id || !decoded.role) {
             return new JsonWebTokenError("Forbidden!, Invalid refresh token");
@@ -377,7 +377,7 @@ export const refreshSellerToken = async (req: Request, res: Response, next: Next
 
         const newAccessToken = jwt.sign(
             { id: decoded.id, role: decoded.role },
-            process.env.ACCESS_TOKEN_SECET as string,
+            process.env.ACCESS_TOKEN_SECRET as string,
             { expiresIn: "15m" }
         )
 
