@@ -91,9 +91,15 @@ export default function CreateProductPage() {
         queryFn: async () => {
             try {
                 const res = await axiosInstance.get("/product/api/get-categories")
-                return res.data
+                // Ensure fallback shape if res.data is undefined or missing keys
+                return {
+                    categories: res.data?.categories || [],
+                    subCategories: res.data?.subCategories || {}
+                }
             } catch (error) {
                 console.log(error)
+                // Always return fallback shape on error
+                return { categories: [], subCategories: {} }
             }
         },
         staleTime: 1000 * 60 * 5,
