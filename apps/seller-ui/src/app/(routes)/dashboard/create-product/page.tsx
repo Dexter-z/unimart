@@ -17,6 +17,7 @@ type ProductForm = {
     colors: string[]; // For color picker
     specifications: string[];
     properties: string[];
+    cashOnDelivery: string;
     category: string;
     detailedDescription: string;
     videoUrl: string;
@@ -73,6 +74,7 @@ export default function CreateProductPage() {
             specifications: [],
             properties: [],
             category: "",
+            cashOnDelivery: "",
             detailedDescription: "",
             videoUrl: "",
             regularPrice: "",
@@ -442,6 +444,22 @@ export default function CreateProductPage() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+
+                    {/* Cash on delivery */}
+                    <div className="mt-4">
+                        <label className="block mb-1 font-medium">Cash on Delivery *</label>
+                        <select
+                            className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                            {...register("cashOnDelivery", { required: "Please select an option" })}
+                        >
+                            <option value="">Select option</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                        {errors.cashOnDelivery && (
+                            <p className="text-red-500 text-xs mt-1">{errors.cashOnDelivery.message as string}</p>
+                        )}
                     </div>
 
 
