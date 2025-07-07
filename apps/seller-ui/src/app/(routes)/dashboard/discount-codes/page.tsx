@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { AxiosError } from 'axios'
 
 const Page = () => {
     const [showModal, setShowModal] = useState(false)
@@ -30,6 +31,7 @@ const Page = () => {
             toast.error("You can only create up to 8 discount codes.")
             return;
         }
+        createDiscountCodeMutation.mutate(data)
     }
 
     const {
@@ -103,10 +105,10 @@ const Page = () => {
                         ) : (
                             discountCodes.map((discount: any) => (
                                 <tr key={discount?.id} className="border-b border-zinc-800 hover:bg-zinc-800 transition">
-                                    <td className="py-3 px-4">{discount?.public_name}</td>
-                                    <td className="py-3 px-4 capitalize">{discount?.discountType === "percentage" ? "Percentage (%)" : "Flat ($)"}</td>
-                                    <td className="py-3 px-4">{discount?.discountType === "percentage" ? `${discount.discountValue}%` : `$${discount.discountValue}`}</td>
-                                    <td className="py-3 px-4 font-mono">{discount?.discountCode}</td>
+                                    <td className="py-3 px-4 text-white">{discount?.public_name}</td>
+                                    <td className="py-3 px-4 text-white capitalize">{discount?.discountType === "percentage" ? "Percentage (%)" : "Flat ($)"}</td>
+                                    <td className="py-3 px-4 text-white">{discount?.discountType === "percentage" ? `${discount.discountValue}%` : `$${discount.discountValue}`}</td>
+                                    <td className="py-3 px-4 text-white font-mono">{discount?.discountCode}</td>
                                     <td className="py-3 px-4">
                                         {/* Actions placeholder */}
                                         <button
@@ -207,10 +209,20 @@ const Page = () => {
                                 </button>
                                 <button
                                     type="submit"
+                                    disabled={createDiscountCodeMutation.isPending}
                                     className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                                 >
-                                    Create
+                                    {createDiscountCodeMutation?.isPending ? "Creating" : "Create"}
                                 </button>
+                                {createDiscountCodeMutation.isError && (
+                                    <p className="text-red-500 text-sm mt-2">
+                                        {(
+                                            createDiscountCodeMutation.error as AxiosError<{
+                                                message: string
+                                            }>
+                                        )?.response?.data?.message || "Something went wrong while creating the discount code"}
+                                    </p>
+                                )}
                             </div>
                         </form>
                     </div>
