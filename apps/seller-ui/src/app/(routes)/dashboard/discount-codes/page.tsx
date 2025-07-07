@@ -1,5 +1,6 @@
 "use client"
 
+import { Button } from '@/components/ui/button'
 import axiosInstance from '@/utils/axiosInstance'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, Trash } from 'lucide-react'
@@ -27,12 +28,11 @@ const Page = () => {
                     <ChevronRight size={20} className="opacity-80 text-white mx-1" />
                     <span className='text-white'>Discount Codes</span>
                 </div>
-                <Link
-                    href="/dashboard/discount-codes/create"
+                <Button
                     className="self-start md:self-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                 >
                     + Create Discount Code
-                </Link>
+                </Button>
             </div>
 
             {/* Table */}
@@ -77,6 +77,8 @@ const Page = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Create Discount Modal */}
 
         </div>
     )
