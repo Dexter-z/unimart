@@ -66,6 +66,17 @@ const Page = () => {
         },
     })
 
+    const deleteDiscountCodeMutation = useMutation({
+        mutationFn: async (discountId: string) => {
+            await axiosInstance.delete(`/product/api/delete-discount-code/${discountId}`)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["shop-discounts"]})
+            toast.success("Discount code deleted successfully!")
+            setShowDeleteModal(false)
+            setSelectedDiscount(null)
+        },
+    })
 
     return (
         <div className="w-full mx-auto p-4 md:p-8">
@@ -236,7 +247,52 @@ const Page = () => {
 
             {/* Delete Discount Modal*/}
             {showDeleteModal && selectedDiscount && (
-
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-zinc-900 rounded-lg shadow-lg p-6 w-full max-w-md mx-2">
+                        <h3 className="text-lg font-semibold mb-4 text-white">Delete Discount Code</h3>
+                        <div className="mb-4">
+                            <p className="text-gray-300 mb-2">Are you sure you want to delete this discount code?</p>
+                            <div className="bg-zinc-800 rounded p-3">
+                                <p className="text-white font-medium">{selectedDiscount.public_name}</p>
+                                <p className="text-gray-400 text-sm">
+                                    {selectedDiscount.discountType === "percentage" ? "Percentage" : "Flat"} discount: 
+                                    {selectedDiscount.discountType === "percentage" ? `${selectedDiscount.discountValue}%` : `$${selectedDiscount.discountValue}`}
+                                </p>
+                                <p className="text-gray-400 text-sm font-mono">Code: {selectedDiscount.discountCode}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600"
+                                onClick={() => {
+                                    setShowDeleteModal(false)
+                                    setSelectedDiscount(null)
+                                }}
+                                disabled={deleteDiscountCodeMutation.isPending}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                                onClick={() => deleteDiscountCodeMutation.mutate(selectedDiscount.id)}
+                                disabled={deleteDiscountCodeMutation.isPending}
+                            >
+                                {deleteDiscountCodeMutation.isPending ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                        {deleteDiscountCodeMutation.isError && (
+                            <p className="text-red-500 text-sm mt-2">
+                                {(
+                                    deleteDiscountCodeMutation.error as AxiosError<{
+                                        message: string
+                                    }>
+                                )?.response?.data?.message || "Something went wrong while deleting the discount code"}
+                            </p>
+                        )}
+                    </div>
+                </div>
             )}
 
         </div>
