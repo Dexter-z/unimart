@@ -471,7 +471,7 @@ export default function CreateProductPage() {
                     <div className="mt-4">
                         <label className="block mb-1 font-medium">Cash on Delivery *</label>
                         <select
-                            className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                            className="w-full rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
                             {...register("cashOnDelivery", { required: "Please select an option" })}
                         >
                             <option value="">Select option</option>
@@ -493,7 +493,7 @@ export default function CreateProductPage() {
                             <div className="text-red-500 px-3 py-2">Error getting categories</div>
                         ) : (
                             <select
-                                className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                className="w-full rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
                                 {...register("category", { required: "Category is required" })}
                             >
                                 <option value="">Select category</option>
