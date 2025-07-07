@@ -27,7 +27,7 @@ type ProductForm = {
     regularPrice: string;
     salePrice: string;
     stock: string;
-    sizes: string;
+    sizes: string[];
     discountCodes: string[];
 };
 
@@ -42,6 +42,8 @@ const frequent_colors = [
     "#ffffff", // White
     "#808080", // Gray
 ]
+
+const availableSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
 
 const MAX_IMAGES = 8
 const MAX_SHORT_DESC_WORDS = 150
@@ -79,7 +81,7 @@ export default function CreateProductPage() {
             regularPrice: "",
             salePrice: "",
             stock: "",
-            sizes: "",
+            sizes: [],
             discountCodes: []
         }
     })
@@ -561,7 +563,7 @@ export default function CreateProductPage() {
                         />
                     </div>
 
-                    
+
                     {/* Regular Price */}
                     <div>
                         <label className="block mb-1 font-medium">Regular Price</label>
@@ -572,6 +574,8 @@ export default function CreateProductPage() {
                             placeholder="Regular price"
                         />
                     </div>
+
+
                     {/* Sale Price */}
                     <div>
                         <label className="block mb-1 font-medium">Sale Price *</label>
@@ -583,6 +587,8 @@ export default function CreateProductPage() {
                         />
                         {errors.salePrice && <p className="text-red-500 text-xs mt-1">{errors.salePrice.message as string}</p>}
                     </div>
+
+
                     {/* Stock */}
                     <div>
                         <label className="block mb-1 font-medium">Stock *</label>
@@ -594,15 +600,45 @@ export default function CreateProductPage() {
                         />
                         {errors.stock && <p className="text-red-500 text-xs mt-1">{errors.stock.message as string}</p>}
                     </div>
+
+
                     {/* Sizes */}
                     <div>
                         <label className="block mb-1 font-medium">Sizes</label>
-                        <input
-                            className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
-                            {...register("sizes")}
-                            placeholder="e.g. S, M, L, XL"
-                        />
+                        <div className="flex flex-wrap gap-2">
+                            {availableSizes.map(size => {
+                                const isSelected = watch("sizes")?.includes(size);
+                                return (
+                                    <label
+                                        key={size}
+                                        className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded 
+            border border-gray-600
+            ${isSelected ? "bg-blue-600 text-white border-blue-600" : "bg-zinc-800 text-gray-200"}
+            transition-colors select-none`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            value={size}
+                                            checked={isSelected}
+                                            onChange={e => {
+                                                const selected = watch("sizes") || [];
+                                                if (e.target.checked) {
+                                                    setValue("sizes", [...selected, size]);
+                                                } else {
+                                                    setValue("sizes", selected.filter(s => s !== size));
+                                                }
+                                            }}
+                                            className="accent-blue-600"
+                                            style={{ display: "none" }} // Hide the checkbox, use box as selector
+                                        />
+                                        <span>{size}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
                     </div>
+
+
                     {/* Discount Codes */}
                     <div>
                         <label className="block mb-1 font-medium">Discount Codes</label>
