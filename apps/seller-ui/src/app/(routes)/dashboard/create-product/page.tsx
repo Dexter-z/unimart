@@ -85,32 +85,38 @@ const page = () => {
                             onRemove={handleRemoveImage}
                         />
                     )}
+
+                    <div className='grid grid-cols-2 gap-3 mt-4'>
+                        {images.slice(1).map((_, index) => (
+                            <ImagePlaceHolder
+                                setOpenImageModal={setOpenImageModal}
+                                size='765 X 850'
+                                key={index}
+                                small={true}
+                                index={index + 1}
+                                onImageChange={handleImageChange}
+                                onRemove={handleRemoveImage}
+                            />
+                        ))}
+                    </div>
                 </div>
 
-                <div className='grid grid-cols-2 gap-3 mt-4'>
-                    {images.slice(1).map((_, index) => (
-                        <ImagePlaceHolder
-                            setOpenImageModal={setOpenImageModal}
-                            size='765 X 850'
-                            key={index}
-                            small={true}
-                            index={index + 1}
-                            onImageChange={handleImageChange}
-                            onRemove={handleRemoveImage}
-                        />
-                    ))}
-                </div>
 
                 {/* Middle and Right side for rest of form input */}
                 <div className='md:w-[65%]'>
                     <div className='w-full flex gap-6'>
                         {/* Product title input */}
                         <div className='w-2/4'>
-                            <Input 
+                            <Input
                                 label='Product Title *'
                                 placeholder='Enter Product Title'
-                                {... register("title", {required: "Title is required"})}
+                                {...register("title", { required: "Title is required" })}
                             />
+                            {errors.title && (
+                                <p className='text-red-500 text-xs mt-1'>
+                                    {errors.title.message as string}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
