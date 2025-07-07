@@ -21,6 +21,7 @@ type ProductForm = {
     properties: string[];
     cashOnDelivery: string;
     category: string;
+    subCategory: string;
     detailedDescription: string;
     videoUrl: string;
     regularPrice: string;
@@ -71,6 +72,7 @@ export default function CreateProductPage() {
             specifications: [],
             properties: [],
             category: "",
+            subCategory: "",
             cashOnDelivery: "",
             detailedDescription: "",
             videoUrl: "",
@@ -505,6 +507,28 @@ export default function CreateProductPage() {
                         {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message as string}</p>}
                     </div>
 
+                    {/* Sub Category */}
+                    <div>
+                        <label className="block mb-1 font-medium">Sub Category</label>
+                        {selectedCategory ? (
+                            Array.isArray(subCategories[selectedCategory]) && subCategories[selectedCategory].length > 0 ? (
+                                <select
+                                    className="w-full rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
+                                    {...register("subCategory")}
+                                >
+                                    <option value="">Select sub category</option>
+                                    {subCategories[selectedCategory].map((sub: string) => (
+                                        <option key={sub} value={sub}>{sub}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div className="text-gray-400 px-3 py-2">No subcategories available</div>
+                            )
+                        ) : (
+                            <div className="text-gray-400 px-3 py-2">Please select a category first</div>
+                        )}
+                    </div>
+
 
                     {/* Detailed Description */}
                     <div>
@@ -525,6 +549,8 @@ export default function CreateProductPage() {
                         <div className="text-xs text-gray-400 text-right">{detailedDescWords} words</div>
                         {errors.detailedDescription && <p className="text-red-500 text-xs mt-1">{errors.detailedDescription.message as string}</p>}
                     </div>
+
+
                     {/* Video URL */}
                     <div>
                         <label className="block mb-1 font-medium">Video URL</label>
@@ -534,6 +560,8 @@ export default function CreateProductPage() {
                             placeholder="https://youtube.com/..."
                         />
                     </div>
+
+                    
                     {/* Regular Price */}
                     <div>
                         <label className="block mb-1 font-medium">Regular Price</label>
