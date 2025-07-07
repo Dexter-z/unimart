@@ -57,6 +57,7 @@ export default function CreateProductPage() {
     const [specName, setSpecName] = useState("");
     const [specValue, setSpecValue] = useState("");
     const [showSpecFields, setShowSpecFields] = useState(false);
+    const [specError, setSpecError] = useState("");
 
 
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
@@ -126,7 +127,11 @@ export default function CreateProductPage() {
     }
 
     const addSpecification = () => {
-        if (!specName.trim()) return; // Name is required
+        if (!specName.trim()) {
+            setSpecError("Specification name is required");
+            return;
+        }
+        setSpecError("");
         const newSpecs = [...watch("specifications"), `${specName.trim()}: ${specValue.trim()}`];
         setValue("specifications", newSpecs);
         setSpecName("");
@@ -392,29 +397,35 @@ export default function CreateProductPage() {
                         </label>
                         {/* Fields for adding a specification */}
                         {showSpecFields && (
-                            <div className="flex gap-2 mb-2">
-                                <input
-                                    className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
-                                    placeholder="Specification name (e.g. Weight)"
-                                    value={specName}
-                                    onChange={e => setSpecName(e.target.value)}
-                                    required
-                                />
-                                <input
-                                    className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
-                                    placeholder="Value (e.g. 5kg)"
-                                    value={specValue}
-                                    onChange={e => setSpecValue(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-                                    onClick={addSpecification}
-                                    disabled={!specName.trim()}
-                                    title="Add specification"
-                                >
-                                    <Plus size={16} />
-                                </button>
+                            <div className="flex gap-2 mb-2 flex-col">
+                                <div className="flex gap-2">
+                                    <input
+                                        className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                        placeholder="Specification name (e.g. Weight)"
+                                        value={specName}
+                                        onChange={e => {
+                                            setSpecName(e.target.value);
+                                            if (specError) setSpecError(""); // clear error on change
+                                        }}
+                                        required
+                                    />
+                                    <input
+                                        className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                        placeholder="Value (e.g. 5kg)"
+                                        value={specValue}
+                                        onChange={e => setSpecValue(e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                        onClick={addSpecification}
+                                        //disabled={!specName.trim()}
+                                        title="Add specification"
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
+                                {specError && <p className="text-red-500 text-xs mt-1">{specError}</p>}
                             </div>
                         )}
                         {/* Render specifications below */}
@@ -444,6 +455,8 @@ export default function CreateProductPage() {
                         </label>
                         {/* Render custom properties here */}
                     </div>
+
+
                     {/* Category */}
                     <div>
                         <label className="block mb-1 font-medium">Category *</label>
