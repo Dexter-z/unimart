@@ -14,7 +14,7 @@ type ProductForm = {
     warranty: string;
     slug: string;
     brand: string;
-    colors: string[]; // <-- important for color picker
+    colors: string[]; // For color picker
     specifications: string[];
     properties: string[];
     category: string;
@@ -30,6 +30,18 @@ type ProductForm = {
 const CATEGORIES = [
     "Books", "Gadgets", "Clothings and accessories", "Perfumes", "Jewelleries",
     "Kitchen utensils", "Electronics", "Bedroom essentials", "Food and pastries"
+]
+
+const FREQUENT_COLORS = [
+    "#ff0000", // Red
+    "#0000ff", // Blue
+    "#ffff00", // Yellow
+    "#00ff00", // Green
+    "#ff9900", // Orange
+    "#800080", // Purple
+    "#000000", // Black
+    "#ffffff", // White
+    "#808080", // Gray
 ]
 
 const MAX_IMAGES = 8
@@ -311,6 +323,22 @@ export default function CreateProductPage() {
                         {/* Color picker modal */}
                         <Dialog open={colorModalOpen} onClose={() => setColorModalOpen(false)} className="fixed z-50 inset-0 flex items-center justify-center">
                             <div className="bg-white p-4 rounded shadow-lg">
+                                <div className="flex gap-2 mb-4 flex-wrap">
+                                    {FREQUENT_COLORS.map(color => (
+                                        <button
+                                            key={color}
+                                            type="button"
+                                            className="w-7 h-7 rounded-full border-2 border-gray-300 flex-shrink-0"
+                                            style={{ background: color }}
+                                            onClick={() => setCurrentColor(color)}
+                                            aria-label={`Pick ${color}`}
+                                        >
+                                            {currentColor === color && (
+                                                <span className="block w-full h-full rounded-full border-2 border-blue-500" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
                                 <HexColorPicker color={currentColor} onChange={setCurrentColor} />
                                 <div className="flex gap-2 mt-4">
                                     <button
@@ -339,6 +367,8 @@ export default function CreateProductPage() {
                         </label>
                         {/* Render custom specs here */}
                     </div>
+
+                    
                     {/* Custom Properties */}
                     <div>
                         <label className="block mb-1 font-medium flex items-center gap-2">
