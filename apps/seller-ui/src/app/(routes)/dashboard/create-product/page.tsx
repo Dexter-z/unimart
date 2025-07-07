@@ -54,6 +54,10 @@ export default function CreateProductPage() {
     const [colorModalOpen, setColorModalOpen] = useState(false)
     const [currentColor, setCurrentColor] = useState("#aabbcc")
     const [selectedColors, setSelectedColors] = useState<string[]>([])
+    const [specName, setSpecName] = useState("");
+    const [specValue, setSpecValue] = useState("");
+    const [showSpecFields, setShowSpecFields] = useState(false);
+
 
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
         defaultValues: {
@@ -120,6 +124,21 @@ export default function CreateProductPage() {
         setDetailedDescWords(words)
         setValue('detailedDescription', e.target.value)
     }
+
+    const addSpecification = () => {
+        if (!specName.trim()) return; // Name is required
+        const newSpecs = [...watch("specifications"), `${specName.trim()}: ${specValue.trim()}`];
+        setValue("specifications", newSpecs);
+        setSpecName("");
+        setSpecValue("");
+        setShowSpecFields(false);
+    };
+
+    const removeSpecification = (idx: number) => {
+        const newSpecs = [...watch("specifications")];
+        newSpecs.splice(idx, 1);
+        setValue("specifications", newSpecs);
+    };
 
     const onSubmit = (data: any) => {
         // handle create product
@@ -213,6 +232,8 @@ export default function CreateProductPage() {
                         />
                         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message as string}</p>}
                     </div>
+
+
                     {/* Short Description */}
                     <div>
                         <label className="block mb-1 font-medium">
@@ -361,14 +382,58 @@ export default function CreateProductPage() {
                     <div>
                         <label className="block mb-1 font-medium flex items-center gap-2">
                             Custom Specifications
-                            <button type="button" className="ml-2 p-1 rounded bg-muted/30 hover:bg-muted/50">
+                            <button
+                                type="button"
+                                className="ml-2 p-1 rounded bg-muted/30 hover:bg-muted/50"
+                                onClick={() => setShowSpecFields(true)}
+                            >
                                 <Plus size={16} />
                             </button>
                         </label>
-                        {/* Render custom specs here */}
+                        {/* Fields for adding a specification */}
+                        {showSpecFields && (
+                            <div className="flex gap-2 mb-2">
+                                <input
+                                    className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                    placeholder="Specification name (e.g. Weight)"
+                                    value={specName}
+                                    onChange={e => setSpecName(e.target.value)}
+                                    required
+                                />
+                                <input
+                                    className="flex-1 rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                    placeholder="Value (e.g. 5kg)"
+                                    value={specValue}
+                                    onChange={e => setSpecValue(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                    onClick={addSpecification}
+                                    disabled={!specName.trim()}
+                                    title="Add specification"
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            </div>
+                        )}
+                        {/* Render specifications below */}
+                        <div className="flex flex-col gap-1 mt-2">
+                            {watch("specifications")?.map((spec, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-muted/10 rounded px-2 py-1">
+                                    <span className="flex-1">{spec}</span>
+                                    <button
+                                        type="button"
+                                        className="text-xs text-red-400"
+                                        onClick={() => removeSpecification(idx)}
+                                        title="Remove"
+                                    >✕</button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    
+
                     {/* Custom Properties */}
                     <div>
                         <label className="block mb-1 font-medium flex items-center gap-2">
