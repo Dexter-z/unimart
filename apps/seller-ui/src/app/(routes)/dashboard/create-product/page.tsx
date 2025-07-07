@@ -521,7 +521,7 @@ export default function CreateProductPage() {
                         {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message as string}</p>}
                     </div>
 
-                    {/* Sub Category */}
+                    {/* Sub Categories */}
                     <div>
                         <label className="block mb-1 font-medium">Sub Category</label>
                         {selectedCategory ? (
