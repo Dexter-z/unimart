@@ -127,11 +127,7 @@ const Page = () => {
                         <h3 className="text-lg font-semibold mb-4 text-white">Create Discount Code</h3>
                         <form
                             className="flex flex-col gap-4"
-                            onSubmit={async e => {
-                                e.preventDefault();
-                                // handle create logic here
-                                setShowModal(false);
-                            }}
+                            onSubmit={handleSubmit(onSubmit)}
                         >
                             <input
                                 className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
@@ -167,7 +163,6 @@ const Page = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    onSubmit={handleSubmit(onSubmit)}
                                     className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                     Create
