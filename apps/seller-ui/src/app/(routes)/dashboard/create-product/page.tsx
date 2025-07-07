@@ -5,6 +5,8 @@ import { ChevronRight, Plus } from 'lucide-react'
 import Image from 'next/image'
 import { HexColorPicker } from "react-colorful"
 import { Dialog } from "@headlessui/react"
+import { useQuery } from '@tanstack/react-query'
+import axiosInstance from '@/utils/axiosInstance'
 
 type ProductForm = {
     images: (File | null)[];
@@ -33,7 +35,7 @@ const CATEGORIES = [
     "Kitchen utensils", "Electronics", "Bedroom essentials", "Food and pastries"
 ]
 
-const FREQUENT_COLORS = [
+const frequent_colors = [
     "#ff0000", // Red
     "#0000ff", // Blue
     "#ffff00", // Yellow
@@ -84,6 +86,28 @@ export default function CreateProductPage() {
             discountCodes: []
         }
     })
+
+    const {data, isLoading, isError} = useQuery({
+        queryKey: ["categories"],
+        queryFn: async () => {
+            try {
+                const res = await axiosInstance.get("/product/api/get-categories")
+                return res.data
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        staleTime: 1000 * 60 * 5,
+        retry: 2,
+    })
+
+    const categories = data?.categories || []
+    const subCategories = data?.subCategories || {}
+
+    const selectedCategory = watch("category");
+    //const regularPrice = watch("regular_price")
+
+    console.log(categories, subCategories)
 
     // Image upload logic
     const handleImageChange = (file: File | null, index: number) => {
@@ -352,7 +376,7 @@ export default function CreateProductPage() {
                         <Dialog open={colorModalOpen} onClose={() => setColorModalOpen(false)} className="fixed z-50 inset-0 flex items-center justify-center">
                             <div className="bg-white p-4 rounded shadow-lg">
                                 <div className="flex gap-2 mb-4 flex-wrap">
-                                    {FREQUENT_COLORS.map(color => (
+                                    {frequent_colors.map(color => (
                                         <button
                                             key={color}
                                             type="button"
