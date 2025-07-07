@@ -108,6 +108,14 @@ export default function CreateProductPage() {
         retry: 2,
     })
 
+    const { data: discountCodes = [], isLoading:discountLoading } = useQuery({
+        queryKey: ["shop-discounts"],
+        queryFn: async () => {
+            const res = await axiosInstance.get("/product/api/get-discount-codes")
+            return res?.data?.discount_codes || []
+        }
+    })
+
     const categories = data?.categories || []
     const subCategories = data?.subCategories || {}
 
@@ -653,12 +661,27 @@ export default function CreateProductPage() {
 
                     {/* Discount Codes */}
                     <div>
-                        <label className="block mb-1 font-medium">Discount Codes</label>
-                        <input
-                            className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
-                            {...register("discountCodes")}
-                            placeholder="Enter discount codes (optional)"
-                        />
+                        <label className="block mb-1 font-medium">Select Discount Codes (Optional)</label>
+                    {discountLoading ? (
+                        <p className="text-gray-400">
+                            Loading discount codes...
+                        </p>
+                    ) : (
+                        <div className='flex flex-wrap gap-2'>
+                            {discountCodes?.map((code: any) => (
+                                <button key={code.id}
+                                    type='button'
+                                    className={`px-3 py-1 rounded-md text-sm font-semibold border ${watch("discountCodes")?.includes(code.id) ? "bg-blue-600 text-white border-blue-600" : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"}`}
+                                    onClick={() => {
+                                        const currentSelection = watch("discountCodes") || []
+                                        const updatedSelection = currentSelection.includes(code.id) ? currentSelection.filter((id: string) => id !== code.id) : [...currentSelection, code.id]
+                                        setValue("discountCodes", updatedSelection)
+                                    }}>
+                                    {code?.public_name} ({code?.discountValue} {code?.discountType === "percentage" ? "%" : "$"})
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     </div>
 
                     {/* Buttons */}
@@ -675,7 +698,7 @@ export default function CreateProductPage() {
 
                         <button
                             type="submit"
-                            disabled = {loading}
+                            disabled={loading}
                             className="w-full md:w-auto px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
                         >
                             {loading ? "Creating..." : "Create"}
