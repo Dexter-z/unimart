@@ -445,19 +445,7 @@ export default function CreateProductPage() {
                     </div>
 
 
-                    {/* Custom Properties */}
-                    <div>
-                        <label className="block mb-1 font-medium flex items-center gap-2">
-                            Custom Properties
-                            <button type="button" className="ml-2 p-1 rounded bg-muted/30 hover:bg-muted/50">
-                                <Plus size={16} />
-                            </button>
-                        </label>
-                        {/* Render custom properties here */}
-                    </div>
-
-
-                    {/* Category */}
+                    {/* Categories This will be editable by the admin. It is in api gateway */}
                     <div>
                         <label className="block mb-1 font-medium">Category *</label>
                         <select
@@ -471,6 +459,8 @@ export default function CreateProductPage() {
                         </select>
                         {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message as string}</p>}
                     </div>
+
+
                     {/* Detailed Description */}
                     <div>
                         <label className="block mb-1 font-medium">
