@@ -30,11 +30,6 @@ type ProductForm = {
     discountCodes: string[];
 };
 
-const CATEGORIES = [
-    "Books", "Gadgets", "Clothings and accessories", "Perfumes", "Jewelleries",
-    "Kitchen utensils", "Electronics", "Bedroom essentials", "Food and pastries"
-]
-
 const frequent_colors = [
     "#ff0000", // Red
     "#0000ff", // Blue
@@ -87,7 +82,7 @@ export default function CreateProductPage() {
         }
     })
 
-    const {data, isLoading, isError} = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
             try {
@@ -189,7 +184,7 @@ export default function CreateProductPage() {
                 <span>Create Product</span>
             </div>
 
-            
+
             <div className="flex flex-col md:flex-row gap-6 mb-6">
 
                 {/* Image Upload */}
@@ -492,15 +487,21 @@ export default function CreateProductPage() {
                     {/* Categories This will be editable by the admin. It is in api gateway */}
                     <div>
                         <label className="block mb-1 font-medium">Category *</label>
-                        <select
-                            className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
-                            {...register("category", { required: "Category is required" })}
-                        >
-                            <option value="">Select category</option>
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                        {isLoading ? (
+                            <div className="text-gray-400 px-3 py-2">Loading categories...</div>
+                        ) : isError ? (
+                            <div className="text-red-500 px-3 py-2">Error getting categories</div>
+                        ) : (
+                            <select
+                                className="w-full rounded px-3 py-2 bg-muted/20 text-white border border-gray-600 focus:outline-none"
+                                {...register("category", { required: "Category is required" })}
+                            >
+                                <option value="">Select category</option>
+                                {categories.map((cat: string) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        )}
                         {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category.message as string}</p>}
                     </div>
 
