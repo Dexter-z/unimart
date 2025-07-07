@@ -3,6 +3,29 @@ import React, { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { ChevronRight, Plus } from 'lucide-react'
 import Image from 'next/image'
+import { HexColorPicker } from "react-colorful"
+import { Dialog } from "@headlessui/react"
+
+type ProductForm = {
+    images: (File | null)[];
+    title: string;
+    shortDescription: string;
+    tags: string;
+    warranty: string;
+    slug: string;
+    brand: string;
+    colors: string[]; // <-- important for color picker
+    specifications: string[];
+    properties: string[];
+    category: string;
+    detailedDescription: string;
+    videoUrl: string;
+    regularPrice: string;
+    salePrice: string;
+    stock: string;
+    sizes: string;
+    discountCodes: string[];
+};
 
 const CATEGORIES = [
     "Books", "Gadgets", "Clothings and accessories", "Perfumes", "Jewelleries",
@@ -16,8 +39,11 @@ export default function CreateProductPage() {
     const [images, setImages] = useState<(File | null)[]>([null])
     const [shortDescWords, setShortDescWords] = useState(0)
     const [detailedDescWords, setDetailedDescWords] = useState(0)
+    const [colorModalOpen, setColorModalOpen] = useState(false)
+    const [currentColor, setCurrentColor] = useState("#aabbcc")
+    const [selectedColors, setSelectedColors] = useState<string[]>([])
 
-    const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm({
+    const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
         defaultValues: {
             images: [null] as (File | null)[],
             title: "",
@@ -54,6 +80,21 @@ export default function CreateProductPage() {
         if (!updated.includes(null) && updated.length < MAX_IMAGES) updated.push(null)
         setImages(updated)
         setValue('images', updated)
+    }
+
+    const addColor = () => {
+        if (!selectedColors.includes(currentColor)) {
+            setSelectedColors([...selectedColors, currentColor])
+            setValue("colors", [...selectedColors, currentColor])
+        }
+        setColorModalOpen(false)
+    }
+
+    // Remove color from list
+    const removeColor = (color: string) => {
+        const updated = selectedColors.filter(c => c !== color)
+        setSelectedColors(updated)
+        setValue("colors", updated)
     }
 
     // Word count handlers
@@ -237,17 +278,57 @@ export default function CreateProductPage() {
                             placeholder="Samsung, Apple"
                         />
                     </div>
-                    
+
                     {/* Colors */}
                     <div>
                         <label className="block mb-1 font-medium flex items-center gap-2">
                             Colors
-                            <button type="button" className="ml-2 p-1 rounded bg-muted/30 hover:bg-muted/50">
+                            <button
+                                type="button"
+                                className="ml-2 p-1 rounded bg-muted/30 hover:bg-muted/50"
+                                onClick={() => setColorModalOpen(true)}
+                            >
                                 <Plus size={16} />
                             </button>
                         </label>
-                        {/* Render selected colors here */}
+                        {/* Selected colors */}
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                            {selectedColors.map(color => (
+                                <div key={color} className="flex items-center gap-1">
+                                    <span
+                                        className="w-6 h-6 rounded-full border"
+                                        style={{ background: color }}
+                                        title={color}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="text-xs text-red-400"
+                                        onClick={() => removeColor(color)}
+                                    >✕</button>
+                                </div>
+                            ))}
+                        </div>
+                        {/* Color picker modal */}
+                        <Dialog open={colorModalOpen} onClose={() => setColorModalOpen(false)} className="fixed z-50 inset-0 flex items-center justify-center">
+                            <div className="bg-white p-4 rounded shadow-lg">
+                                <HexColorPicker color={currentColor} onChange={setCurrentColor} />
+                                <div className="flex gap-2 mt-4">
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded"
+                                        onClick={addColor}
+                                    >Add</button>
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-gray-200 rounded"
+                                        onClick={() => setColorModalOpen(false)}
+                                    >Cancel</button>
+                                </div>
+                            </div>
+                        </Dialog>
                     </div>
+
+
                     {/* Custom Specifications */}
                     <div>
                         <label className="block mb-1 font-medium flex items-center gap-2">
