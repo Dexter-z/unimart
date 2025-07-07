@@ -14,6 +14,8 @@ import { AxiosError } from 'axios'
 
 const Page = () => {
     const [showModal, setShowModal] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [selectedDiscount, setSelectedDiscount] = useState<any>()
     const queryClient = useQueryClient()
 
     const { data: discountCodes = [], isLoading } = useQuery({
@@ -24,7 +26,10 @@ const Page = () => {
         }
     })
 
-    const handleDeleteClick = async (discount: any) => { }
+    const handleDeleteClick = async (discount: any) => { 
+        setShowDeleteModal(true)
+        setSelectedDiscount(discount)
+    }
     
     const onSubmit = (data: any) => {
         if(discountCodes.length >= 8){
@@ -227,6 +232,11 @@ const Page = () => {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* Delete Discount Modal*/}
+            {showDeleteModal && selectedDiscount && (
+
             )}
 
         </div>
