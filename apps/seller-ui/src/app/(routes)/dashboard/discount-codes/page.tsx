@@ -8,6 +8,8 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
 const Page = () => {
     const [showModal, setShowModal] = useState(false)
@@ -129,30 +131,50 @@ const Page = () => {
                             className="flex flex-col gap-4"
                             onSubmit={handleSubmit(onSubmit)}
                         >
-                            <input
-                                className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
-                                placeholder="Title"
-                                required
-                            />
-                            <select
-                                className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
-                                required
-                            >
-                                <option value="">Select Type</option>
-                                <option value="percentage">Percentage (%)</option>
-                                <option value="flat">Flat ($)</option>
-                            </select>
-                            <input
-                                type="number"
-                                className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
-                                placeholder="Value"
-                                required
-                            />
-                            <input
-                                className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
-                                placeholder="Code"
-                                required
-                            />
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="public_name" className="text-white">Title</Label>
+                                <Input
+                                    id="public_name"
+                                    {...register('public_name')}
+                                    className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
+                                    placeholder="e.g. Summer Sale, Black Friday"
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="discountType" className="text-white">Type</Label>
+                                <select
+                                    id="discountType"
+                                    {...register('discountType')}
+                                    className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
+                                    required
+                                >
+                                    <option value="">Select Type</option>
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="flat">Flat ($)</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="discountValue" className="text-white">Value</Label>
+                                <Input
+                                    id="discountValue"
+                                    type="number"
+                                    {...register('discountValue')}
+                                    className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
+                                    placeholder="e.g. 10 for 10% or 5 for $5"
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="discountCode" className="text-white">Code</Label>
+                                <Input
+                                    id="discountCode"
+                                    {...register('discountCode')}
+                                    className="rounded px-3 py-2 bg-zinc-800 text-white border border-gray-600 focus:outline-none"
+                                    placeholder="e.g. SUMMER10, BLACKFRIDAY"
+                                    required
+                                />
+                            </div>
                             <div className="flex justify-end gap-2 mt-2">
                                 <button
                                     type="button"
