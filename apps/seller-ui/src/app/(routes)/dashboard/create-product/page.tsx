@@ -59,6 +59,8 @@ export default function CreateProductPage() {
     const [specValue, setSpecValue] = useState("");
     const [showSpecFields, setShowSpecFields] = useState(false);
     const [specError, setSpecError] = useState("");
+    const [isChanged, setIsChanged] = useState(true)
+    const [loading, setLoading] = useState(false)
 
 
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
@@ -175,6 +177,10 @@ export default function CreateProductPage() {
         newSpecs.splice(idx, 1);
         setValue("specifications", newSpecs);
     };
+
+    const handleSaveDraft = () => {
+
+    }
 
     const onSubmit = (data: any) => {
         // handle create product
@@ -654,24 +660,31 @@ export default function CreateProductPage() {
                             placeholder="Enter discount codes (optional)"
                         />
                     </div>
+
+                    {/* Buttons */}
+                    <div className="flex flex-col md:flex-row gap-4 mt-8">
+                        {isChanged && (
+                            <button
+                                type="button"
+                                onClick={handleSaveDraft}
+                                className="w-full md:w-auto px-6 py-2 rounded bg-muted/30 text-white border border-gray-600 hover:bg-muted/50 transition"
+                            >
+                                Save Draft
+                            </button>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled = {loading}
+                            className="w-full md:w-auto px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                        >
+                            {loading ? "Creating..." : "Create"}
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col md:flex-row gap-4 mt-8">
-                <button
-                    type="button"
-                    className="w-full md:w-auto px-6 py-2 rounded bg-muted/30 text-white border border-gray-600 hover:bg-muted/50 transition"
-                >
-                    Save Draft
-                </button>
-                <button
-                    type="submit"
-                    className="w-full md:w-auto px-6 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-                >
-                    Create Product
-                </button>
-            </div>
+
         </form>
     )
 }
