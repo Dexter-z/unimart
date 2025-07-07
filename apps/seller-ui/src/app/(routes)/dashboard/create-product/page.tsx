@@ -189,8 +189,10 @@ export default function CreateProductPage() {
                 <span>Create Product</span>
             </div>
 
-            {/* Image Upload */}
+            
             <div className="flex flex-col md:flex-row gap-6 mb-6">
+
+                {/* Image Upload */}
                 <div className="w-full md:w-1/3 flex flex-col items-center">
                     {/* Main Image */}
                     <label className="block w-full aspect-[9/10] bg-muted/30 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden mb-2 border border-dashed border-gray-400">
