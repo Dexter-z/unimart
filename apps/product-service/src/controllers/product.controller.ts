@@ -130,3 +130,19 @@ export const uploadProductImage = async (req: Request, res: Response, next: Next
         next(error)
     }
 }
+
+//Delete Image
+export const deleteProductImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {fileId} = req.body
+        const response = await imagekit.deleteFile(fileId)
+
+        res.status(201).json({
+            success: true,
+            response
+        })
+    } catch (error) {
+        console.error('uploadProductImage error:', error);
+        next(error)
+    }
+}

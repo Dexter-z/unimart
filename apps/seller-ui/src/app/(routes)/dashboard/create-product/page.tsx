@@ -31,6 +31,8 @@ type ProductForm = {
     discountCodes: string[];
 };
 
+type ImageState = { file: File | null, previewUrl: string | null, uploadedUrl: string | null, fileId?: string | null };
+
 const frequent_colors = [
     "#ff0000", // Red
     "#0000ff", // Blue
@@ -49,8 +51,8 @@ const MAX_IMAGES = 8
 const MAX_SHORT_DESC_WORDS = 150
 
 export default function CreateProductPage() {
-    const [images, setImages] = useState<{ file: File | null, previewUrl: string | null, uploadedUrl: string | null }[]>([
-        { file: null, previewUrl: null, uploadedUrl: null }
+    const [images, setImages] = useState<ImageState[]>([
+        { file: null, previewUrl: null, uploadedUrl: null, fileId: null }
     ]);
     const [shortDescWords, setShortDescWords] = useState(0)
     const [detailedDescWords, setDetailedDescWords] = useState(0)
@@ -142,32 +144,39 @@ export default function CreateProductPage() {
 
         const previewUrl = URL.createObjectURL(file);
         let uploadedUrl = null;
+        let fileId = null;
         try {
             const fileBase64 = await convertFileToBase64(file);
             const response = await axiosInstance.post("/product/api/upload-product-image", { fileName: fileBase64 });
             uploadedUrl = response.data.file_url;
+            fileId = response.data.file_name;
         } catch (error) {
             console.log(error);
         }
         const updatedImages = [...images];
-        // Ensure all slots up to index are filled
         while (updatedImages.length <= index) {
-            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
+            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null, fileId: null });
         }
-        updatedImages[index] = { file, previewUrl, uploadedUrl };
+        updatedImages[index] = { file, previewUrl, uploadedUrl, fileId };
         if (updatedImages.length < MAX_IMAGES && !updatedImages.some(img => img.file === null)) {
-            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
+            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null, fileId: null });
         }
         setImages(updatedImages);
         setValue('images', updatedImages.map(img => img?.file ?? null));
     };
     
-    const handleRemoveImage = (index: number) => {
+    const handleRemoveImage = async (index: number) => {
         try {
             const updatedImages = [...images];
+            const imageToDelete = updatedImages[index];
+            if (imageToDelete?.fileId) {
+                await axiosInstance.delete("/product/api/delete-product-image", {
+                    data: { fileId: imageToDelete.fileId }
+                });
+            }
             updatedImages.splice(index, 1);
             if (updatedImages.length < MAX_IMAGES && !updatedImages.some(img => img.file === null)) {
-                updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
+                updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null, fileId: null });
             }
             setImages(updatedImages);
             setValue('images', updatedImages.map(img => img?.file ?? null));
