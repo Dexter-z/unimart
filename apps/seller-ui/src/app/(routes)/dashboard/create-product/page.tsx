@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight, Plus, Trash } from 'lucide-react'
 import Image from 'next/image'
 import { HexColorPicker } from "react-colorful"
 import { Dialog } from "@headlessui/react"
@@ -65,6 +65,7 @@ export default function CreateProductPage() {
     const [specError, setSpecError] = useState("");
     const [isChanged, setIsChanged] = useState(true)
     const [loading, setLoading] = useState(false)
+    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
 
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
@@ -140,8 +141,8 @@ export default function CreateProductPage() {
 
     // Image upload logic
     const handleImageChange = async (file: File | null, index: number) => {
-        if (!file) return;
-
+        if (!file || uploadingIndex !== null) return;
+        setUploadingIndex(index);
         const previewUrl = URL.createObjectURL(file);
         let uploadedUrl = null;
         let fileId = null;
@@ -163,6 +164,7 @@ export default function CreateProductPage() {
         }
         setImages(updatedImages);
         setValue('images', updatedImages.map(img => img?.file ?? null));
+        setUploadingIndex(null);
     };
     
     const handleRemoveImage = async (index: number) => {
@@ -259,7 +261,7 @@ export default function CreateProductPage() {
                 {/* Image Upload */}
                 <div className="w-full md:w-1/3 flex flex-col items-center">
                     {/* Main Image */}
-                    <label className="block w-full aspect-[9/10] bg-muted/30 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden mb-2 border border-dashed border-gray-400">
+                    <label className="block w-full aspect-[9/10] bg-muted/30 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden mb-2 border border-dashed border-gray-400 relative">
                         {images[0]?.previewUrl || images[0]?.uploadedUrl ? (
                             <Image
                                 src={images[0]?.uploadedUrl || images[0]?.previewUrl || ""}
@@ -271,11 +273,35 @@ export default function CreateProductPage() {
                         ) : (
                             <span className="text-gray-400">Click to upload main image</span>
                         )}
+                        {/* Remove button for main image */}
+                        {(images[0]?.previewUrl || images[0]?.uploadedUrl) && (
+                            <button
+                                type="button"
+                                className="absolute top-1 right-1 text-xs text-red-500 bg-white rounded-full p-1 z-10"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    handleRemoveImage(0);
+                                }}
+                                aria-label="Remove main image"
+                            >
+                                <Trash size={16} />
+                            </button>
+                        )}
+                        {/* Loading spinner overlay */}
+                        {uploadingIndex === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+                                <svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </div>
+                        )}
                         <input
                             type="file"
                             accept="image/*"
                             className="hidden"
                             onChange={e => handleImageChange(e.target.files?.[0] || null, 0)}
+                            disabled={uploadingIndex !== null}
                         />
                     </label>
                     {/* Small Images */}
@@ -296,22 +322,36 @@ export default function CreateProductPage() {
                                 ) : (
                                     <span className="text-gray-400 text-xs">+</span>
                                 )}
+                                {/* Remove button for small images */}
+                                {(images[i + 1]?.previewUrl || images[i + 1]?.uploadedUrl) && (
+                                    <button
+                                        type="button"
+                                        className="absolute top-1 right-1 text-xs text-red-500 bg-white rounded-full p-1 z-10"
+                                        onClick={e => {
+                                            e.preventDefault();
+                                            handleRemoveImage(i + 1);
+                                        }}
+                                        aria-label={`Remove image ${i + 2}`}
+                                    >
+                                        <Trash size={14} />
+                                    </button>
+                                )}
+                                {/* Loading spinner overlay */}
+                                {uploadingIndex === i + 1 && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+                                        <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                        </svg>
+                                    </div>
+                                )}
                                 <input
                                     type="file"
                                     accept="image/*"
                                     className="hidden"
                                     onChange={e => handleImageChange(e.target.files?.[0] || null, i + 1)}
+                                    disabled={uploadingIndex !== null}
                                 />
-                                {images[i + 1]?.previewUrl || images[i + 1]?.uploadedUrl ? (
-                                    <button
-                                        type="button"
-                                        className="absolute top-1 right-1 text-xs text-red-500 bg-white rounded-full px-1"
-                                        onClick={e => {
-                                            e.preventDefault();
-                                            handleRemoveImage(i + 1);
-                                        }}
-                                    >x</button>
-                                ) : null}
                             </label>
                         ))}
                     </div>
