@@ -132,6 +132,7 @@ export default function CreateProductPage() {
         setImages(updated)
         setValue('images', updated)
     }
+    
     const handleRemoveImage = (index: number) => {
         let updated = [...images]
         updated.splice(index, 1)
