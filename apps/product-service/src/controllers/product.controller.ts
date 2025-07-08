@@ -111,7 +111,7 @@ export const deleteDiscountCodes = async (req: any, res: Response, next: NextFun
 export const uploadProductImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {fileName} = req.body
-        console.log("I am here ", fileName)
+        //console.log("I am here ", fileName)
         const response = await imagekit.upload({
             file: fileName,
             fileName: `product-${Date.now()}.jpg`,
