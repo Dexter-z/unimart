@@ -49,7 +49,9 @@ const MAX_IMAGES = 8
 const MAX_SHORT_DESC_WORDS = 150
 
 export default function CreateProductPage() {
-    const [images, setImages] = useState<(File | null)[]>([null])
+    const [images, setImages] = useState<{ file: File | null, previewUrl: string | null, uploadedUrl: string | null }[]>([
+        { file: null, previewUrl: null, uploadedUrl: null }
+    ]);
     const [shortDescWords, setShortDescWords] = useState(0)
     const [detailedDescWords, setDetailedDescWords] = useState(0)
     const [colorModalOpen, setColorModalOpen] = useState(false)
@@ -122,7 +124,7 @@ export default function CreateProductPage() {
     const selectedCategory = watch("category");
     //const regularPrice = watch("regular_price")
 
-    console.log(categories, subCategories)
+    //console.log(categories, subCategories)
 
     //Convert File to base64
     const convertFileToBase64 = (file: File) => {
@@ -136,55 +138,43 @@ export default function CreateProductPage() {
 
     // Image upload logic
     const handleImageChange = async (file: File | null, index: number) => {
-        if(!file){
-            return
-        }
+        if (!file) return;
 
+        const previewUrl = URL.createObjectURL(file);
+        let uploadedUrl = null;
         try {
-            const fileName = await convertFileToBase64(file)
-            //console.log("1 ", fileName)
-            const response = await axiosInstance.post("/product/api/upload-product-image", {fileName} )
-            console.log("2 ", response.data)
-            const updatedImages = [...images]
-            updatedImages[index] = response.data.file_url // Assuming the API returns the image URL
-
-            if(index === images.length - 1 && updatedImages.length < MAX_IMAGES) {
-                updatedImages.push(null) // Add a new empty slot if it's the last image
-            }
-            setImages(updatedImages)
-            setValue('images', updatedImages)
+            const fileBase64 = await convertFileToBase64(file);
+            const response = await axiosInstance.post("/product/api/upload-product-image", { fileName: fileBase64 });
+            uploadedUrl = response.data.file_url;
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-
-        // const updated = [...images]
-        // updated[index] = file
-        // if (index === images.length - 1 && images.length < MAX_IMAGES) updated.push(null)
-        // setImages(updated)
-        // setValue('images', updated)
-    }
+        const updatedImages = [...images];
+        // Ensure all slots up to index are filled
+        while (updatedImages.length <= index) {
+            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
+        }
+        updatedImages[index] = { file, previewUrl, uploadedUrl };
+        if (updatedImages.length < MAX_IMAGES && !updatedImages.some(img => img.file === null)) {
+            updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
+        }
+        setImages(updatedImages);
+        setValue('images', updatedImages.map(img => img?.file ?? null));
+    };
     
     const handleRemoveImage = (index: number) => {
         try {
-            const updatedImages = [...images]
-            const imageToDelete = updatedImages[index]
-            if(imageToDelete && typeof imageToDelete === "string"){
-                //delete picture
+            const updatedImages = [...images];
+            updatedImages.splice(index, 1);
+            if (updatedImages.length < MAX_IMAGES && !updatedImages.some(img => img.file === null)) {
+                updatedImages.push({ file: null, previewUrl: null, uploadedUrl: null });
             }
-
-            updatedImages.splice(index, 1) // Remove the image at the specified index
-
-            //Add null placeholder
-            if(!updatedImages.includes(null) && updatedImages.length < MAX_IMAGES) {
-                updatedImages.push(null) // Add a new empty slot if it's not already full
-            }
-
-            setImages(updatedImages)
-            setValue('images', updatedImages)
+            setImages(updatedImages);
+            setValue('images', updatedImages.map(img => img?.file ?? null));
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-    }
+    };
 
     const addColor = () => {
         if (!selectedColors.includes(currentColor)) {
@@ -261,9 +251,9 @@ export default function CreateProductPage() {
                 <div className="w-full md:w-1/3 flex flex-col items-center">
                     {/* Main Image */}
                     <label className="block w-full aspect-[9/10] bg-muted/30 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden mb-2 border border-dashed border-gray-400">
-                        {images[0] ? (
+                        {images[0]?.previewUrl || images[0]?.uploadedUrl ? (
                             <Image
-                                src={URL.createObjectURL(images[0])}
+                                src={images[0]?.uploadedUrl || images[0]?.previewUrl || ""}
                                 alt="Main"
                                 width={300}
                                 height={350}
@@ -284,11 +274,11 @@ export default function CreateProductPage() {
                         {Array.from({ length: MAX_IMAGES - 1 }).map((_, i) => (
                             <label
                                 key={i + 1}
-                                className="aspect-square bg-muted/30 rounded flex items-center justify-center cursor-pointer overflow-hidden border border-dashed border-gray-400"
+                                className="aspect-square bg-muted/30 rounded flex items-center justify-center cursor-pointer overflow-hidden border border-dashed border-gray-400 relative"
                             >
-                                {images[i + 1] ? (
+                                {images[i + 1]?.previewUrl || images[i + 1]?.uploadedUrl ? (
                                     <Image
-                                        src={URL.createObjectURL(images[i + 1]!)}
+                                        src={images[i + 1]?.uploadedUrl || images[i + 1]?.previewUrl || ""}
                                         alt={`Image ${i + 2}`}
                                         width={80}
                                         height={80}
@@ -303,16 +293,16 @@ export default function CreateProductPage() {
                                     className="hidden"
                                     onChange={e => handleImageChange(e.target.files?.[0] || null, i + 1)}
                                 />
-                                {images[i + 1] && (
+                                {images[i + 1]?.previewUrl || images[i + 1]?.uploadedUrl ? (
                                     <button
                                         type="button"
                                         className="absolute top-1 right-1 text-xs text-red-500 bg-white rounded-full px-1"
                                         onClick={e => {
-                                            e.preventDefault()
-                                            handleRemoveImage(i + 1)
+                                            e.preventDefault();
+                                            handleRemoveImage(i + 1);
                                         }}
                                     >x</button>
-                                )}
+                                ) : null}
                             </label>
                         ))}
                     </div>

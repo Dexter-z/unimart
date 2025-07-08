@@ -111,21 +111,22 @@ export const deleteDiscountCodes = async (req: any, res: Response, next: NextFun
 export const uploadProductImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {fileName} = req.body
-        //console.log("I am here ", fileName)
+        // Extract mime type from base64 string
+        const matches = fileName.match(/^data:(image\/[a-zA-Z0-9+]+);base64,/);
+        const mimeType = matches ? matches[1] : "image/jpeg";
+        const extension = mimeType.split("/")[1];
+        console.log('uploadProductImage:', { mimeType, extension, fileName: fileName.slice(0, 30) });
         const response = await imagekit.upload({
             file: fileName,
-            fileName: `product-${Date.now()}.jpg`,
+            fileName: `product-${Date.now()}.${extension}`,
             folder: "/products",
         })
-
-        
-
         res.status(201).json({
             file_url: response.url,
             file_name: response.fileId,
         })
     } catch (error) {
+        console.error('uploadProductImage error:', error);
         next(error)
-        
     }
 }
