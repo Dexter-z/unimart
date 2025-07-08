@@ -7,6 +7,8 @@ import { HexColorPicker } from "react-colorful"
 import { Dialog } from "@headlessui/react"
 import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 type ProductForm = {
     images: (File | null)[];
@@ -67,6 +69,8 @@ export default function CreateProductPage() {
     const [loading, setLoading] = useState(false)
     const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
+    const router = useRouter()
+
 
     const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<ProductForm>({
         defaultValues: {
@@ -79,7 +83,6 @@ export default function CreateProductPage() {
             brand: "",
             colors: [],
             specifications: [],
-            properties: [],
             category: "",
             subCategory: "",
             cashOnDelivery: "",
@@ -113,7 +116,7 @@ export default function CreateProductPage() {
         retry: 2,
     })
 
-    const { data: discountCodes = [], isLoading:discountLoading } = useQuery({
+    const { data: discountCodes = [], isLoading: discountLoading } = useQuery({
         queryKey: ["shop-discounts"],
         queryFn: async () => {
             const res = await axiosInstance.get("/product/api/get-discount-codes")
@@ -166,7 +169,7 @@ export default function CreateProductPage() {
         setValue('images', updatedImages.map(img => img?.file ?? null));
         setUploadingIndex(null);
     };
-    
+
     const handleRemoveImage = async (index: number) => {
         try {
             const updatedImages = [...images];
@@ -237,9 +240,18 @@ export default function CreateProductPage() {
 
     }
 
-    const onSubmit = (data: any) => {
+    const onSubmit = async (data: any) => {
         // handle create product
-        console.log(data)
+        try {
+            setLoading(true)
+            console.log(data)
+            await axiosInstance.post("/product/api/create-product", data)
+            router.push("/dashboard/all-products")
+        } catch (error: any) {
+            toast.error(error?.data?.message)
+        } finally{
+            setLoading(false)
+        }
     }
 
     return (
@@ -747,26 +759,26 @@ export default function CreateProductPage() {
                     {/* Discount Codes */}
                     <div>
                         <label className="block mb-1 font-medium">Select Discount Codes (Optional)</label>
-                    {discountLoading ? (
-                        <p className="text-gray-400">
-                            Loading discount codes...
-                        </p>
-                    ) : (
-                        <div className='flex flex-wrap gap-2'>
-                            {discountCodes?.map((code: any) => (
-                                <button key={code.id}
-                                    type='button'
-                                    className={`px-3 py-1 rounded-md text-sm font-semibold border ${watch("discountCodes")?.includes(code.id) ? "bg-blue-600 text-white border-blue-600" : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"}`}
-                                    onClick={() => {
-                                        const currentSelection = watch("discountCodes") || []
-                                        const updatedSelection = currentSelection.includes(code.id) ? currentSelection.filter((id: string) => id !== code.id) : [...currentSelection, code.id]
-                                        setValue("discountCodes", updatedSelection)
-                                    }}>
-                                    {code?.public_name} ({code?.discountValue} {code?.discountType === "percentage" ? "%" : "$"})
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                        {discountLoading ? (
+                            <p className="text-gray-400">
+                                Loading discount codes...
+                            </p>
+                        ) : (
+                            <div className='flex flex-wrap gap-2'>
+                                {discountCodes?.map((code: any) => (
+                                    <button key={code.id}
+                                        type='button'
+                                        className={`px-3 py-1 rounded-md text-sm font-semibold border ${watch("discountCodes")?.includes(code.id) ? "bg-blue-600 text-white border-blue-600" : "bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700"}`}
+                                        onClick={() => {
+                                            const currentSelection = watch("discountCodes") || []
+                                            const updatedSelection = currentSelection.includes(code.id) ? currentSelection.filter((id: string) => id !== code.id) : [...currentSelection, code.id]
+                                            setValue("discountCodes", updatedSelection)
+                                        }}>
+                                        {code?.public_name} ({code?.discountValue} {code?.discountType === "percentage" ? "%" : "$"})
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Buttons */}
