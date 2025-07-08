@@ -124,21 +124,66 @@ export default function CreateProductPage() {
 
     console.log(categories, subCategories)
 
+    //Convert File to base64
+    const convertFileToBase64 = (file: File) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        })
+    }
+
     // Image upload logic
-    const handleImageChange = (file: File | null, index: number) => {
-        const updated = [...images]
-        updated[index] = file
-        if (index === images.length - 1 && images.length < MAX_IMAGES) updated.push(null)
-        setImages(updated)
-        setValue('images', updated)
+    const handleImageChange = async (file: File | null, index: number) => {
+        if(!file){
+            return
+        }
+
+        try {
+            const fileName = await convertFileToBase64(file)
+            //console.log("1 ", fileName)
+            const response = await axiosInstance.post("/product/api/upload-product-image", {fileName} )
+            console.log("2 ", response.data)
+            const updatedImages = [...images]
+            updatedImages[index] = response.data.file_url // Assuming the API returns the image URL
+
+            if(index === images.length - 1 && updatedImages.length < MAX_IMAGES) {
+                updatedImages.push(null) // Add a new empty slot if it's the last image
+            }
+            setImages(updatedImages)
+            setValue('images', updatedImages)
+        } catch (error) {
+            console.log(error)
+        }
+
+        // const updated = [...images]
+        // updated[index] = file
+        // if (index === images.length - 1 && images.length < MAX_IMAGES) updated.push(null)
+        // setImages(updated)
+        // setValue('images', updated)
     }
     
     const handleRemoveImage = (index: number) => {
-        let updated = [...images]
-        updated.splice(index, 1)
-        if (!updated.includes(null) && updated.length < MAX_IMAGES) updated.push(null)
-        setImages(updated)
-        setValue('images', updated)
+        try {
+            const updatedImages = [...images]
+            const imageToDelete = updatedImages[index]
+            if(imageToDelete && typeof imageToDelete === "string"){
+                //delete picture
+            }
+
+            updatedImages.splice(index, 1) // Remove the image at the specified index
+
+            //Add null placeholder
+            if(!updatedImages.includes(null) && updatedImages.length < MAX_IMAGES) {
+                updatedImages.push(null) // Add a new empty slot if it's not already full
+            }
+
+            setImages(updatedImages)
+            setValue('images', updatedImages)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const addColor = () => {

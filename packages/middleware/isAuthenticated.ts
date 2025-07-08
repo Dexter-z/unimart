@@ -35,7 +35,7 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
             });
             
             req.seller = account
-            console.log("Account: ", account)
+            //console.log("Account: ", account)
         }
 
         
