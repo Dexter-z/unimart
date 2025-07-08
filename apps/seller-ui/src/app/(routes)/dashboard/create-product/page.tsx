@@ -241,18 +241,23 @@ export default function CreateProductPage() {
     }
 
     const onSubmit = async (data: any) => {
-        // handle create product
         try {
-            setLoading(true)
-            console.log(data)
-            await axiosInstance.post("/product/api/create-product", data)
-            router.push("/dashboard/all-products")
+            setLoading(true);
+            // Build an array of uploaded image URLs (filter out empty slots)
+            const imageUrls = images
+                .filter(img => img && img.uploadedUrl)
+                .map(img => img.uploadedUrl);
+            await axiosInstance.post("/product/api/create-product", {
+                ...data,
+                images: imageUrls,
+            });
+            router.push("/dashboard/all-products");
         } catch (error: any) {
-            toast.error(error?.data?.message)
-        } finally{
-            setLoading(false)
+            toast.error(error?.data?.message);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <form

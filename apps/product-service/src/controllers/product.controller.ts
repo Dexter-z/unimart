@@ -192,10 +192,7 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
         const newProduct = await prisma.products.create({
             data: {
                 shopId: req.seller?.shop?.id!,
-                images: images.map((image:any) => ({
-                    file_id:image.fileId,
-                    url: image.file_url,
-                })),
+                images: images,
                 title,
                 shortDescription,
                 tags: Array.isArray(tags) ? tags : tags.split(","),
@@ -215,7 +212,7 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
                 sizes: sizes || [],
                 discountCodes: discountCodes.map((codeId:string) => codeId),
             },
-            include: {images: true}
+            // No include needed
         })
 
         res.status(201).json({
