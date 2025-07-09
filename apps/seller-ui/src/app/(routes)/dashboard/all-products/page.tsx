@@ -180,7 +180,7 @@ const ProductList = () => {
                 />
             </div>
 
-            {/* Product Table */}
+            {/* Product Tables */}
             <div className='bg-gray-800 rounded-lg overflow-x-auto'>
                 {isLoading ? (
                     <div className="p-8 text-center text-white">Loading Products...</div>
