@@ -11,12 +11,14 @@ datasource db {
 
 model images {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  field_id   String
+  file_id   String
   url        String
   userId     String?   @unique @db.ObjectId
   shopId     String?   @unique @db.ObjectId
   users      users?    @relation(fields: [userId], references: [id])
   shops      shops?    @relation(fields: [shopId], references: [id])
+  products   products? @relation(fields: [productsId], references: [id])
+  productsId String?   @db.ObjectId
 }
 
 model users {
@@ -107,7 +109,7 @@ model products {
   subCategory         String
   shortDescription    String
   detailedDescription String
-  images              String[]
+  images              images[]
   videoUrl            String?
   tags                String[]
   brand               String?
