@@ -97,7 +97,7 @@ const ProductList = () => {
             }
         },
         {
-            accessorKey: 'name',
+            accessorKey: 'title',
             header: 'Product Name',
             cell: ({ row }: any) => {
                 const truncatedTitle = row.original.title.length > 25 ? `${row.original.title.substring(0, 25)}...` : row.original.title;
