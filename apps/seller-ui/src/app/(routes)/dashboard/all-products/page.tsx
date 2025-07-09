@@ -20,7 +20,8 @@ import {
     Plus,
     BarChart,
     Star,
-    ChevronRight
+    ChevronRight,
+    Recycle
 } from "lucide-react"
 
 import Link from 'next/link'
@@ -41,6 +42,9 @@ const ProductList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
+    // Add a local state to track soft-deleted products (by id)
+    const [deletedProducts, setDeletedProducts] = useState<{ [id: string]: boolean }>({})
+
     const queryClient = useQueryClient()
 
     // Delete mutation (stubbed API call)
@@ -49,9 +53,22 @@ const ProductList = () => {
             // TODO: Replace with your actual API endpoint
             return await axiosInstance.delete(`/product/api/delete-product/${productId}`)
         },
-        onSuccess: () => {
+        onSuccess: (_, productId) => {
             setShowDeleteModal(false)
             setSelectedProduct(null)
+            setDeletedProducts(prev => ({ ...prev, [productId]: true }))
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+        },
+    })
+
+    // Restore mutation (stubbed API call)
+    const restoreProductMutation = useMutation({
+        mutationFn: async (productId: string) => {
+            // TODO: Replace with your actual API endpoint
+            return await axiosInstance.put(`/product/api/restore-product/${productId}`)
+        },
+        onSuccess: (_, productId) => {
+            setDeletedProducts(prev => ({ ...prev, [productId]: false }))
             queryClient.invalidateQueries({ queryKey: ['shop-products'] })
         },
     })
@@ -125,36 +142,51 @@ const ProductList = () => {
         },
         {
             header: 'Actions',
-            cell: ({ row }: any) => (
-                <div className="flex gap-3">
-                    <Link href={`/product/${row.original.id}`} className='text-blue-400 hover:text-blue-300 transition'>
-                        <Eye size={18} />
-                    </Link>
+            cell: ({ row }: any) => {
+                const isDeleted = deletedProducts[row.original.id] || row.original.deleted
+                return (
+                    <div className="flex gap-3">
+                        <Link href={`/product/${row.original.id}`} className='text-blue-400 hover:text-blue-300 transition'>
+                            <Eye size={18} />
+                        </Link>
 
-                    <Link href={`/product/edit/${row.original.id}`} className='text-yellow-400 hover:text-yellow-300 transition'>
-                        <Pencil size={18} />
-                    </Link>
+                        <Link href={`/product/edit/${row.original.id}`} className='text-yellow-400 hover:text-yellow-300 transition'>
+                            <Pencil size={18} />
+                        </Link>
 
-                    <button
-                        className='text-green-400 hover:text-green-300 transition'
-                    //onClick={() => openAnalytics(row.original)}
-                    >
-                        <BarChart size={18} />
-                    </button>
+                        <button
+                            className='text-green-400 hover:text-green-300 transition'
+                        //onClick={() => openAnalytics(row.original)}
+                        >
+                            <BarChart size={18} />
+                        </button>
 
-                    <button
-                        className='text-red-400 hover:text-red-300 transition'
-                        onClick={() => {
-                            setSelectedProduct(row.original)
-                            setShowDeleteModal(true)
-                        }}
-                    >
-                        <Trash size={18} />
-                    </button>
-                </div>
-            )
+                        {isDeleted ? (
+                            <button
+                                className="text-green-400 hover:text-green-300 transition"
+                                onClick={() => restoreProductMutation.mutate(row.original.id)}
+                                disabled={restoreProductMutation.isPending}
+                                title="Restore Product"
+                            >
+                                <Recycle size={18} />
+                            </button>
+                        ) : (
+                            <button
+                                className='text-red-400 hover:text-red-300 transition'
+                                onClick={() => {
+                                    setSelectedProduct(row.original)
+                                    setShowDeleteModal(true)
+                                }}
+                                title="Delete Product"
+                            >
+                                <Trash size={18} />
+                            </button>
+                        )}
+                    </div>
+                )
+            }
         }
-    ], [])
+    ], [deletedProducts, restoreProductMutation.isPending])
 
     const table = useReactTable({
         data: products,
@@ -247,7 +279,7 @@ const ProductList = () => {
                     <SheetHeader>
                         <SheetTitle className="text-lg text-white">Delete Product</SheetTitle>
                         <SheetDescription className="text-gray-300">
-                            Are you sure you want to delete <span className="font-semibold text-red-400">{selectedProduct?.title}</span>? This action cannot be undone.
+                            Are you sure you want to delete <span className="font-semibold text-red-400">{selectedProduct?.title}</span>? This Product will be moved to a Temporary storage location and permanently deleted after 24hours. You can restore it within this time.
                         </SheetDescription>
                     </SheetHeader>
                     <SheetFooter>

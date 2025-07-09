@@ -227,7 +227,7 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
                     salePrice: parseFloat(salePrice),
                     stock: parseInt(stock),
                     sizes: sizes || [],
-                    discountCodes: discountCodes.map((codeId:string) => codeId),
+                    discountCodes: discountCodes.map((codeId: string) => codeId),
                 },
                 // No include needed
             });
@@ -271,7 +271,7 @@ export const getShopProducts = async (req: any, res: Response, next: NextFunctio
 //Delete Products
 export const deleteProduct = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const {productId} = req.params;
+        const { productId } = req.params;
         const sellerId = req.seller?.shop?.id;
 
         const product = await prisma.products.findUnique({
@@ -279,7 +279,7 @@ export const deleteProduct = async (req: any, res: Response, next: NextFunction)
             select: { id: true, shopId: true, isDeleted: true }
         });
 
-        if(!product){
+        if (!product) {
             return next(new ValidationError("Product not found"));
         }
         if (product.shopId !== sellerId) {
@@ -292,8 +292,8 @@ export const deleteProduct = async (req: any, res: Response, next: NextFunction)
 
         const deletedProduct = await prisma.products.update({
             where: { id: productId },
-            data: { 
-                isDeleted: true ,
+            data: {
+                isDeleted: true,
                 deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Set deletedAt to 24 hours from now
             }
         })
@@ -305,5 +305,45 @@ export const deleteProduct = async (req: any, res: Response, next: NextFunction)
 
     } catch (error) {
         return next(error);
+    }
+}
+
+//Restore Product
+export const restoreProduct = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const { productId } = req.params;
+        const sellerId = req.seller?.shop?.id;
+
+        const product = await prisma.products.findUnique({
+            where: { id: productId },
+            select: { id: true, shopId: true, isDeleted: true }
+        });
+
+        if (!product) {
+            return next(new ValidationError("Product not found"));
+        }
+        if (product.shopId !== sellerId) {
+            return next(new ValidationError("You are not authorized to delete this product"));
+        }
+        // Check if the product is in a deleted state
+        if (!product.isDeleted) {
+            return next(new ValidationError("Product is not in a temporarily deleted state"));
+        }
+
+        await prisma.products.update({
+            where: { id: productId },
+            data: {
+                isDeleted: false, // Restore the product,
+                deletedAt: null
+            }
+        })
+
+        return res.status(200).json({
+            message: "Product Successfully Restored",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred while restoring the product",
+        })
     }
 }
