@@ -48,23 +48,31 @@ const ProductList = () => {
         staleTime: 1000 * 60 * 5, // 5 minutes
     })
 
+    // Fix: columns should be memoized with products as dependency for correct rendering
     const columns = useMemo(() => [
         {
             accessorKey: 'image',
             header: 'Image',
-            cell: ({ row }: any) => <Image src={row.original.image}
-                alt={row.original.image}
-                className='w-12 h-12 rounded-md object-cover'
-            />
+            cell: ({ row }: any) => {
+                console.log(row.original)
+                return (
+                    <Image src={row.original.images[0]?.url}
+                        alt={row.original.images[0]?.url}
+                        className='w-12 h-12 rounded-md object-cover'
+                        width={48}
+                        height={48}
+                    />
+                )
+            }
         },
         {
             accessorKey: 'name',
             header: 'Product Name',
             cell: ({ row }: any) => {
-                const truncatedTitle = row.original.name.length > 25 ? `${row.original.title.substring(0, 25)}...` : row.original.title;
+                const truncatedTitle = row.original.title.length > 25 ? `${row.original.title.substring(0, 25)}...` : row.original.title;
                 return (
                     <Link
-                        href={`${process.env.NEXT_PUBLIC_USER_UI_LINK}/product/${row.original.slug}`}
+                        href={`${process.env.NEXT_PUBLIC_USER_UI_LINK || ''}/product/${row.original.slug}`}
                         className='text-blue-400 hover:underline'
                         title={row.original.title}
                     >
@@ -76,7 +84,7 @@ const ProductList = () => {
         {
             accessorKey: 'price',
             header: 'Price',
-            cell: ({ row }: any) => <span>${row.original.sale_price}</span>
+            cell: ({ row }: any) => <span>${row.original.salePrice}</span>
         },
         {
             accessorKey: 'stock',
@@ -98,7 +106,6 @@ const ProductList = () => {
                 <div className='flex items-center gap-1 text-yellow-400'>
                     <Star fill='#fde047' size={18} /> {" "}
                     <span className='text-white'>{row.original.ratings || 5}</span>
-
                 </div>
             )
         },
@@ -130,7 +137,7 @@ const ProductList = () => {
                 </div>
             )
         }
-    ])
+    ], [])
 
     const table = useReactTable({
         data: products,
@@ -173,9 +180,49 @@ const ProductList = () => {
                 />
             </div>
 
-            {/* Product Tables */}
-            <div className='bg-gray-800 rounded-lg overflow-hidden'>
-                
+            {/* Product Table */}
+            <div className='bg-gray-800 rounded-lg overflow-x-auto'>
+                {isLoading ? (
+                    <div className="p-8 text-center text-white">Loading Products...</div>
+                ) : (
+                    <table className="min-w-full divide-y divide-gray-700 text-sm md:text-base">
+                        <thead className="bg-gray-700">
+                            {table.getHeaderGroups().map(headerGroup => (
+                                <tr key={headerGroup.id}>
+                                    {headerGroup.headers.map(header => (
+                                        <th
+                                            key={header.id}
+                                            className="px-3 py-3 text-left font-semibold text-white whitespace-nowrap"
+                                            style={{ minWidth: 100 }}
+                                        >
+                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                        </th>
+                                    ))}
+                                </tr>
+                            ))}
+                        </thead>
+                        <tbody>
+                            {table.getRowModel().rows.length === 0 ? (
+                                <tr>
+                                    <td colSpan={columns.length} className="text-center text-gray-400 py-8">No products found.</td>
+                                </tr>
+                            ) : (
+                                table.getRowModel().rows.map(row => (
+                                    <tr key={row.id} className="hover:bg-gray-700 transition">
+                                        {row.getVisibleCells().map(cell => (
+                                            <td
+                                                key={cell.id}
+                                                className="px-3 py-3 whitespace-nowrap border-b border-gray-700 align-middle"
+                                            >
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     )
