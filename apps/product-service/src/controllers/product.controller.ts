@@ -189,31 +189,52 @@ export const createProduct = async (req: any, res: Response, next: NextFunction)
             return next(new ValidationError("Slug already exists, Please use a new one"));
         }
 
-        const newProduct = await prisma.products.create({
-            data: {
-                shopId: req.seller?.shop?.id!,
-                images: images,
-                title,
-                shortDescription,
-                tags: Array.isArray(tags) ? tags : tags.split(","),
-                warranty,
-                slug,
-                brand,
-                colors: colors || [],
-                specifications: specifications || {},
-                category,
-                subCategory,
-                cashOnDelivery,
-                detailedDescription,
-                videoUrl,
-                regularPrice: parseFloat(regularPrice),
-                salePrice: parseFloat(salePrice),
-                stock: parseInt(stock),
-                sizes: sizes || [],
-                discountCodes: discountCodes.map((codeId:string) => codeId),
-            },
-            // No include needed
-        })
+        // Add logging for incoming images
+        console.log('Received images:', images);
+        // Validate images array
+        if (!Array.isArray(images) || images.some(img => !img || !img.url || !img.fileId)) {
+            console.error('Invalid images array:', images);
+            return next(new ValidationError('Each image must have both url and fileId.'));
+        }
+        // Prepare images for Prisma create
+        const imagesForCreate = images.map((img: { url: string, fileId: string }) => ({
+            url: img.url,
+            file_id: img.fileId
+        }));
+        console.log('Images for Prisma create:', imagesForCreate);
+        let newProduct;
+        try {
+            newProduct = await prisma.products.create({
+                data: {
+                    shopId: req.seller?.shop?.id!,
+                    images: {
+                        create: imagesForCreate
+                    },
+                    title,
+                    shortDescription,
+                    tags: Array.isArray(tags) ? tags : tags.split(","),
+                    warranty,
+                    slug,
+                    brand,
+                    colors: colors || [],
+                    specifications: specifications || {},
+                    category,
+                    subCategory,
+                    cashOnDelivery,
+                    detailedDescription,
+                    videoUrl,
+                    regularPrice: parseFloat(regularPrice),
+                    salePrice: parseFloat(salePrice),
+                    stock: parseInt(stock),
+                    sizes: sizes || [],
+                    discountCodes: discountCodes.map((codeId:string) => codeId),
+                },
+                // No include needed
+            });
+        } catch (prismaError) {
+            console.error('Prisma create error:', prismaError);
+            return next(new ValidationError('Failed to create product. See server logs for details.'));
+        }
 
         res.status(201).json({
             success: true,

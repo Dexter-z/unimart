@@ -243,13 +243,13 @@ export default function CreateProductPage() {
     const onSubmit = async (data: any) => {
         try {
             setLoading(true);
-            // Build an array of uploaded image URLs (filter out empty slots)
-            const imageUrls = images
-                .filter(img => img && img.uploadedUrl)
-                .map(img => img.uploadedUrl);
+            // Build an array of uploaded image objects (filter out empty slots)
+            const imageObjs = images
+                .filter(img => img && img.uploadedUrl && img.fileId)
+                .map(img => ({ url: img.uploadedUrl, fileId: img.fileId }));
             await axiosInstance.post("/product/api/create-product", {
                 ...data,
-                images: imageUrls,
+                images: imageObjs,
             });
             router.push("/dashboard/all-products");
         } catch (error: any) {
