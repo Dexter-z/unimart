@@ -168,7 +168,10 @@ const ProductList = () => {
                                 disabled={restoreProductMutation.isPending}
                                 title="Restore Product"
                             >
-                                <Recycle size={18} />
+                                <Recycle 
+                                    size={18} 
+                                    className={restoreProductMutation.isPending ? 'animate-spin' : ''}
+                                />
                             </button>
                         ) : (
                             <button
