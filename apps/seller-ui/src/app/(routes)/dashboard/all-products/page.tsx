@@ -27,6 +27,7 @@ import Link from 'next/link'
 import axiosInstance from '@/utils/axiosInstance'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
+import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet'
 
 const fetchProducts = async () => {
     const res = await axiosInstance.get('/product/api/get-shop-products')
@@ -38,9 +39,22 @@ const ProductList = () => {
     const [analyticsData, setAnalyticsData] = useState(null)
     const [showAnalytics, setShowAnalytics] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<any>()
+    const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
     const queryClient = useQueryClient()
+
+    // Delete mutation (stubbed API call)
+    const deleteProductMutation = useMutation({
+        mutationFn: async (productId: string) => {
+            // TODO: Replace with your actual API endpoint
+            return await axiosInstance.delete(`/product/api/delete-product/${productId}`)
+        },
+        onSuccess: () => {
+            setShowDeleteModal(false)
+            setSelectedProduct(null)
+            queryClient.invalidateQueries({ queryKey: ['shop-products'] })
+        },
+    })
 
     const { data: products = [], isLoading } = useQuery({
         queryKey: ['shop-products'],
@@ -130,7 +144,10 @@ const ProductList = () => {
 
                     <button
                         className='text-red-400 hover:text-red-300 transition'
-                    //onClick={() => openDeleteModal(row.original)}
+                        onClick={() => {
+                            setSelectedProduct(row.original)
+                            setShowDeleteModal(true)
+                        }}
                     >
                         <Trash size={18} />
                     </button>
@@ -224,6 +241,40 @@ const ProductList = () => {
                     </table>
                 )}
             </div>
+            {/* Delete Confirmation Modal */}
+            <Sheet open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <SheetContent side="top" className="max-w-md mx-auto rounded-lg bg-gray-900">
+                    <SheetHeader>
+                        <SheetTitle className="text-lg text-white">Delete Product</SheetTitle>
+                        <SheetDescription className="text-gray-300">
+                            Are you sure you want to delete <span className="font-semibold text-red-400">{selectedProduct?.title}</span>? This action cannot be undone.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <SheetFooter>
+                        <button
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mr-2 disabled:opacity-60"
+                            onClick={() => deleteProductMutation.mutate(selectedProduct?.id)}
+                            disabled={deleteProductMutation.isPending}
+                        >
+                            {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </button>
+                        <SheetClose asChild>
+                            <button
+                                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                                type="button"
+                                disabled={deleteProductMutation.isPending}
+                            >
+                                Cancel
+                            </button>
+                        </SheetClose>
+                    </SheetFooter>
+                    {deleteProductMutation.isError && (
+                        <div className="text-red-400 mt-2 text-sm">
+                            Error deleting product. Please try again.
+                        </div>
+                    )}
+                </SheetContent>
+            </Sheet>
         </div>
     )
 }
