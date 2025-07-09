@@ -173,7 +173,7 @@ const ProductList = () => {
                 />
             </div>
 
-            {/* Product Table */}
+            {/* Product Tables */}
             <div className='bg-gray-800 rounded-lg overflow-hidden'>
                 
             </div>
