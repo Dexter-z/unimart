@@ -37,9 +37,9 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        //Werey please find a way to prevent this shit from retrying infinitely
-        if(error.esponse?.status === 401 && !originalRequest._retry){
-            if(isRefreshing){
+        // Only handle 401 errors for protected endpoints, and prevent infinite retry
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
                 return new Promise((resolve) => {
                     subscribeTokenRefresh(() => resolve(axiosInstance(originalRequest)))
                 })
@@ -51,22 +51,21 @@ axiosInstance.interceptors.response.use(
                 await axios.post(
                     `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token-user`,
                     {},
-                    {withCredentials: true}
+                    { withCredentials: true }
                 )
 
                 isRefreshing = false;
-                onRefreshSuccess()
+                onRefreshSuccess();
 
-                return axiosInstance(originalRequest)
-
-            } catch (error) {
-                isRefreshing = false
-                refreshSubscribers = []
-                handleLogout()
-                return Promise.reject(error)
+                return axiosInstance(originalRequest);
+            } catch (refreshError) {
+                isRefreshing = false;
+                refreshSubscribers = [];
+                handleLogout();
+                return Promise.reject(refreshError);
             }
         }
-        return Promise.reject(error)
+        return Promise.reject(error);
     }
 )
 
