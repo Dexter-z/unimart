@@ -53,7 +53,7 @@ export function LoginForm({
     },
     onSuccess: (data) => {
       setServerError(null);
-      queryClient.invalidateQueries(["user"]);
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       router.push("/")
     },
     onError: (error: AxiosError) => {
