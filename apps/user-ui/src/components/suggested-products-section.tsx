@@ -14,6 +14,7 @@ const SuggestedProductsSection = () => {
     queryKey: ["products"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/get-all-products?page=1&limit=10")
+      console.log("Response 1: ", res)
       return res.data.products
     },
     staleTime: 1000 * 60 * 2,
@@ -23,13 +24,14 @@ const SuggestedProductsSection = () => {
     queryKey: ["latest-products"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/get-all-products?page=1&limit=10&type=latest")
+      console.log("Response 2: ", res)
       return res.data.products
     },
     staleTime: 1000 * 60 * 2,
   })
 
-  console.log(products)
-  console.log(latestProducts)
+  console.log("Products: ",products)
+  console.log("Latest Products",latestProducts)
 
 
   return (
