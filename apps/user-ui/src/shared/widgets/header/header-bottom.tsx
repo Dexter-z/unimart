@@ -29,39 +29,31 @@ const HeaderBottom = () => {
 
     return (
         <div className={`w-full transition-all duration-300 ${isSticky ? 'fixed top-0 left-0 z-[100] bg-white shadow-lg' : 'relative'}`}>
+            {/* Nav bar always visible above All Categories */}
+            <div className='w-full bg-[#f8fafc] border-b border-b-[#e5e7eb]'>
+                <div className='w-[95%] md:w-[80%] m-auto flex items-center justify-center gap-2 md:gap-6 py-2 overflow-x-auto'>
+                    {navItems.map((i: NavItemsTypes, index: number) => (
+                        <Link className='px-3 py-1 font-medium text-base md:text-lg text-gray-700 hover:text-[#3489FF] transition whitespace-nowrap' href={i.href} key={index}>
+                            {i.title}
+                        </Link>
+                    ))}
+                </div>
+            </div>
+            {/* All Categories bar below nav */}
             <div className={`w-[95%] md:w-[80%] relative m-auto flex flex-col md:flex-row items-center md:justify-between gap-4 md:gap-0 ${isSticky ? 'pt-3' : 'py-0'}`}>
-                <div className={`w-full md:w-[260px] ${isSticky && '-mb-2'} cursor-pointer flex items-center justify-between px-4 md:px-5 h-[45px] md:h-[50px] bg-[#3489FF] mb-2 md:mb-0`} onClick={() => setShow(!show)}>
+                <div className={`relative w-full md:w-[260px] ${isSticky && '-mb-2'} cursor-pointer flex items-center justify-between px-4 md:px-5 h-[45px] md:h-[50px] bg-[#3489FF] mb-2 md:mb-0`} onClick={() => setShow(!show)}>
                     <div className='flex items-center gap-2'>
                         <AlignLeft color='white' />
                         <span className='text-white font-medium text-sm md:text-base'>All Categories</span>
                     </div>
                     <ChevronDown color='white' />
-                </div>
-                {show && (
-                    <div className={`absolute left-0 ${isSticky ? 'top-[55px] md:top-[70px]' : 'top-[45px] md:top-[50px]'} w-[80vw] md:w-[260px] h-[300px] md:h-[400px] bg-[#f5f5f5] z-50 rounded-md shadow-md`}>
-                        {/* Categories dropdown content here */}
-                    </div>
-                )}
-
-                <div className='hidden md:flex items-center'>
-                    {navItems.map((i: NavItemsTypes, index: number) => (
-                        <Link className='px-2 md:px-5 font-medium text-base md:text-lg' href={i.href} key={index}>
-                            {i.title}
-                        </Link>
-                    ))}
-                </div>
-                {/* Mobile nav items dropdown */}
-                <div className='flex md:hidden w-full'>
                     {show && (
-                        <div className='flex flex-col w-full bg-white rounded shadow-md absolute top-[55px] left-0 z-40'>
-                            {navItems.map((i: NavItemsTypes, index: number) => (
-                                <Link className='px-4 py-2 font-medium text-base border-b last:border-b-0' href={i.href} key={index} onClick={() => setShow(false)}>
-                                    {i.title}
-                                </Link>
-                            ))}
+                        <div className={`absolute left-0 top-[45px] md:top-[50px] w-[80vw] md:w-[260px] h-[300px] md:h-[400px] bg-[#f5f5f5] z-30 rounded-md shadow-md`} style={{minWidth: '200px'}}>
+                            {/* Categories dropdown content here */}
                         </div>
                     )}
                 </div>
+                {/* Remove nav items from here, they are now always above */}
                 <div className='w-full md:w-auto flex justify-end'>
                     {isSticky && (
                         <div className='flex items-center gap-4 md:gap-8 pb-2'>
