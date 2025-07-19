@@ -24,16 +24,20 @@ const SuggestedProductsSection = () => {
     <section className="w-full py-8 md:py-12 bg-[#18181b]">
       <div className="w-[95%] md:w-[80%] mx-auto">
         <h2 className="text-xl md:text-2xl font-bold text-[#ff8800] mb-4">Suggested Products</h2>
-        <div className="flex md:grid md:grid-cols-5 gap-4 overflow-x-auto md:overflow-visible pb-2">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-2 auto-rows-fr">
           {showSkeleton
             ? dummyProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="min-w-[160px] md:min-w-0 bg-[#232326] rounded-xl p-4 flex flex-col items-center animate-pulse border border-[#232326] shadow-sm"
+                  className="bg-[#232326] rounded-xl flex flex-col items-center animate-pulse border border-[#232326] shadow-sm min-h-[280px] aspect-[3/4] overflow-hidden"
                 >
-                  <div className="w-24 h-24 bg-gray-700 rounded-lg mb-3" />
-                  <div className="h-4 w-20 bg-gray-700 rounded mb-2" />
-                  <div className="h-3 w-12 bg-gray-700 rounded" />
+                  <div className="w-full" style={{ height: '66%' }}>
+                    <div className="w-full h-full bg-gray-700" />
+                  </div>
+                  <div className="flex-1 w-full flex flex-col items-center justify-between p-4">
+                    <div className="w-full min-h-[2.5rem] bg-gray-700 rounded mb-2" />
+                    <div className="w-12 h-3 bg-gray-700 rounded" />
+                  </div>
                 </div>
               ))
             : products.map((product: any) => (
