@@ -21,11 +21,11 @@ const Header = () => {
                 </Link>
                 {/* Search Bar */}
                 <div className='flex-1 mx-2 md:mx-8 max-w-[500px]'>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                         <input type="text" placeholder='Search for products...'
-                            className='w-full px-4 font-Poppins font-medium border-2 border-[#3489FF] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-blue-200 transition' />
-                        <button className='w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[#3489FF] rounded-full absolute top-1/2 right-1 -translate-y-1/2 shadow-md hover:bg-blue-700 transition'>
-                            <Search color='#fff' size={22} />
+                            className='w-full px-4 pr-12 font-Poppins font-medium border-2 border-[#3489FF] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-blue-200 transition' />
+                        <button className='absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#3489FF] rounded-full shadow-md hover:bg-blue-700 transition'>
+                            <Search color='#fff' size={20} />
                         </button>
                     </div>
                 </div>
