@@ -28,7 +28,7 @@ const Header = () => {
                     <span className='text-lg font-semibold text-white'>UNN</span>
                 </Link>
                 {/* Search Bar */}
-                <div className='flex-1 mx-2 md:mx-8 max-w-[140px] md:max-w-[500px]'>
+                <div className='flex-1 mx-2 md:mx-8 max-w-[220px] md:max-w-[500px]'>
                     <div className="relative flex items-center">
                         <input type="text" placeholder='Search for products...'
                             className='w-full px-4 pr-12 font-Poppins font-medium border-2 border-[#5aaaff] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-blue-200 transition bg-[#f3f6fa] text-gray-800 placeholder-gray-500' />
