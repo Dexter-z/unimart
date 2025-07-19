@@ -25,10 +25,10 @@ const Header = () => {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 shrink-0">
                     <span className='text-xl md:text-3xl font-bold tracking-tight text-[#3489FF]'>Unimart</span>
-                    <span className='hidden md:inline text-lg font-semibold text-gray-700'>UNN</span>
+                    <span className='text-lg font-semibold text-gray-700'>UNN</span>
                 </Link>
                 {/* Search Bar */}
-                <div className='flex-1 mx-2 md:mx-8 max-w-[500px]'>
+                <div className='flex-1 mx-2 md:mx-8 max-w-[140px] md:max-w-[500px]'>
                     <div className="relative flex items-center">
                         <input type="text" placeholder='Search for products...'
                             className='w-full px-4 pr-12 font-Poppins font-medium border-2 border-[#3489FF] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-blue-200 transition' />
