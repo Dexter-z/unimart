@@ -38,7 +38,7 @@ const Header = () => {
                     </div>
                 </div>
                 {/* Icons */}
-                <div className='flex items-center gap-2 md:gap-5'>
+                <div className='flex items-center gap-4 md:gap-7'>
                     {/* Wishlist */}
                     <Link href="/wishlist" className='relative group'>
                         <HeartIcon className="w-6 h-6 md:w-7 md:h-7 text-white group-hover:text-[#5aaaff] transition" />
