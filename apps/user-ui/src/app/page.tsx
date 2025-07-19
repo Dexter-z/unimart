@@ -1,3 +1,4 @@
+
 import React from 'react'
 import HeroSection from '@/components/hero-section';
 import SuggestedProductsSection from '@/components/suggested-products-section';
