@@ -26,7 +26,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
         <img
           src={product.images?.[0]?.url || '/placeholder.svg'}
           alt={product.title}
-          className="w-full h-full object-cover rounded-t-2xl"
+          className="w-full h-full object-contain rounded-t-2xl bg-[#18181b]"
           style={{ height: '100%' }}
         />
       </div>
