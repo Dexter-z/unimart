@@ -26,7 +26,7 @@ const HeroSection = () => {
           )}
         </div>
         {/* Right: Image/Illustration */}
-        <div className="flex-1 flex items-center justify-center">
+        {/* <div className="flex-1 flex items-center justify-center">
           <div className="bg-[#232326] rounded-lg p-4 md:p-8">
             <img
               src="/hero-campus.svg"
@@ -35,7 +35,7 @@ const HeroSection = () => {
               style={{objectFit: 'cover'}}
             />
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
