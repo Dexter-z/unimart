@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 
 
@@ -34,6 +34,7 @@ export function LoginForm({
   const [serverError, setServerError] = useState<string | null>(null);
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -52,6 +53,7 @@ export function LoginForm({
     },
     onSuccess: (data) => {
       setServerError(null);
+      queryClient.invalidateQueries(["user"]);
       router.push("/")
     },
     onError: (error: AxiosError) => {
