@@ -69,10 +69,10 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="bg-[#232326] border-[#232326] text-white">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl text-white">Welcome back</CardTitle>
+          <CardDescription className="text-[#ff8800]">
             Login with your Email
           </CardDescription>
         </CardHeader>
@@ -81,20 +81,21 @@ export function LoginForm({
             <div className="grid gap-6">
               <div className="grid gap-6">
                 <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-white">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="m@example.com"
+                    className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                     {...register("email", { required: "Email is required" })}
                   />
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-white">Password</Label>
                     <a
                       href="/forgot-password"
-                      className="ml-auto text-sm underline-offset-4 hover:underline text-blue-800"
+                      className="ml-auto text-sm underline-offset-4 hover:underline text-[#ff8800]"
                     >
                       Forgot your password?
                     </a>
@@ -103,6 +104,7 @@ export function LoginForm({
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
+                      className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                       {...register("password", {
                         required: "Password is required",
                         minLength: {
@@ -118,40 +120,40 @@ export function LoginForm({
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#ff8800]"
                       tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                   {errors.password && (
-                    <span className="text-red-500 text-xs">{errors.password.message}</span>
+                    <span className="text-red-400 text-xs">{errors.password.message}</span>
                   )}
                 </div>
                 {serverError && (
-                  <div className="text-red-500 text-sm text-center mb-2">{serverError}</div>
+                  <div className="text-red-400 text-sm text-center mb-2">{serverError}</div>
                 )}
                 <div className="flex items-center gap-2">
                   <input
                     id="rememberMe"
                     type="checkbox"
                     {...register("rememberMe")}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-[#ff8800] text-[#ff8800] focus:ring-[#ff8800] bg-[#18181b]"
                   />
-                  <Label htmlFor="rememberMe" className="text-sm font-medium">
+                  <Label htmlFor="rememberMe" className="text-sm font-medium text-white">
                     Remember me
                   </Label>
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors"
+                  className="w-full bg-[#ff8800] text-[#18181b] hover:bg-orange-600 hover:text-white transition-colors font-bold border-none"
                   disabled={loginMutation.isPending}>
                   {loginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
               </div>
-              <div className="text-center text-sm">
+              <div className="text-center text-sm text-white">
                 Don&apos;t have an account?{" "}
-                <a href="/sign-up" className="underline underline-offset-4">
+                <a href="/sign-up" className="underline underline-offset-4 text-[#ff8800]">
                   Sign up
                 </a>
               </div>
@@ -159,9 +161,9 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 text-gray-400">
+        By clicking continue, you agree to our <a href="#" className="text-[#ff8800]">Terms of Service</a>{" "}
+        and <a href="#" className="text-[#ff8800]">Privacy Policy</a>.
       </div>
     </div>
   )

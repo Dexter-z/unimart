@@ -131,10 +131,10 @@ export function SignUpForm({
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-            <Card>
+            <Card className="bg-[#232326] border-[#232326] text-white">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-xl">Welcome to Unimart UNN</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-xl text-white">Welcome to Unimart UNN</CardTitle>
+                    <CardDescription className="text-[#ff8800]">
                         Signup with your Email
                     </CardDescription>
                 </CardHeader>
@@ -143,36 +143,35 @@ export function SignUpForm({
                         <div className="grid gap-6">
                             <div className="grid gap-6">
                                 <div className="grid gap-3">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name" className="text-white">Name</Label>
                                     <Input
                                         id="name"
                                         type="text"
                                         placeholder="Full name"
+                                        className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                                         {...register("name", { required: "Name is required" })}
                                     />
                                     {errors.name && (
-                                        <span className="text-red-500 text-xs">{errors.name.message}</span>
+                                        <span className="text-red-400 text-xs">{errors.name.message}</span>
                                     )}
                                 </div>
-
                                 <div className="grid gap-3">
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email" className="text-white">Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         placeholder="m@example.com"
+                                        className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                                         {...register("email", { required: "Email is required" })}
                                     />
                                 </div>
                                 <div className="grid gap-3">
-                                    <div className="flex items-center">
-                                        <Label htmlFor="password">Password</Label>
-
-                                    </div>
+                                    <Label htmlFor="password" className="text-white">Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="password"
                                             type={showPassword ? "text" : "password"}
+                                            className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                                             {...register("password", {
                                                 required: "Password is required",
                                                 minLength: {
@@ -188,62 +187,55 @@ export function SignUpForm({
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword((v) => !v)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#ff8800]"
                                             tabIndex={-1}
                                         >
                                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
                                     </div>
                                     {errors.password && (
-                                        <span className="text-red-500 text-xs">{errors.password.message}</span>
+                                        <span className="text-red-400 text-xs">{errors.password.message}</span>
                                     )}
                                 </div>
-                                
-
                                 <div className="grid gap-3">
-                                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                    <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="confirmPassword"
                                             type={showConfirmPassword ? "text" : "password"}
+                                            className="bg-[#18181b] border-[#ff8800] text-white placeholder-gray-400"
                                             {...register("confirmPassword", {
-                                                required: "Please confirm your password",
-                                                validate: (value) =>
-                                                    value === watch("password") || "Passwords do not match",
+                                                required: "Confirm Password is required",
+                                                validate: (value) => value === watch("password") || "Passwords do not match",
                                             })}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword((v) => !v)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#ff8800]"
                                             tabIndex={-1}
                                         >
-                                            {showConfirmPassword ? (
-                                                <EyeOff className="w-5 h-5" />
-                                            ) : (
-                                                <Eye className="w-5 h-5" />
-                                            )}
+                                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
                                     </div>
                                     {errors.confirmPassword && (
-                                        <span className="text-red-500 text-xs">{errors.confirmPassword.message}</span>
+                                        <span className="text-red-400 text-xs">{errors.confirmPassword.message}</span>
                                     )}
                                 </div>
-
-                                <Button type="submit" disabled={signUpMutation.isPending} className="w-full bg-[#3489FF] hover:bg-blue-600 transition-colors">
+                                <Button type="submit" disabled={signUpMutation.isPending} className="w-full bg-[#ff8800] text-[#18181b] hover:bg-orange-600 hover:text-white transition-colors font-bold border-none">
                                     {signUpMutation.isPending ? "Signing up..." : "Sign Up"}
                                 </Button>
                             </div>
-                            <div className="text-center text-sm">
+                            <div className="text-center text-sm text-white">
                                 Already have an account?{" "}
-                                <a href="/login" className="underline underline-offset-4">
+                                <a href="/login" className="underline underline-offset-4 text-[#ff8800]">
                                     Login
                                 </a>
                             </div>
                         </div>
                     </form>) : (
                         <div>
-                            <h3 className="text-xl font-semibold text-center mb-4">
+                            <h3 className="text-xl font-semibold text-center mb-4 text-white">
                                 Enter OTP
                             </h3>
                             <div className="flex justify-center gap-6">
@@ -254,50 +246,44 @@ export function SignUpForm({
                                         }
                                     }}
                                         maxLength={1}
-                                        className="w-12 h-12 text-center border border-gray-300 outline-none !rounded"
+                                        className="w-12 h-12 text-center border border-[#ff8800] outline-none rounded bg-[#18181b] text-white text-xl"
                                         value={digit}
                                         onChange={(e) => { handleOtpChange(index, e.target.value); }}
                                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                                     />
                                 ))}
                             </div>
-
                             <button
-                                className="w-full mt-4 text-lg cursor-pointer bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                className="w-full mt-4 text-lg cursor-pointer bg-[#ff8800] text-[#18181b] py-2 rounded-lg hover:bg-orange-600 hover:text-white transition-colors font-bold border-none"
                                 disabled={verifyOtpMutation.isPending}
                                 onClick={() => verifyOtpMutation.mutate()}
                             >
                                 {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
                             </button>
-
-                            <p className="text-center text-sm mt-4">
+                            <div className="text-center mt-2 text-white">
                                 {canResend ? (
                                     <button
                                         onClick={resendOtp}
-                                        className="text-blue-500 hover:underline"
+                                        className="text-[#ff8800] hover:underline"
                                     >
                                         Resend OTP
                                     </button>
                                 ) :
                                     `Resend OTP in ${timer} seconds`
                                 }
-                            </p>
-                            {
-                                verifyOtpMutation.isError && verifyOtpMutation.error instanceof AxiosError && (
-                                    <p className="text-red-500 text-sm text-center mt-2">
-                                        {verifyOtpMutation.error.response?.data?.message || verifyOtpMutation.error.message}
-
-                                    </p>
-                                )
-                            }
+                            </div>
+                            {verifyOtpMutation.isError && verifyOtpMutation.error instanceof AxiosError && (
+                                <p className="text-red-400 text-sm text-center mt-2">
+                                    {verifyOtpMutation.error.response?.data?.message || verifyOtpMutation.error.message}
+                                </p>
+                            )}
                         </div>
                     )}
-
                 </CardContent>
             </Card>
-            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-                By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-                and <a href="#">Privacy Policy</a>.
+            <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 text-gray-400">
+                By clicking continue, you agree to our <a href="#" className="text-[#ff8800]">Terms of Service</a>{" "}
+                and <a href="#" className="text-[#ff8800]">Privacy Policy</a>.
             </div>
         </div>
     )
