@@ -11,6 +11,14 @@ const Header = () => {
 
     console.log(user)
 
+    // Helper to get initials from user name
+    const getInitials = (name?: string) => {
+        if (!name) return '';
+        const parts = name.trim().split(' ');
+        if (parts.length === 1) return parts[0][0]?.toUpperCase() || '';
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+
     return (
         <div className='w-full bg-white shadow-sm sticky top-0 z-50'>
             <div className="w-full md:w-[80%] py-2 md:py-4 px-3 md:px-0 m-auto flex items-center justify-between gap-2 md:gap-0">
@@ -51,9 +59,11 @@ const Header = () => {
                             <UserRound className="opacity-50 w-6 h-6 md:w-7 md:h-7" />
                         </div>
                     ) : user ? (
-                        <Link href="/profile" className='border-2 w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full border-[#3489FF] bg-white hover:bg-blue-50 transition ml-1 md:ml-0'>
-                            <UserRound className="w-6 h-6 md:w-7 md:h-7 text-[#3489FF]" />
-                            <span className='hidden md:inline ml-2 text-sm font-semibold text-gray-700'>{user?.name?.split(" ")[0]}</span>
+                        <Link href="/profile" className='border-2 w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full border-[#3489FF] bg-[#3489FF] hover:bg-blue-600 transition ml-1 md:ml-0'>
+                            {/* Only initials in the circle */}
+                            <span className="text-white font-bold text-base md:text-lg select-none">{getInitials(user?.name)}</span>
+                            {/* Only show name on desktop, outside the circle */}
+                            {/* <span className='hidden md:inline ml-2 text-sm font-semibold text-gray-700'>{user?.name?.split(" ")[0]}</span> */}
                         </Link>
                     ) : (
                         <Link href="/login" className='border-2 w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full border-[#3489FF] bg-white hover:bg-blue-50 transition ml-1 md:ml-0'>
