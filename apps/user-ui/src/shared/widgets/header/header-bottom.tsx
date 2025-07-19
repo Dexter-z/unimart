@@ -23,11 +23,11 @@ const HeaderBottom = () => {
     return (
         <div className='w-full transition-all duration-300 relative'>
             {/* Desktop nav (top, with All Categories) */}
-            <div className='w-full bg-[#2563eb] border-b border-b-[#e5e7eb] hidden md:block'>
+            <div className='w-full bg-[#18181b] border-b border-b-[#232326] hidden md:block'>
                 <div className='w-[98%] md:w-[80%] m-auto flex items-center gap-4 py-2 px-2 md:px-4'>
                     {/* All Categories dropdown */}
                     <div className='relative md:w-[200px] flex-shrink-0'>
-                        <div className='flex items-center justify-between px-5 h-[45px] bg-[#3489FF] rounded-lg cursor-pointer' onClick={() => setShow(!show)}>
+                        <div className='flex items-center justify-between px-5 h-[45px] bg-[#ff8800] rounded-lg cursor-pointer' onClick={() => setShow(!show)}>
                             <div className='flex items-center gap-2'>
                                 <AlignLeft color='white' />
                                 <span className='text-white font-medium text-base'>All Categories</span>
@@ -35,7 +35,7 @@ const HeaderBottom = () => {
                             <ChevronDown color='white' />
                         </div>
                         {show && (
-                            <div className='absolute left-0 top-[48px] w-[220px] h-[300px] bg-[#f5f5f5] z-30 rounded-md shadow-md'>
+                            <div className='absolute left-0 top-[48px] w-[220px] h-[300px] bg-[#232326] z-30 rounded-md shadow-md'>
                                 {/* Categories dropdown content here */}
                             </div>
                         )}
@@ -44,7 +44,7 @@ const HeaderBottom = () => {
                     <div className='flex-1 flex items-center gap-4'>
                         {navItems.map((i: NavItemsTypes, index: number) => (
                             <Link
-                                className='px-4 py-2 font-semibold text-base md:text-lg text-white hover:bg-[#5aaaff] hover:text-white transition rounded-lg whitespace-nowrap duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#5aaaff] focus:ring-offset-2'
+                                className='px-4 py-2 font-semibold text-base md:text-lg text-white hover:bg-[#ff8800] hover:text-[#18181b] transition rounded-lg whitespace-nowrap duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ff8800] focus:ring-offset-2'
                                 href={i.href}
                                 key={index}
                             >
@@ -53,10 +53,10 @@ const HeaderBottom = () => {
                         ))}
                     </div>
                 </div>
-                <div className='w-full border-b border-[#e5e7eb]' />
+                <div className='w-full border-b border-[#232326]' />
             </div>
             {/* Mobile All Categories bar (top, only on mobile) */}
-            <div className='block md:hidden w-full bg-[#3489FF]'>
+            <div className='block md:hidden w-full bg-[#ff8800]'>
                 <div className='relative w-full flex items-center justify-between px-5 h-[45px] cursor-pointer' onClick={() => setShow(!show)}>
                     <div className='flex items-center gap-2'>
                         <AlignLeft color='white' />
@@ -64,18 +64,18 @@ const HeaderBottom = () => {
                     </div>
                     <ChevronDown color='white' />
                     {show && (
-                        <div className='absolute left-0 top-[45px] w-full h-[300px] bg-[#f5f5f5] z-30 rounded-b-md shadow-md'>
+                        <div className='absolute left-0 top-[45px] w-full h-[300px] bg-[#232326] z-30 rounded-b-md shadow-md'>
                             {/* Categories dropdown content here */}
                         </div>
                     )}
                 </div>
             </div>
             {/* Mobile nav (bottom) */}
-            <div className='fixed bottom-0 left-0 w-full bg-[#2563eb] border-t border-[#e5e7eb] flex md:hidden z-[100] safe-area-inset-bottom'>
+            <div className='fixed bottom-0 left-0 w-full bg-[#18181b] border-t border-[#232326] flex md:hidden z-[100] safe-area-inset-bottom'>
                 <div className='flex-1 flex items-center justify-around py-2'>
                     {navItems.map((i: NavItemsTypes, index: number) => (
                         <Link
-                            className='flex flex-col items-center justify-center px-2 py-1 text-xs font-semibold text-white hover:text-[#5aaaff] transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#5aaaff] focus:ring-offset-2'
+                            className='flex flex-col items-center justify-center px-2 py-1 text-xs font-semibold text-white hover:text-[#ff8800] transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#ff8800] focus:ring-offset-2'
                             href={i.href}
                             key={index}
                         >
