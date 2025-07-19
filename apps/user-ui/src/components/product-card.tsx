@@ -12,7 +12,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   return (
     <Link
       href={`/product/${product.slug}`}
-      className={`min-w-[160px] md:min-w-0 bg-[#232326] rounded-xl p-4 flex flex-col items-center border border-[#232326] shadow-sm relative transition-all duration-200 hover:scale-[1.03] ${isEvent ? 'ring-2 ring-[#ff8800] ring-offset-2' : ''}`}
+      className={`min-w-[160px] md:min-w-0 bg-[#232326] rounded-xl p-4 flex flex-col items-center border border-[#232326] shadow-sm relative transition-all duration-200 hover:scale-[1.03] ${isEvent ? 'ring-2 ring-[#ff8800] ring-offset-2' : ''} min-h-[240px] md:min-h-[260px]`}
     >
       {/* OFFER badge for event */}
       {isEvent && (
@@ -27,7 +27,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
         alt={product.title}
         className={`w-24 h-24 object-cover rounded-lg mb-3 bg-gray-800 ${isLimited ? 'ring-2 ring-red-600' : ''}`}
       />
-      <div className="h-4 w-20 text-white font-semibold text-center mb-2 truncate">{product.title}</div>
+      <div className="h-auto min-h-[2.5rem] w-32 text-white font-semibold text-center mb-2 break-words line-clamp-2">{product.title}</div>
       <div className="h-3 w-12 text-[#ff8800] font-bold text-center">{product.price ? `₦${product.price}` : ''}</div>
     </Link>
   );
