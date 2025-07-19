@@ -14,7 +14,7 @@ const SuggestedProductsSection = () => {
     queryKey: ["products"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/get-all-products?page=1&limit=10")
-      console.log("Response 1: ", res)
+      console.log("Response 1 : ", res)
       return res.data.products
     },
     staleTime: 1000 * 60 * 2,
