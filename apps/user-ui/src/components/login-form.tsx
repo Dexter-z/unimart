@@ -46,7 +46,7 @@ export function LoginForm({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-user`,
         data,
-        { withCredentials: true } // To make sure cookies are sent with the request
+        { withCredentials: true } // To make sure cookies are sent with the requests
       )
       console.log(response.data)
       return response.data;
