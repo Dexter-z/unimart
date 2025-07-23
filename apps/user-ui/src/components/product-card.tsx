@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Ratings from './ratings';
+import { Heart } from 'lucide-react';
 
 interface ProductCardProps {
   product: any;
@@ -11,6 +12,8 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   // Countdown logic
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
+  const [wishlisted, setWishlisted] = useState(false);
+  
   useEffect(() => {
     if (!product.endingDate) return;
     const interval = setInterval(() => {
@@ -31,11 +34,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
     return () => clearInterval(interval);
   }, [product.endingDate]);
 
+  
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setWishlisted((prev) => !prev);
+    // TODO: Optionally trigger API call here
+  };
+
   return (
     <Link
       href={`/product/${product.slug}`}
       className={`min-w-[170px] md:min-w-0 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-0 flex flex-col items-center border border-[#232326] shadow-lg relative transition-all duration-200 hover:scale-[1.04] hover:border-[#ff8800] group min-h-[280px] aspect-[3/4.4] overflow-hidden`}
     >
+      {/* Wishlist Heart Icon */}
+      <button
+        aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        onClick={handleWishlistClick}
+        className="absolute top-3 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
+        tabIndex={0}
+        type="button"
+      >
+        <Heart
+          className={`w-6 h-6 ${wishlisted ? 'fill-[#ff8800] text-[#ff8800]' : 'text-gray-300'} transition`}
+          fill={wishlisted ? '#ff8800' : 'none'}
+        />
+      </button>
       {/* OFFER badge for event */}
       {isEvent && (
         <span className="absolute top-3 left-3 bg-[#ff8800] text-[#18181b] text-xs font-bold px-3 py-1 rounded-full shadow group-hover:bg-orange-500 transition">OFFER</span>
