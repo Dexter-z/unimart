@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setWishlisted((prev) => !prev);
+    //setWishlisted((prev) => !prev);
 
     isWishlisted ? removeFromWishlist(product.id, user, location, deviceInfo) : addToWishlist({...product, quantity: 1},
     user, location, deviceInfo)
@@ -81,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
       >
       {/* Wishlist Heart Icon */}
       <button
-        aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         onClick={handleWishlistClick}
         className="absolute top-3 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
         tabIndex={0}
