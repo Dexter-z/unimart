@@ -19,16 +19,17 @@ const Header = () => {
 
     console.log(user)
 
-    const handleSearchClick = async() => {
-        if(!searchQuery.trim()) return;
+    const handleSearchClick = async () => {
+        if (!searchQuery.trim()) return;
         setLoadingSuggestions(true)
 
         try {
             const res = await axiosInstance.get(`/product/api/search-products?q=${encodeURIComponent(searchQuery)}`)
             setSuggestions(res.data.products.slice(0, 10))
-            
         } catch (error) {
-            
+
+        } finally {
+            setLoadingSuggestions(false)
         }
     }
 
