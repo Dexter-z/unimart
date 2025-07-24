@@ -108,7 +108,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           tabIndex={0}
           type="button"
         >
-          <ShoppingCart className="w-6 h-6 text-gray-300 hover:text-[#ff8800] transition" />
+          <ShoppingCart
+            className={`w-6 h-6 transition ${isInCart ? 'text-[#ff8800]' : 'text-white'}`}
+            stroke={isInCart ? '#ff8800' : '#fff'}
+            fill="none"
+          />
         </button>
 
         {/* Share Button */}
