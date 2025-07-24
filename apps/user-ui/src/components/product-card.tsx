@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Ratings from './ratings';
 import { Heart, Share2 } from 'lucide-react';
 import ShareModal from './share-modal';
+import { useStore } from '@/store';
 
 interface ProductCardProps {
   product: any;
@@ -15,6 +16,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [wishlisted, setWishlisted] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const addToCart = useStore((state: any) => state.addToCart);
+  const removeFromCart = useStore((state: any) => state.removeFromCart);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === product.id);
+
+  const addToWishlist = useStore((state: any) => state.addToWishlist);
+  const removeFromWishlist = useStore((state: any) => state.removeFromWishlist);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishlisted = wishlist.some((item: any) => item.id === product.id);
+  
   
   useEffect(() => {
     if (!product.endingDate) return;
