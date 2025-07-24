@@ -1,15 +1,36 @@
 "use client"
 
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
 import useUser from '@/hooks/useUser';
+import axiosInstance from '@/utils/axiosInstance';
+import { useStore } from '@/store';
 
 const Header = () => {
     const { user, isLoading } = useUser()
 
+    const [searchQuery, setSearchQuery] = useState("")
+    const [suggestions, setSuggestions] = useState<any[]>([])
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+    const cart = useStore((state: any) => state.cart);
+    const wishlist = useStore((state: any) => state.wishlist);
+
     console.log(user)
+
+    const handleSearchClick = async() => {
+        if(!searchQuery.trim()) return;
+        setLoadingSuggestions(true)
+
+        try {
+            const res = await axiosInstance.get(`/product/api/search-products?q=${encodeURIComponent(searchQuery)}`)
+            setSuggestions(res.data.products.slice(0, 10))
+            
+        } catch (error) {
+            
+        }
+    }
 
     // Helper to get initials from user name
     const getInitials = (name?: string) => {
