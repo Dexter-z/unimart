@@ -401,3 +401,29 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
         next(error)
     }
 }
+
+// Search Products
+export const searchProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const q = (req.query.q as string)?.trim();
+        if (!q) {
+            return res.status(400).json({ message: "Missing search query" });
+        }
+        // Search by title, shortDescription, or tags (case-insensitive)
+        const products = await prisma.products.findMany({
+            where: {
+                OR: [
+                    { title: { contains: q, mode: 'insensitive' } },
+                    { shortDescription: { contains: q, mode: 'insensitive' } },
+                    { tags: { has: q } }
+                ],
+                isDeleted: { not: true },
+            },
+            include: { images: true },
+            take: 10,
+        });
+        return res.status(200).json({ products });
+    } catch (error) {
+        next(error);
+    }
+}
