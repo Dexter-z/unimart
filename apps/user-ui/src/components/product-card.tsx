@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Ratings from './ratings';
-import { Heart, Share2 } from 'lucide-react';
+import { Heart, Share2, ShoppingCart } from 'lucide-react';
 import ShareModal from './share-modal';
 import { useStore } from '@/store';
 import useUser from '@/hooks/useUser';
@@ -67,6 +67,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
     // TODO: Optionally trigger API call here
   };
 
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log('added to cart');
+  };
+
   const handleShareClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowShareModal(true)
@@ -94,11 +99,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           />
         </button>
 
+        {/* Add to Cart Button */}
+        <button
+          aria-label="Add to cart"
+          onClick={handleAddToCartClick}
+          className="absolute top-14 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
+          tabIndex={0}
+          type="button"
+        >
+          <ShoppingCart className="w-6 h-6 text-gray-300 hover:text-[#ff8800] transition" />
+        </button>
+
         {/* Share Button */}
         <button
           aria-label="Share product"
           onClick={handleShareClick}
-          className="absolute top-12 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
+          className="absolute top-25 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
           tabIndex={0}
           type="button"
         >
