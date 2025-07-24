@@ -88,8 +88,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
         type="button"
       >
         <Heart
-          className={`w-6 h-6 ${wishlisted ? 'fill-[#ff8800] text-[#ff8800]' : 'text-gray-300'} transition`}
-          fill={wishlisted ? '#ff8800' : 'none'}
+          className={`w-6 h-6 ${isWishlisted ? 'fill-[#ff8800] text-[#ff8800]' : 'text-gray-300'} transition`}
+          fill={isWishlisted ? '#ff8800' : 'none'}
         />
       </button>
       
