@@ -5,6 +5,9 @@ import Ratings from './ratings';
 import { Heart, Share2 } from 'lucide-react';
 import ShareModal from './share-modal';
 import { useStore } from '@/store';
+import useUser from '@/hooks/useUser';
+import useLocationTracking from '@/hooks/useLocationTracking';
+import useDeviceTracking from '@/hooks/useDeviceTracking';
 
 interface ProductCardProps {
   product: any;
@@ -16,6 +19,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [wishlisted, setWishlisted] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const {user} = useUser()
+  const location = useLocationTracking()
+  const deviceInfo = useDeviceTracking()
 
   const addToCart = useStore((state: any) => state.addToCart);
   const removeFromCart = useStore((state: any) => state.removeFromCart);
@@ -53,6 +60,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setWishlisted((prev) => !prev);
+
+    isWishlisted ? removeFromWishlist(product.id, user, location, deviceInfo) : addToWishlist({...product, quantity: 1},
+    user, location, deviceInfo)
+   
+
     // TODO: Optionally trigger API call here
   };
 
