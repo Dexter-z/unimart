@@ -44,6 +44,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
     // TODO: Optionally trigger API call here
   };
 
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowShareModal(true)
+  };
+
   return (
     <React.Fragment>
       <Link
@@ -67,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
       {/* Share Button */}
       <button
         aria-label="Share product"
-        onClick={() => setShowShareModal(true)}
+        onClick={handleShareClick}
         className="absolute top-12 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
         tabIndex={0}
         type="button"
