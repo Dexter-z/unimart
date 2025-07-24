@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Ratings from './ratings';
-import { Heart } from 'lucide-react';
+import { Heart, Share2 } from 'lucide-react';
+import ShareModal from './share-modal';
 
 interface ProductCardProps {
   product: any;
@@ -13,6 +14,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   // Countdown logic
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [wishlisted, setWishlisted] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   
   useEffect(() => {
     if (!product.endingDate) return;
@@ -43,10 +45,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   };
 
   return (
-    <Link
-      href={`/product/${product.slug}`}
-      className={`min-w-[170px] md:min-w-0 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-0 flex flex-col items-center border border-[#232326] shadow-lg relative transition-all duration-200 hover:scale-[1.04] hover:border-[#ff8800] group min-h-[280px] aspect-[3/4.4] overflow-hidden`}
-    >
+    <React.Fragment>
+      <Link
+        href={`/product/${product.slug}`}
+        className={`min-w-[170px] md:min-w-0 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-0 flex flex-col items-center border border-[#232326] shadow-lg relative transition-all duration-200 hover:scale-[1.04] hover:border-[#ff8800] group min-h-[280px] aspect-[3/4.4] overflow-hidden`}
+      >
       {/* Wishlist Heart Icon */}
       <button
         aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -59,6 +62,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           className={`w-6 h-6 ${wishlisted ? 'fill-[#ff8800] text-[#ff8800]' : 'text-gray-300'} transition`}
           fill={wishlisted ? '#ff8800' : 'none'}
         />
+      </button>
+      
+      {/* Share Button */}
+      <button
+        aria-label="Share product"
+        onClick={() => setShowShareModal(true)}
+        className="absolute top-12 right-3 z-10 bg-[#18181b] rounded-full p-1 border-2 border-[#232326] hover:border-[#ff8800] transition"
+        tabIndex={0}
+        type="button"
+      >
+        <Share2 className="w-6 h-6 text-gray-300 hover:text-[#ff8800] transition" />
       </button>
       {/* OFFER badge for event */}
       {isEvent && (
@@ -89,8 +103,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           )}
         </div>
       </div>
-    </Link>
+      </Link>
+      {showShareModal && (
+        <ShareModal
+          productUrl={`${window.location.origin}/product/${product.slug}`}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+    </React.Fragment>
   );
 };
 
-export default ProductCard; 
+export default ProductCard;
