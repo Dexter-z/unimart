@@ -69,7 +69,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
 
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('added to cart');
+
+    !isInCart ? addToCart({ ...product, quantity: 1 }, user, location, deviceInfo) : removeFromCart(product.id, user, location, deviceInfo)
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
