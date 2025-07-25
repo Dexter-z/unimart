@@ -18,6 +18,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   // Countdown logic
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
 
   const { user } = useUser()
   const location = useLocationTracking()
@@ -58,13 +59,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    //setWishlisted((prev) => !prev);
-
-    isWishlisted ? removeFromWishlist(product.id, user, location, deviceInfo) : addToWishlist({ ...product, quantity: 1 },
-      user, location, deviceInfo)
-
-
-    // TODO: Optionally trigger API call here
+    if (isWishlisted) {
+      setShowRemoveDialog(true);
+    } else {
+      addToWishlist({ ...product, quantity: 1 }, user, location, deviceInfo);
+    }
   };
 
   const handleAddToCartClick = (e: React.MouseEvent) => {
@@ -160,6 +159,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           productUrl={`${window.location.origin}/product/${product.slug}`}
           onClose={() => setShowShareModal(false)}
         />
+      )}
+      {/* Remove from Wishlist Confirmation Dialog */}
+      {showRemoveDialog && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-[#232326] border border-[#ff8800] rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col items-center">
+            <h3 className="text-lg font-bold text-white mb-2">Remove from Wishlist?</h3>
+            <p className="text-gray-300 mb-4 text-center">Are you sure you want to remove this item from your wishlist?</p>
+            <div className="flex gap-4 w-full justify-center">
+              <button
+                className="px-4 py-2 rounded-lg bg-[#ff8800] text-[#18181b] font-semibold hover:bg-orange-600 transition w-1/2"
+                onClick={() => {
+                  removeFromWishlist(product.id, user, location, deviceInfo);
+                  setShowRemoveDialog(false);
+                }}
+              >
+                Yes, Remove
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg border border-[#ff8800] text-[#ff8800] font-semibold hover:bg-[#18181b] hover:text-[#ff8800] transition w-1/2"
+                onClick={() => setShowRemoveDialog(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </React.Fragment>
   );
