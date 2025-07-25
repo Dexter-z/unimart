@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
 import useUser from '@/hooks/useUser';
@@ -14,8 +14,34 @@ const Header = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [suggestions, setSuggestions] = useState<any[]>([])
     const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
     const cart = useStore((state: any) => state.cart);
     const wishlist = useStore((state: any) => state.wishlist);
+
+    // Dynamic suggestions as user types (debounced)
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setSuggestions([])
+            setLoadingSuggestions(false)
+            return
+        }
+        setLoadingSuggestions(true)
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current)
+        debounceTimeout.current = setTimeout(async () => {
+            try {
+                const res = await axiosInstance.get(`/product/api/search-products?q=${encodeURIComponent(searchQuery)}`)
+                setSuggestions(res.data.products.slice(0, 10))
+            } catch (error) {
+                setSuggestions([])
+            } finally {
+                setLoadingSuggestions(false)
+            }
+        }, 300)
+        // Cleanup on unmount
+        return () => {
+            if (debounceTimeout.current) clearTimeout(debounceTimeout.current)
+        }
+    }, [searchQuery])
 
     console.log(user)
 
@@ -58,36 +84,36 @@ const Header = () => {
                             className='w-full px-4 pr-12 font-Poppins font-medium border-2 border-[#ff8800] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-orange-200 transition bg-[#232326] text-white placeholder-gray-300'
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleSearchClick(); }}
+                            onKeyDown={e => { if (e.key === 'Enter') {/* Optionally handle search submit */} }}
                         />
                         <button
                             className='absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#ff8800] rounded-full shadow-md hover:bg-orange-600 transition'
-                            onClick={handleSearchClick}
+                            onClick={() => {}}
                             disabled={loadingSuggestions}
                         >
                             <Search color='#18181b' size={20} />
                         </button>
                         {/* Suggestions Dropdown */}
-                        {suggestions.length > 0 && (
-                            <div className="absolute left-0 top-12 w-full bg-[#232326] border border-[#ff8800] rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto">
+                        {(suggestions.length > 0 || loadingSuggestions) && (
+                            <div className="absolute left-0 top-12 w-full bg-[#232326] border border-[#ff8800] rounded-lg shadow-lg z-50 max-h-[36rem] min-h-[12rem] overflow-y-auto" style={{ fontSize: '1.25rem' }}>
                                 {suggestions.map((product) => (
                                     <Link
                                         href={`/product/${product.slug}`}
                                         key={product.id}
-                                        className="flex items-center gap-3 px-4 py-2 hover:bg-[#18181b] transition cursor-pointer"
-                                        onClick={() => {
-                                            setSuggestions([])
-                                            setSearchQuery("")
-                                        }}
+                                        className="flex items-center gap-4 px-6 py-4 hover:bg-[#18181b] transition cursor-pointer"
+                                        onClick={() => setSuggestions([])}
                                     >
                                         {product.images && product.images[0]?.url && (
-                                            <img src={product.images[0].url} alt={product.title} className="w-8 h-8 object-cover rounded" />
+                                            <img src={product.images[0].url} alt={product.title} className="w-16 h-16 object-cover rounded" />
                                         )}
-                                        <span className="text-white text-sm">{product.title}</span>
+                                        <span className="text-white font-semibold">{product.title}</span>
                                     </Link>
                                 ))}
                                 {loadingSuggestions && (
-                                    <div className="px-4 py-2 text-gray-400 text-xs">Loading...</div>
+                                    <div className="px-6 py-4 text-gray-400 text-lg">Loading...</div>
+                                )}
+                                {!loadingSuggestions && suggestions.length === 0 && searchQuery.trim() && (
+                                    <div className="px-6 py-4 text-gray-400 text-lg">No products found.</div>
                                 )}
                             </div>
                         )}
