@@ -14,7 +14,10 @@ const Header = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [suggestions, setSuggestions] = useState<any[]>([])
     const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+    const [showSuggestions, setShowSuggestions] = useState(false)
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+    const searchRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
     const cart = useStore((state: any) => state.cart);
     const wishlist = useStore((state: any) => state.wishlist);
 
@@ -23,9 +26,11 @@ const Header = () => {
         if (!searchQuery.trim()) {
             setSuggestions([])
             setLoadingSuggestions(false)
+            setShowSuggestions(false)
             return
         }
         setLoadingSuggestions(true)
+        setShowSuggestions(true)
         if (debounceTimeout.current) clearTimeout(debounceTimeout.current)
         debounceTimeout.current = setTimeout(async () => {
             try {
@@ -42,6 +47,19 @@ const Header = () => {
             if (debounceTimeout.current) clearTimeout(debounceTimeout.current)
         }
     }, [searchQuery])
+
+    // Close suggestions on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     console.log(user)
 
@@ -77,13 +95,20 @@ const Header = () => {
                 </Link>
                 {/* Search Bar */}
                 <div className='flex-1 mx-2 md:mx-8 max-w-[220px] md:max-w-[500px]'>
-                    <div className="relative flex items-center">
+                    <div className="relative flex items-center" ref={searchRef}>
                         <input
+                            ref={inputRef}
                             type="text"
                             placeholder='Search for products...'
                             className='w-full px-4 pr-12 font-Poppins font-medium border-2 border-[#ff8800] outline-none h-10 md:h-12 rounded-full shadow-sm focus:ring-2 focus:ring-orange-200 transition bg-[#232326] text-white placeholder-gray-300'
                             value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
+                            onChange={e => {
+                                setSearchQuery(e.target.value)
+                                setShowSuggestions(true)
+                            }}
+                            onFocus={() => {
+                                if (searchQuery.trim()) setShowSuggestions(true)
+                            }}
                             onKeyDown={e => { if (e.key === 'Enter') {/* Optionally handle search submit */} }}
                         />
                         <button
@@ -94,14 +119,14 @@ const Header = () => {
                             <Search color='#18181b' size={20} />
                         </button>
                         {/* Suggestions Dropdown */}
-                        {(suggestions.length > 0 || loadingSuggestions) && (
+                        {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
                             <div className="absolute left-0 top-12 w-full bg-[#232326] border border-[#ff8800] rounded-lg shadow-lg z-50 max-h-[36rem] min-h-[12rem] overflow-y-auto" style={{ fontSize: '1.25rem' }}>
                                 {suggestions.map((product) => (
                                     <Link
                                         href={`/product/${product.slug}`}
                                         key={product.id}
                                         className="flex items-center gap-4 px-6 py-4 hover:bg-[#18181b] transition cursor-pointer"
-                                        onClick={() => setSuggestions([])}
+                                        onClick={() => setShowSuggestions(false)}
                                     >
                                         {product.images && product.images[0]?.url && (
                                             <img src={product.images[0].url} alt={product.title} className="w-16 h-16 object-cover rounded" />
