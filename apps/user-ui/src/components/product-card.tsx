@@ -19,6 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   const [timeLeft, setTimeLeft] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [showRemoveCartDialog, setShowRemoveCartDialog] = useState(false);
 
   const { user } = useUser()
   const location = useLocationTracking()
@@ -69,7 +70,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
 
-    !isInCart ? addToCart({ ...product, quantity: 1 }, user, location, deviceInfo) : removeFromCart(product.id, user, location, deviceInfo)
+    if (!isInCart) {
+      addToCart({ ...product, quantity: 1 }, user, location, deviceInfo);
+    } else {
+      setShowRemoveCartDialog(true);
+    }
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
@@ -80,7 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
   //console.log("Device Info ", deviceInfo, "Location ", location)
 
   return (
-    <React.Fragment>
+    <>
       <Link
         href={`/product/${product.slug}`}
         className={`min-w-[170px] md:min-w-0 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-0 flex flex-col items-center border border-[#232326] shadow-lg relative transition-all duration-200 hover:scale-[1.04] hover:border-[#ff8800] group min-h-[280px] aspect-[3/4.4] overflow-hidden`}
@@ -98,7 +103,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
             fill={isWishlisted ? '#ff8800' : 'none'}
           />
         </button>
-
         {/* Add to Cart Button */}
         <button
           aria-label="Add to cart"
@@ -113,7 +117,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
             fill="none"
           />
         </button>
-
         {/* Share Button */}
         <button
           aria-label="Share product"
@@ -160,6 +163,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           onClose={() => setShowShareModal(false)}
         />
       )}
+      {/* Remove from Cart Confirmation Dialog */}
+      {showRemoveCartDialog && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-[#232326] border border-[#ff8800] rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col items-center">
+            <h3 className="text-lg font-bold text-white mb-2">Remove from Cart?</h3>
+            <p className="text-gray-300 mb-4 text-center">Are you sure you want to remove this item from your cart?</p>
+            <div className="flex gap-4 w-full justify-center">
+              <button
+                className="px-4 py-2 rounded-lg bg-[#ff8800] text-[#18181b] font-semibold hover:bg-orange-600 transition w-1/2"
+                onClick={() => {
+                  removeFromCart(product.id, user, location, deviceInfo);
+                  setShowRemoveCartDialog(false);
+                }}
+              >
+                Yes, Remove
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg border border-[#ff8800] text-[#ff8800] font-semibold hover:bg-[#18181b] hover:text-[#ff8800] transition w-1/2"
+                onClick={() => setShowRemoveCartDialog(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Remove from Wishlist Confirmation Dialog */}
       {showRemoveDialog && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -186,7 +215,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isEvent }) => {
           </div>
         </div>
       )}
-    </React.Fragment>
+    </>
   );
 };
 
