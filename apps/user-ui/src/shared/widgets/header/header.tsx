@@ -144,20 +144,21 @@ const Header = () => {
                         )}
                     </div>
                 </div>
+
                 {/* Icons */}
                 <div className='flex items-center gap-4 md:gap-7'>
                     {/* Wishlist */}
                     <Link href="/wishlist" className='relative group'>
                         <HeartIcon className="w-6 h-6 md:w-7 md:h-7 text-white group-hover:text-[#ff8800] transition" />
                         <div className='w-5 h-5 border-2 border-[#18181b] bg-[#ff8800] rounded-full flex items-center justify-center absolute -top-2 -right-2'>
-                            <span className='text-white font-medium text-xs'>0</span>
+                            <span className='text-white font-medium text-xs'>{wishlist?.length}</span>
                         </div>
                     </Link>
                     {/* Cart */}
                     <Link href="/cart" className='relative group'>
                         <ShoppingCart className="w-6 h-6 md:w-7 md:h-7 text-white group-hover:text-[#ff8800] transition" />
                         <div className='w-5 h-5 border-2 border-[#18181b] bg-[#ff8800] rounded-full flex items-center justify-center absolute -top-2 -right-2'>
-                            <span className='text-white font-medium text-xs'>0</span>
+                            <span className='text-white font-medium text-xs'>{cart?.length}</span>
                         </div>
                     </Link>
                     {/* Profile */}
