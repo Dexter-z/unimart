@@ -113,7 +113,7 @@ const Header = () => {
                         />
                         <button
                             className='absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#ff8800] rounded-full shadow-md hover:bg-orange-600 transition'
-                            onClick={() => {}}
+                            onClick={handleSearchClick}
                             disabled={loadingSuggestions}
                         >
                             <Search color='#18181b' size={20} />
