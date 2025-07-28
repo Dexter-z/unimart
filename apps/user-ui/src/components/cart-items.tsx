@@ -19,7 +19,6 @@ import { useStore } from "@/store";
 import useUser from "@/hooks/useUser";
 import useLocationTracking from "@/hooks/useLocationTracking";
 import useDeviceTracking from "@/hooks/useDeviceTracking";
-import axios from "axios";
 import axiosInstance from "@/utils/axiosInstance";
 
 const CartItems: React.FC = () => {
@@ -50,22 +49,29 @@ const CartItems: React.FC = () => {
     }
   };
 
-  const calculateDiscountedPrice = (item: any) => {
-    const { salePrice, quantity } = item;
-    let finalPrice = item.salePrice * quantity;
+  const calculateSubtotal = () => {
+    return cart.reduce((total, item) => total + item.salePrice * item.quantity, 0);
+  };
 
-    if (appliedDiscount && item.discountCodes.includes(appliedDiscount.id)) {
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    if (appliedDiscount) {
       if (appliedDiscount.discountType === "percentage") {
-        finalPrice *= (1 - appliedDiscount.discountValue / 100);
+        return subtotal * (1 - appliedDiscount.discountValue / 100);
       } else if (appliedDiscount.discountType === "amount") {
-        finalPrice -= appliedDiscount.discountValue;
+        return subtotal - appliedDiscount.discountValue;
       }
     }
-    return finalPrice;
+    return subtotal;
   };
 
   const handleCheckout = () => {
-    console.log("Checkout clicked", cart);
+    console.log("Checkout clicked", {
+      cart,
+      subtotal: calculateSubtotal(),
+      total: calculateTotal(),
+      appliedDiscount,
+    });
   };
 
   if (cart.length === 0) {
@@ -95,7 +101,7 @@ const CartItems: React.FC = () => {
             </div>
             <div className="w-full flex items-center justify-between mt-2">
                 <p className="text-lg font-bold text-[#ff8800]">
-                    ${calculateDiscountedPrice(item).toFixed(2)}
+                    ${(item.salePrice * item.quantity).toFixed(2)}
                 </p>
                 <div className="flex items-center">
                     <Button
@@ -140,20 +146,41 @@ const CartItems: React.FC = () => {
           </div>
         </div>
       ))}
-      <div className="flex flex-col md:flex-row justify-between items-center mt-6">
-        <div className="flex items-center mb-4 md:mb-0">
-          <Input
-            type="text"
-            placeholder="Discount code"
-            value={discountCode}
-            onChange={(e) => setDiscountCode(e.target.value)}
-            className="mr-2 border-gray-600 bg-gray-700 text-white placeholder-gray-400"
-          />
-          <Button onClick={applyDiscountCode} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">Apply</Button>
+      <div className="mt-6 p-4 border-t border-gray-700">
+        <div className="flex justify-between items-center mb-4">
+            <p className="text-lg text-gray-400">Subtotal</p>
+            <p className="text-lg font-bold text-white">${calculateSubtotal().toFixed(2)}</p>
         </div>
-        <Button size="lg" onClick={handleCheckout} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">
-          Checkout
-        </Button>
+        {appliedDiscount && (
+            <div className="flex justify-between items-center mb-4">
+                <p className="text-lg text-gray-400">Discount ({appliedDiscount.public_name})</p>
+                <p className="text-lg font-bold text-green-500">
+                    -
+                    {appliedDiscount.discountType === "percentage"
+                        ? `${appliedDiscount.discountValue}%`
+                        : `$${appliedDiscount.discountValue.toFixed(2)}`}
+                </p>
+            </div>
+        )}
+        <div className="flex justify-between items-center font-bold text-xl mb-6">
+            <p>Total</p>
+            <p>${calculateTotal().toFixed(2)}</p>
+        </div>
+        <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-4 md:mb-0">
+            <Input
+                type="text"
+                placeholder="Discount code"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+                className="mr-2 border-gray-600 bg-gray-700 text-white placeholder-gray-400"
+            />
+            <Button onClick={applyDiscountCode} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">Apply</Button>
+            </div>
+            <Button size="lg" onClick={handleCheckout} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">
+            Checkout
+            </Button>
+        </div>
       </div>
     </div>
   );

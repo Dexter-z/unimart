@@ -5,16 +5,13 @@ type Product = {
     id: string;
     title: string;
     price: number;
+    salePrice: number;
     image: string;
     quantity: number;
     shopId: string;
     stock: number;
     images: { url: string }[];
-    discount?: {
-        code: string;
-        discountType: "percentage" | "amount";
-        discountValue: number;
-    };
+    discountCodes: string[];
     color: string;
     size: string;
 }
