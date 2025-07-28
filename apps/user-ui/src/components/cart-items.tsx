@@ -74,7 +74,7 @@ const CartItems: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    console.log("Checkout clicked", {
+    console.log("Checkout clickedd", {
       cart,
       subtotal: calculateOriginalSubtotal(),
       total: calculateFinalTotal(),
