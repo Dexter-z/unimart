@@ -1,5 +1,5 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { create } from "zustand";
+import { persist, createJSONStorage, StateStorage } from "zustand/middleware";
 
 type Product = {
     id: string;
@@ -48,6 +48,25 @@ type Store = {
     ) => void;
     updateCartQuantity: (id: string, quantity: number) => void;
 }
+
+const storage: StateStorage = {
+    getItem: (name: string) => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem(name);
+        }
+        return null;
+    },
+    setItem: (name: string, value: string) => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem(name, value);
+        }
+    },
+    removeItem: (name: string) => {
+        if (typeof window !== "undefined") {
+            localStorage.removeItem(name);
+        }
+    },
+};
 
 export const useStore = create<Store>()(
     persist(
@@ -117,6 +136,9 @@ export const useStore = create<Store>()(
                 });
             },
         }),
-    {name: "store-storage"})
-
-)
+        {
+            name: "store-storage",
+            storage: createJSONStorage(() => storage),
+        }
+    )
+);
