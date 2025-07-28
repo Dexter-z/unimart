@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, Store, Tag, UserPlus } from 'lucide-react';
+//import { Home, ShoppingBag, Store, Tag, UserPlus } from 'lucide-react';
 
 export const navItems: NavItemsTypes[] = [
     {

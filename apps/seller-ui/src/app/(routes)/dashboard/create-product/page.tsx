@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { ChevronRight, Plus, Trash } from 'lucide-react'
 import Image from 'next/image'
 import { HexColorPicker } from "react-colorful"
