@@ -14,6 +14,7 @@ const CartPage = () => {
     const {discountedProductId, setDiscountedProductId} = useState("")
     const {discountedPercent, setDiscountedPercent} = useState(0)
     const {discountedPrice, setDiscountedPrice} = useState(0)
+    const {discountAmount, setDiscountAmount} = useState(0)
 
     const location = useLocationTracking()
     const deviceInfo = useDeviceTracking()
