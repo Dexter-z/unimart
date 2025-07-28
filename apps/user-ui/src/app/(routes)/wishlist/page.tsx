@@ -1,8 +1,8 @@
 "use client"
 
-import useDeviceTracking from '@/hooks/useDeviceTracking'
-import useLocationTracking from '@/hooks/useLocationTracking'
-import useUser from '@/hooks/useUser'
+// import useDeviceTracking from '@/hooks/useDeviceTracking'
+// import useLocationTracking from '@/hooks/useLocationTracking'
+// import useUser from '@/hooks/useUser'
 import { useStore } from '@/store'
 import React from 'react'
 import ProductCard from '@/components/product-card'
@@ -13,9 +13,9 @@ import ProductCard from '@/components/product-card'
 // import { useState } from 'react'
 
 const WishlistPage = () => {
-    const { user } = useUser()
-    const location = useLocationTracking()
-    const deviceInfo = useDeviceTracking()
+    // const { user } = useUser()
+    // const location = useLocationTracking()
+    // const deviceInfo = useDeviceTracking()
     const wishlist = useStore((state: any) => state.wishlist);
 
     if (!wishlist || wishlist.length === 0) {
