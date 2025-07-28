@@ -20,34 +20,16 @@ import useUser from "@/hooks/useUser";
 import useLocationTracking from "@/hooks/useLocationTracking";
 import useDeviceTracking from "@/hooks/useDeviceTracking";
 
-// Assuming the Product type in the store is the source of truth
-type CartItem = ReturnType<typeof useStore.getState>['cart'][0] & {
-    images: { url: string }[];
-    stock: number;
-    discount?: {
-        code: string;
-        discountType: "percentage" | "amount";
-        discountValue: number;
-    };
-    color: string;
-    size: string;
-};
-
-
 const CartItems: React.FC = () => {
-  const { cart, removeFromCart, addToCart } = useStore();
+  const { cart, removeFromCart, updateCartQuantity } = useStore();
   const { user } = useUser();
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
   const [discountCode, setDiscountCode] = useState("");
 
-  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
-    if (newQuantity > 0 && newQuantity <= item.stock) {
-      const productToAdd = {
-        ...item,
-        quantity: newQuantity,
-      };
-      addToCart(productToAdd, user, JSON.stringify(location), deviceInfo);
+  const handleQuantityChange = (itemId: string, newQuantity: number, stock: number) => {
+    if (newQuantity > 0 && newQuantity <= stock) {
+      updateCartQuantity(itemId, newQuantity);
     }
   };
 
@@ -55,8 +37,8 @@ const CartItems: React.FC = () => {
     removeFromCart(itemId, user, JSON.stringify(location), deviceInfo);
   };
 
-  const calculateDiscountedPrice = (item: CartItem) => {
-    const { salePrice, discount, quantity } = item as any;
+  const calculateDiscountedPrice = (item: any) => {
+    const { salePrice, discount, quantity } = item;
 
     if (discount && discount.code === discountCode) {
       if (discount.discountType === "percentage") {
@@ -81,9 +63,9 @@ const CartItems: React.FC = () => {
       {cart.map((item) => (
         <div
           key={item.id}
-          className="flex flex-col md:flex-row items-center justify-between p-4 mb-4 border border-gray-700 rounded-lg bg-gray-800"
+          className="flex items-center justify-between p-4 mb-4 border border-gray-700 rounded-lg bg-gray-800"
         >
-          <div className="flex items-center mb-4 md:mb-0">
+          <div className="flex-shrink-0">
             <Image
               src={item.images[0].url}
               alt={item.title}
@@ -91,55 +73,56 @@ const CartItems: React.FC = () => {
               height={100}
               className="rounded-md"
             />
-            <div className="ml-4">
-              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-              <p className="text-sm text-gray-400">
-                {/* Assuming color and size are not in the store, you might need to adjust this */}
-                {/* Color: {item.color} | Size: {item.size} */}
-              </p>
-              <p className="text-lg font-bold text-[#ff8800]">
-                ${calculateDiscountedPrice(item as any).toFixed(2)}
-              </p>
-            </div>
           </div>
-          <div className="flex items-center">
-            <Button
-              size="sm"
-              onClick={() => handleQuantityChange(item as any, item.quantity - 1)}
-              className="bg-[#18181b] text-white hover:bg-gray-700"
-            >
-              -
-            </Button>
-            <span className="mx-4 text-white">{item.quantity}</span>
-            <Button
-              size="sm"
-              onClick={() => handleQuantityChange(item as any, item.quantity + 1)}
-              className="bg-[#18181b] text-white hover:bg-gray-700"
-            >
-              +
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="ml-4 bg-red-600 hover:bg-red-700">
-                  Remove
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-gray-800 text-white border-gray-700">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-gray-400">
-                    This action cannot be undone. This will permanently remove
-                    the item from your cart.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500">Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleRemoveItem(item.id)} className="bg-red-600 hover:bg-red-700">
-                    Remove
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+
+          <div className="flex-grow ml-4 flex flex-col items-start">
+            <div className="w-full">
+                <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+            </div>
+            <div className="w-full flex items-center justify-between mt-2">
+                <p className="text-lg font-bold text-[#ff8800]">
+                    ${calculateDiscountedPrice(item).toFixed(2)}
+                </p>
+                <div className="flex items-center">
+                    <Button
+                    size="sm"
+                    onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock)}
+                    className="bg-[#18181b] text-white hover:bg-gray-700"
+                    >
+                    -
+                    </Button>
+                    <span className="mx-4 text-white">{item.quantity}</span>
+                    <Button
+                    size="sm"
+                    onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock)}
+                    className="bg-[#18181b] text-white hover:bg-gray-700"
+                    >
+                    +
+                    </Button>
+                    <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="ml-4 bg-red-600 hover:bg-red-700">
+                        Remove
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-800 text-white border-gray-700">
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                            This action cannot be undone. This will permanently remove
+                            the item from your cart.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleRemoveItem(item.id)} className="bg-red-600 hover:bg-red-700">
+                            Remove
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </div>
           </div>
         </div>
       ))}

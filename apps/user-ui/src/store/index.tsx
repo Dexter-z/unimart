@@ -49,6 +49,7 @@ type Store = {
         location: string,
         deviceInfo: string
     ) => void;
+    updateCartQuantity: (id: string, quantity: number) => void;
 }
 
 export const useStore = create<Store>()(
@@ -62,8 +63,12 @@ export const useStore = create<Store>()(
                 set((state) => {
                     const existing = state.cart?.find((item) => item.id === product.id)
                     if (existing) {
+                        const newQuantity = (existing.quantity ?? 1) + 1;
+                        if (newQuantity > product.stock) {
+                            return state; // Do not update if quantity exceeds stock
+                        }
                         return {
-                            cart: state.cart.map((item) => item.id === product.id ? { ...item, quantity: (item.quantity ?? 1) + 1 } : item)
+                            cart: state.cart.map((item) => item.id === product.id ? { ...item, quantity: newQuantity } : item)
                         }
                     }
                     return {
@@ -99,6 +104,20 @@ export const useStore = create<Store>()(
                 set((state) => ({
                     wishlist: state.wishlist.filter((item) => item.id !== id),
                 }))
+            },
+
+            updateCartQuantity: (id, quantity) => {
+                set((state) => {
+                    const itemToUpdate = state.cart.find((item) => item.id === id);
+                    if (itemToUpdate && quantity > itemToUpdate.stock) {
+                        return state; // Do not update if quantity exceeds stock
+                    }
+                    return {
+                        cart: state.cart.map((item) =>
+                            item.id === id ? { ...item, quantity } : item
+                        ),
+                    }
+                });
             },
         }),
     {name: "store-storage"})
