@@ -49,7 +49,11 @@ const CartItems: React.FC = () => {
     }
   };
 
-  const calculateItemPrice = (item: any) => {
+  const calculateOriginalItemPrice = (item: any) => {
+    return item.salePrice;
+  };
+
+  const calculateDiscountedItemPrice = (item: any) => {
     let price = item.salePrice;
     if (appliedDiscount && item.discountCodes.includes(appliedDiscount.id)) {
       if (appliedDiscount.discountType === "percentage") {
@@ -61,15 +65,19 @@ const CartItems: React.FC = () => {
     return price;
   };
 
-  const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + calculateItemPrice(item) * item.quantity, 0);
+  const calculateOriginalSubtotal = () => {
+    return cart.reduce((total, item) => total + item.salePrice * item.quantity, 0);
+  };
+
+  const calculateFinalTotal = () => {
+    return cart.reduce((total, item) => total + calculateDiscountedItemPrice(item) * item.quantity, 0);
   };
 
   const handleCheckout = () => {
     console.log("Checkout clicked", {
       cart,
-      subtotal: calculateSubtotal(),
-      total: calculateSubtotal(), // Total is the same as subtotal after per-item discount
+      subtotal: calculateOriginalSubtotal(),
+      total: calculateFinalTotal(),
       appliedDiscount,
     });
   };
@@ -100,8 +108,15 @@ const CartItems: React.FC = () => {
                 <h3 className="text-lg font-semibold text-white">{item.title}</h3>
             </div>
             <div className="w-full flex items-center justify-between mt-2">
-                <p className="text-lg font-bold text-[#ff8800]">
-                    ${(calculateItemPrice(item) * item.quantity).toFixed(2)}
+                <p className="text-lg font-bold text-[#ff8800] flex flex-col items-end">
+                    {appliedDiscount && item.discountCodes.includes(appliedDiscount.id) ? (
+                        <>
+                            <span className="line-through text-gray-500">${(calculateOriginalItemPrice(item) * item.quantity).toFixed(2)}</span>
+                            <span>${(calculateDiscountedItemPrice(item) * item.quantity).toFixed(2)}</span>
+                        </>
+                    ) : (
+                        <span>${(calculateOriginalItemPrice(item) * item.quantity).toFixed(2)}</span>
+                    )}
                 </p>
                 <div className="flex items-center">
                     <Button
@@ -149,7 +164,7 @@ const CartItems: React.FC = () => {
       <div className="mt-6 p-4 border-t border-gray-700">
         <div className="flex justify-between items-center mb-4">
             <p className="text-lg text-gray-400">Subtotal</p>
-            <p className="text-lg font-bold text-white">${calculateSubtotal().toFixed(2)}</p>
+            <p className="text-lg font-bold text-white">${calculateOriginalSubtotal().toFixed(2)}</p>
         </div>
         {appliedDiscount && (
             <div className="flex justify-between items-center mb-4">
@@ -164,7 +179,7 @@ const CartItems: React.FC = () => {
         )}
         <div className="flex justify-between items-center font-bold text-xl mb-6">
             <p>Total</p>
-            <p>${calculateSubtotal().toFixed(2)}</p>
+            <p>${calculateFinalTotal().toFixed(2)}</p>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
