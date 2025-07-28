@@ -5,11 +5,12 @@ import useLocationTracking from '@/hooks/useLocationTracking'
 import useUser from '@/hooks/useUser'
 import { useStore } from '@/store'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 
 const CartPage = () => {
     const router = useRouter()
     const {user} = useUser()
+    const {loading, setLoading} = useState(false)
 
     const location = useLocationTracking()
     const deviceInfo = useDeviceTracking()
