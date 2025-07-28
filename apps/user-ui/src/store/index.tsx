@@ -8,6 +8,15 @@ type Product = {
     image: string;
     quantity: number;
     shopId: string;
+    stock: number;
+    images: { url: string }[];
+    discount?: {
+        code: string;
+        discountType: "percentage" | "amount";
+        discountValue: number;
+    };
+    color: string;
+    size: string;
 }
 
 type Store = {

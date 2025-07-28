@@ -15,52 +15,48 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useStore } from "@/store";
+import useUser from "@/hooks/useUser";
+import useLocationTracking from "@/hooks/useLocationTracking";
+import useDeviceTracking from "@/hooks/useDeviceTracking";
 
-interface CartItem {
-  id: string;
-  product: {
-    id: string;
-    name: string;
-    price: number;
+// Assuming the Product type in the store is the source of truth
+type CartItem = ReturnType<typeof useStore.getState>['cart'][0] & {
     images: { url: string }[];
     stock: number;
     discount?: {
-      code: string;
-      discountType: "percentage" | "amount";
-      discountValue: number;
+        code: string;
+        discountType: "percentage" | "amount";
+        discountValue: number;
     };
-  };
-  quantity: number;
-  color: string;
-  size: string;
-}
+    color: string;
+    size: string;
+};
 
-interface CartItemsProps {
-  cartItems: CartItem[];
-}
 
-const CartItems: React.FC<CartItemsProps> = ({ cartItems: initialCartItems }) => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+const CartItems: React.FC = () => {
+  const { cart, removeFromCart, addToCart } = useStore();
+  const { user } = useUser();
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
   const [discountCode, setDiscountCode] = useState("");
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
-    const item = cartItems.find((item) => item.id === itemId);
-    if (item && newQuantity > 0 && newQuantity <= item.product.stock) {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
-      );
+  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
+    if (newQuantity > 0 && newQuantity <= item.stock) {
+      const productToAdd = {
+        ...item,
+        quantity: newQuantity,
+      };
+      addToCart(productToAdd, user, JSON.stringify(location), deviceInfo);
     }
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setCartItems(cartItems.filter((item) => item.id !== itemId));
+    removeFromCart(itemId, user, JSON.stringify(location), deviceInfo);
   };
 
   const calculateDiscountedPrice = (item: CartItem) => {
-    const { product, quantity } = item;
-    const { price, discount } = product;
+    const { price, discount, quantity } = item;
 
     if (discount && discount.code === discountCode) {
       if (discount.discountType === "percentage") {
@@ -73,69 +69,72 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems: initialCartItems }) =>
   };
 
   const handleCheckout = () => {
-    console.log("Checkout clicked", cartItems);
+    console.log("Checkout clicked", cart);
   };
 
-  if (cartItems.length === 0) {
-    return <p>Your cart is empty, Start adding products</p>;
+  if (cart.length === 0) {
+    return <p className="text-center text-gray-500">Your cart is empty, Start adding products</p>;
   }
 
   return (
     <div className="w-full">
-      {cartItems.map((item) => (
+      {cart.map((item) => (
         <div
           key={item.id}
-          className="flex flex-col md:flex-row items-center justify-between p-4 mb-4 border rounded-lg"
+          className="flex flex-col md:flex-row items-center justify-between p-4 mb-4 border border-gray-700 rounded-lg bg-gray-800"
         >
           <div className="flex items-center mb-4 md:mb-0">
             <Image
-              src={item.product.images[0].url}
-              alt={item.product.name}
+              src={item.image}
+              alt={item.title}
               width={100}
               height={100}
               className="rounded-md"
             />
             <div className="ml-4">
-              <h3 className="text-lg font-semibold">{item.product.name}</h3>
-              <p className="text-sm text-gray-500">
-                Color: {item.color} | Size: {item.size}
+              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+              <p className="text-sm text-gray-400">
+                {/* Assuming color and size are not in the store, you might need to adjust this */}
+                {/* Color: {item.color} | Size: {item.size} */}
               </p>
-              <p className="text-lg font-bold">
-                ${calculateDiscountedPrice(item).toFixed(2)}
+              <p className="text-lg font-bold text-[#ff8800]">
+                ${calculateDiscountedPrice(item as any).toFixed(2)}
               </p>
             </div>
           </div>
           <div className="flex items-center">
             <Button
               size="sm"
-              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+              onClick={() => handleQuantityChange(item as any, item.quantity - 1)}
+              className="bg-[#18181b] text-white hover:bg-gray-700"
             >
               -
             </Button>
-            <span className="mx-4">{item.quantity}</span>
+            <span className="mx-4 text-white">{item.quantity}</span>
             <Button
               size="sm"
-              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+              onClick={() => handleQuantityChange(item as any, item.quantity + 1)}
+              className="bg-[#18181b] text-white hover:bg-gray-700"
             >
               +
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="ml-4">
+                <Button variant="destructive" size="sm" className="ml-4 bg-red-600 hover:bg-red-700">
                   Remove
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-gray-800 text-white border-gray-700">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription className="text-gray-400">
                     This action cannot be undone. This will permanently remove
                     the item from your cart.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleRemoveItem(item.id)}>
+                  <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleRemoveItem(item.id)} className="bg-red-600 hover:bg-red-700">
                     Remove
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -151,11 +150,11 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems: initialCartItems }) =>
             placeholder="Discount code"
             value={discountCode}
             onChange={(e) => setDiscountCode(e.target.value)}
-            className="mr-2"
+            className="mr-2 border-gray-600 bg-gray-700 text-white placeholder-gray-400"
           />
-          <Button>Apply</Button>
+          <Button className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">Apply</Button>
         </div>
-        <Button size="lg" onClick={handleCheckout}>
+        <Button size="lg" onClick={handleCheckout} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">
           Checkout
         </Button>
       </div>
