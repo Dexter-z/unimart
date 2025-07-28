@@ -162,11 +162,7 @@ const Header = () => {
                         </div>
                     </Link>
                     {/* Profile */}
-                    {isLoading ? (
-                        <div className='border-2 w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full border-[#ff8800] animate-pulse bg-gray-800 ml-1 md:ml-0'>
-                            <UserRound className="opacity-50 w-6 h-6 md:w-7 md:h-7 text-white" />
-                        </div>
-                    ) : user ? (
+                    {user ? (
                         <Link href="/profile" className='border-2 w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-full border-[#ff8800] bg-[#ff8800] hover:bg-orange-600 transition ml-1 md:ml-0'>
                             <span className="text-[#18181b] font-bold text-base md:text-lg select-none">{getInitials(user?.name)}</span>
                         </Link>

@@ -17,7 +17,7 @@ const HeroSection = () => {
           <p className="text-base md:text-lg text-gray-200 mb-6 max-w-xl mx-auto md:mx-0">
             Your one-stop marketplace for students of University of Nigeria, Nsukka. Discover, buy, and sell everything you need on campus – fast, safe, and easy.
           </p>
-          {!user && !isLoading && (
+          {!user && isLoading && (
             <Link href="/sign-up">
               <button className="px-8 py-3 bg-[#ff8800] text-[#18181b] font-semibold rounded-lg shadow hover:bg-orange-600 hover:text-white transition-all text-base md:text-lg">
                 Get Started

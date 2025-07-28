@@ -18,8 +18,10 @@ const useUser = () => {
     } = useQuery({
         queryKey: ["user"],
         queryFn: fetchUser,
-        staleTime: 1000 * 60 * 5,
+        staleTime: 1000 * 60, // 1 minute
         retry: 1,
+        refetchInterval: 1000 * 60, // Refetch every minute
+        refetchOnWindowFocus: true,
     })
 
     return {user, isLoading, isError, refetch}
