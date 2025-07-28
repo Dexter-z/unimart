@@ -1,30 +1,50 @@
-"use client"
+"use client";
 
-import useDeviceTracking from '@/hooks/useDeviceTracking'
-import useLocationTracking from '@/hooks/useLocationTracking'
-import useUser from '@/hooks/useUser'
-import { useStore } from '@/store'
-import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import CartItems from "@/components/cart-items";
+
+const initialCartItems = [
+  {
+    id: "1",
+    product: {
+      id: "prod1",
+      name: "Wireless Headphones",
+      price: 99.99,
+      images: [{ url: "https://via.placeholder.com/150" }],
+      stock: 10,
+      discount: {
+        code: "SUMMER20",
+        discountType: "percentage" as "percentage" | "amount",
+        discountValue: 20,
+      },
+    },
+    quantity: 1,
+    color: "Black",
+    size: "One Size",
+  },
+  {
+    id: "2",
+    product: {
+      id: "prod2",
+      name: "Smartwatch",
+      price: 199.99,
+      images: [{ url: "https://via.placeholder.com/150" }],
+      stock: 5,
+    },
+    quantity: 1,
+    color: "Silver",
+    size: "44mm",
+  },
+];
 
 const CartPage = () => {
-    const router = useRouter()
-    const {user} = useUser()
-    const {loading, setLoading} = useState(false)
-    const {discountedProductId, setDiscountedProductId} = useState("")
-    const {discountedPercent, setDiscountedPercent} = useState(0)
-    const {discountedPrice, setDiscountedPrice} = useState(0)
-    const {discountAmount, setDiscountAmount} = useState(0)
-
-    const location = useLocationTracking()
-    const deviceInfo = useDeviceTracking()
-    const cart = useStore((state: any) => state.cart);
-    const removeFromCart = useStore((state: any) => state.removeFromCart);
   return (
-    <div>
-      
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+        Shopping Cart
+      </h1>
+      <CartItems cartItems={initialCartItems} />
     </div>
-  )
-}
+  );
+};
 
-export default CartPage
+export default CartPage;
