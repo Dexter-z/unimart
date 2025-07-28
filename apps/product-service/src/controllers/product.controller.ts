@@ -78,6 +78,28 @@ export const getDiscountCodes = async (req: any, res: Response, next: NextFuncti
     }
 }
 
+export const getDiscountCodeByName = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { code } = req.params;
+        const discount = await prisma.discount_codes.findUnique({
+            where: {
+                discountCode: code,
+            },
+        });
+
+        if (!discount) {
+            return next(new NotFoundError("Discount code not found"));
+        }
+
+        res.status(200).json({
+            success: true,
+            discount,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 //Delete Discount codes
 export const deleteDiscountCodes = async (req: any, res: Response, next: NextFunction) => {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import { useStore } from "@/store";
 import useUser from "@/hooks/useUser";
 import useLocationTracking from "@/hooks/useLocationTracking";
 import useDeviceTracking from "@/hooks/useDeviceTracking";
+import axios from "axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 const CartItems: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity } = useStore();
@@ -26,6 +28,7 @@ const CartItems: React.FC = () => {
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
   const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
 
   const handleQuantityChange = (itemId: string, newQuantity: number, stock: number) => {
     if (newQuantity > 0 && newQuantity <= stock) {
@@ -37,17 +40,28 @@ const CartItems: React.FC = () => {
     removeFromCart(itemId, user, JSON.stringify(location), deviceInfo);
   };
 
-  const calculateDiscountedPrice = (item: any) => {
-    const { salePrice, discount, quantity } = item;
+  const applyDiscountCode = async () => {
+    try {
+      const response = await axiosInstance.get(`/product/api/get-discount-code/${discountCode}`);
+      setAppliedDiscount(response.data.discount);
+    } catch (error) {
+      console.error("Invalid discount code", error);
+      setAppliedDiscount(null);
+    }
+  };
 
-    if (discount && discount.code === discountCode) {
-      if (discount.discountType === "percentage") {
-        return (salePrice * (1 - discount.discountValue / 100)) * quantity;
-      } else if (discount.discountType === "amount") {
-        return (salePrice - discount.discountValue) * quantity;
+  const calculateDiscountedPrice = (item: any) => {
+    const { salePrice, quantity } = item;
+    let finalPrice = salePrice * quantity;
+
+    if (appliedDiscount && item.discountCodes.includes(appliedDiscount.id)) {
+      if (appliedDiscount.discountType === "percentage") {
+        finalPrice *= (1 - appliedDiscount.discountValue / 100);
+      } else if (appliedDiscount.discountType === "amount") {
+        finalPrice -= appliedDiscount.discountValue;
       }
     }
-    return salePrice * quantity;
+    return finalPrice;
   };
 
   const handleCheckout = () => {
@@ -135,7 +149,7 @@ const CartItems: React.FC = () => {
             onChange={(e) => setDiscountCode(e.target.value)}
             className="mr-2 border-gray-600 bg-gray-700 text-white placeholder-gray-400"
           />
-          <Button className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">Apply</Button>
+          <Button onClick={applyDiscountCode} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">Apply</Button>
         </div>
         <Button size="lg" onClick={handleCheckout} className="bg-[#ff8800] text-[#18181b] hover:bg-orange-600">
           Checkout
