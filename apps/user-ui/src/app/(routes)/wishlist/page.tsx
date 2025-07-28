@@ -6,11 +6,11 @@ import useUser from '@/hooks/useUser'
 import { useStore } from '@/store'
 import React from 'react'
 import ProductCard from '@/components/product-card'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import Ratings from '@/components/ratings'
-import ShareModal from '@/components/share-modal'
-import { useState } from 'react'
+// import { Button } from '@/components/ui/button'
+// import { Card, CardContent } from '@/components/ui/card'
+// import Ratings from '@/components/ratings'
+// import ShareModal from '@/components/share-modal'
+// import { useState } from 'react'
 
 const WishlistPage = () => {
     const { user } = useUser()
