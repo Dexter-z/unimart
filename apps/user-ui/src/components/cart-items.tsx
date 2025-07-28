@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,27 +49,27 @@ const CartItems: React.FC = () => {
     }
   };
 
-  const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + item.salePrice * item.quantity, 0);
-  };
-
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
-    if (appliedDiscount) {
+  const calculateItemPrice = (item: any) => {
+    let price = item.salePrice;
+    if (appliedDiscount && item.discountCodes.includes(appliedDiscount.id)) {
       if (appliedDiscount.discountType === "percentage") {
-        return subtotal * (1 - appliedDiscount.discountValue / 100);
+        price *= (1 - appliedDiscount.discountValue / 100);
       } else if (appliedDiscount.discountType === "amount") {
-        return subtotal - appliedDiscount.discountValue;
+        price -= appliedDiscount.discountValue;
       }
     }
-    return subtotal;
+    return price;
+  };
+
+  const calculateSubtotal = () => {
+    return cart.reduce((total, item) => total + calculateItemPrice(item) * item.quantity, 0);
   };
 
   const handleCheckout = () => {
     console.log("Checkout clicked", {
       cart,
       subtotal: calculateSubtotal(),
-      total: calculateTotal(),
+      total: calculateSubtotal(), // Total is the same as subtotal after per-item discount
       appliedDiscount,
     });
   };
@@ -101,7 +101,7 @@ const CartItems: React.FC = () => {
             </div>
             <div className="w-full flex items-center justify-between mt-2">
                 <p className="text-lg font-bold text-[#ff8800]">
-                    ${(item.salePrice * item.quantity).toFixed(2)}
+                    ${(calculateItemPrice(item) * item.quantity).toFixed(2)}
                 </p>
                 <div className="flex items-center">
                     <Button
@@ -164,7 +164,7 @@ const CartItems: React.FC = () => {
         )}
         <div className="flex justify-between items-center font-bold text-xl mb-6">
             <p>Total</p>
-            <p>${calculateTotal().toFixed(2)}</p>
+            <p>${calculateSubtotal().toFixed(2)}</p>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
