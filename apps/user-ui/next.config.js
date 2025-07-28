@@ -14,7 +14,7 @@ const nextConfig = {
     svgr: false,
   },
   images: {
-    domains: ['via.placeholder.com'],
+    domains: ['via.placeholder.com', 'ik.imagekit.io'],
   },
 };
 

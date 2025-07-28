@@ -56,16 +56,16 @@ const CartItems: React.FC = () => {
   };
 
   const calculateDiscountedPrice = (item: CartItem) => {
-    const { price, discount, quantity } = item;
+    const { salePrice, discount, quantity } = item as any;
 
     if (discount && discount.code === discountCode) {
       if (discount.discountType === "percentage") {
-        return (price * (1 - discount.discountValue / 100)) * quantity;
+        return (salePrice * (1 - discount.discountValue / 100)) * quantity;
       } else if (discount.discountType === "amount") {
-        return (price - discount.discountValue) * quantity;
+        return (salePrice - discount.discountValue) * quantity;
       }
     }
-    return price * quantity;
+    return salePrice * quantity;
   };
 
   const handleCheckout = () => {
@@ -85,7 +85,7 @@ const CartItems: React.FC = () => {
         >
           <div className="flex items-center mb-4 md:mb-0">
             <Image
-              src={item.image}
+              src={item.images[0].url}
               alt={item.title}
               width={100}
               height={100}
