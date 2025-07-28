@@ -52,7 +52,7 @@ const CartItems: React.FC = () => {
 
   const calculateDiscountedPrice = (item: any) => {
     const { salePrice, quantity } = item;
-    let finalPrice = salePrice * quantity;
+    let finalPrice = item.salePrice * quantity;
 
     if (appliedDiscount && item.discountCodes.includes(appliedDiscount.id)) {
       if (appliedDiscount.discountType === "percentage") {
