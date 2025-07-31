@@ -150,16 +150,34 @@ const CartItems: React.FC = () => {
                     size="sm"
                     onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock)}
                     className="bg-transparent hover:bg-gray-700 text-gray-300 h-8 w-8 p-0 rounded-r-none border-0"
+                    disabled={item.quantity <= 1}
                   >
                     -
                   </Button>
-                  <span className="px-3 py-1 text-white text-sm font-medium bg-gray-700 border-x border-gray-600">
-                    {item.quantity}
-                  </span>
+                  <Input
+                    type="number"
+                    min="1"
+                    max={item.stock}
+                    value={item.quantity}
+                    onChange={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 1;
+                      const validQuantity = Math.min(Math.max(newQuantity, 1), item.stock);
+                      handleQuantityChange(item.id, validQuantity, item.stock);
+                    }}
+                    onBlur={(e) => {
+                      const newQuantity = parseInt(e.target.value) || 1;
+                      const validQuantity = Math.min(Math.max(newQuantity, 1), item.stock);
+                      if (validQuantity !== parseInt(e.target.value)) {
+                        handleQuantityChange(item.id, validQuantity, item.stock);
+                      }
+                    }}
+                    className="w-12 h-8 text-center bg-gray-700 border-0 border-x border-gray-600 text-white text-sm font-medium rounded-none focus:ring-0 focus:border-gray-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
                   <Button
                     size="sm"
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock)}
                     className="bg-transparent hover:bg-gray-700 text-gray-300 h-8 w-8 p-0 rounded-l-none border-0"
+                    disabled={item.quantity >= item.stock}
                   >
                     +
                   </Button>
@@ -259,8 +277,9 @@ const CartItems: React.FC = () => {
               type="text"
               placeholder="Enter discount code"
               value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value)}
-              className="flex-1 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-[#ff8800] focus:ring-[#ff8800]/20"
+              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+              className="flex-1 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-[#ff8800] focus:ring-[#ff8800]/20 uppercase"
+              style={{ textTransform: 'uppercase' }}
             />
             <Button 
               onClick={applyDiscountCode} 
