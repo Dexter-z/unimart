@@ -29,6 +29,7 @@ const CartItems: React.FC = () => {
   const deviceInfo = useDeviceTracking();
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
 
   const handleQuantityChange = (itemId: string, newQuantity: number, stock: number) => {
     if (newQuantity > 0 && newQuantity <= stock) {
@@ -59,12 +60,17 @@ const CartItems: React.FC = () => {
   };
 
   const applyDiscountCode = async () => {
+    if (!discountCode.trim()) return;
+    
+    setIsApplyingDiscount(true);
     try {
       const response = await axiosInstance.get(`/product/api/get-discount-code/${discountCode}`);
       setAppliedDiscount(response.data.discount);
     } catch (error) {
       console.error("Invalid discount code", error);
       setAppliedDiscount(null);
+    } finally {
+      setIsApplyingDiscount(false);
     }
   };
 
@@ -350,12 +356,24 @@ const CartItems: React.FC = () => {
               onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
               className="flex-1 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-[#ff8800] focus:ring-[#ff8800]/20 uppercase text-lg"
               style={{ textTransform: 'uppercase' }}
+              disabled={isApplyingDiscount}
             />
             <Button 
               onClick={applyDiscountCode} 
-              className="bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 text-lg"
+              className="bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 text-lg min-w-[80px]"
+              disabled={isApplyingDiscount || !discountCode.trim()}
             >
-              Apply
+              {isApplyingDiscount ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Applying...</span>
+                </div>
+              ) : (
+                'Apply'
+              )}
             </Button>
           </div>
         </div>
