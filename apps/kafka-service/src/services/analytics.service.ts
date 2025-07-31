@@ -158,6 +158,6 @@ export const updateProductAnalytics = async(event:any) => {
         })
 
     } catch (error) {
-        
+        console.log("Error updating product analytics:", error)
     }
 }
