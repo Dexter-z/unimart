@@ -111,6 +111,19 @@ const CartItems: React.FC = () => {
                 {item.title}
               </h3>
               
+              {/* Stock Information */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  item.stock > 10 
+                    ? 'bg-green-900/30 text-green-400' 
+                    : item.stock > 0 
+                    ? 'bg-yellow-900/30 text-yellow-400' 
+                    : 'bg-red-900/30 text-red-400'
+                }`}>
+                  {item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}
+                </span>
+              </div>
+              
               {/* Price */}
               <div className="flex items-center gap-2 mb-2">
                 {appliedDiscount && item.discountCodes.includes(appliedDiscount.id) ? (
