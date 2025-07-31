@@ -310,15 +310,15 @@ const CartItems: React.FC = () => {
         </div>
       ))}
       {/* Cart Summary */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700/50 shadow-lg">
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700/50 shadow-lg">
         {/* Summary Header */}
-        <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-700">
           <h2 className="text-xl font-semibold text-white">Order Summary</h2>
           <span className="text-lg text-gray-400">{cart.length} item{cart.length !== 1 ? 's' : ''}</span>
         </div>
 
         {/* Price Breakdown */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-2 mb-4">
           <div className="flex justify-between items-center">
             <span className="text-lg text-gray-400">Subtotal</span>
             <span className="text-lg text-white font-medium">${calculateOriginalSubtotal().toFixed(2)}</span>
@@ -338,7 +338,7 @@ const CartItems: React.FC = () => {
             </div>
           )}
           
-          <div className="border-t border-gray-700 pt-3">
+          <div className="border-t border-gray-700 pt-2">
             <div className="flex justify-between items-center">
               <span className="text-xl font-semibold text-white">Total</span>
               <span className="text-2xl font-bold text-[#ff8800]">${calculateFinalTotal().toFixed(2)}</span>
@@ -347,7 +347,7 @@ const CartItems: React.FC = () => {
         </div>
         
         {/* Discount Code Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex gap-2">
             <Input
               type="text"
@@ -382,7 +382,7 @@ const CartItems: React.FC = () => {
         <Button 
           size="lg" 
           onClick={handleCheckout} 
-          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-xl"
+          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-white font-semibold py-2.5 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-xl"
         >
           <span className="flex items-center justify-center gap-2">
             Proceed to Checkout
