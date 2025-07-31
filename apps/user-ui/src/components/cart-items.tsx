@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Heart } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,7 @@ import useDeviceTracking from "@/hooks/useDeviceTracking";
 import axiosInstance from "@/utils/axiosInstance";
 
 const CartItems: React.FC = () => {
-  const { cart, removeFromCart, updateCartQuantity } = useStore();
+  const { cart, removeFromCart, updateCartQuantity, addToWishlist, removeFromWishlist, wishlist } = useStore();
   const { user } = useUser();
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
@@ -37,6 +38,24 @@ const CartItems: React.FC = () => {
 
   const handleRemoveItem = (itemId: string) => {
     removeFromCart(itemId, user, JSON.stringify(location), deviceInfo);
+  };
+
+  const handleAddToWishlist = (item: any) => {
+    const isWishlisted = wishlist.some((wishItem: any) => wishItem.id === item.id);
+    if (isWishlisted) {
+      // Remove from wishlist if already wishlisted
+      removeFromWishlist(item.id, user, JSON.stringify(location), deviceInfo);
+    } else {
+      // Add to wishlist if not already there
+      addToWishlist({ ...item, quantity: 1 }, user, JSON.stringify(location), deviceInfo);
+    }
+  };
+
+  const handleClearCart = () => {
+    // Clear cart by removing each item individually
+    cart.forEach((item) => {
+      removeFromCart(item.id, user, JSON.stringify(location), deviceInfo);
+    });
   };
 
   const applyDiscountCode = async () => {
@@ -88,6 +107,38 @@ const CartItems: React.FC = () => {
 
   return (
     <div className="w-full space-y-4">
+      {/* Clear Cart Button */}
+      {cart.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-400 border-red-400 hover:bg-red-900/20 hover:text-red-300">
+                Clear Cart ({cart.length} items)
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-gray-900 text-white border-gray-700 max-w-sm mx-4">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-lg">Clear Cart?</AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-400 text-sm">
+                  This will remove all {cart.length} items from your cart. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="gap-2">
+                <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600 border-gray-600 text-sm">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleClearCart} 
+                  className="bg-red-600 hover:bg-red-700 text-sm"
+                >
+                  Clear Cart
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+
       {cart.map((item) => (
         <div
           key={item.id}
@@ -183,7 +234,7 @@ const CartItems: React.FC = () => {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {/* Item Total */}
                   <div className="text-right">
                     <div className="text-white font-bold text-base">
@@ -194,6 +245,24 @@ const CartItems: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Save for Later (Wishlist) Button */}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleAddToWishlist(item)}
+                    className={`h-8 w-8 p-0 ${
+                      wishlist.some((wishItem: any) => wishItem.id === item.id)
+                        ? 'text-[#ff8800] hover:text-[#ff6600] hover:bg-orange-900/20' 
+                        : 'text-gray-400 hover:text-[#ff8800] hover:bg-orange-900/20'
+                    }`}
+                    title={wishlist.some((wishItem: any) => wishItem.id === item.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Heart 
+                      className="w-4 h-4" 
+                      fill={wishlist.some((wishItem: any) => wishItem.id === item.id) ? '#ff8800' : 'none'}
+                    />
+                  </Button>
+
                   {/* Remove Button */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -201,6 +270,7 @@ const CartItems: React.FC = () => {
                         variant="ghost" 
                         size="sm" 
                         className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 p-0"
+                        title="Remove from cart"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
