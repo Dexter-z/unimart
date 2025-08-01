@@ -2,6 +2,7 @@ import prisma from "@packages/libs/prisma"
 
 export const updateUserAnalytics = async(event:any) => {
     try {
+        console.log("Updating user analytics")
         const existingData = await prisma.userAnalytics.findUnique({
             where: {
                 userId: event.userId
@@ -97,6 +98,7 @@ export const updateUserAnalytics = async(event:any) => {
 //Update product analytics
 export const updateProductAnalytics = async(event:any) => {
     try {
+        console.log("Updating product analytics")
         if (!event.productId){
             return
         }
