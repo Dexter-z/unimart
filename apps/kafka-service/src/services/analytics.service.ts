@@ -2,12 +2,20 @@ import prisma from "@packages/libs/prisma"
 
 export const updateUserAnalytics = async(event:any) => {
     try {
-        console.log("Updating user analytics")
+        console.log(`🔍 Starting updateUserAnalytics for userId: ${event.userId}, action: ${event.action}`);
+        
+        if (!event.userId) {
+            console.warn('⚠️ No userId provided in event, skipping user analytics');
+            return;
+        }
+        
+        console.log("📊 Fetching existing user analytics data...");
         const existingData = await prisma.userAnalytics.findUnique({
             where: {
                 userId: event.userId
             }
-        })
+        });
+        console.log("📊 Existing data result:", existingData ? "Found" : "Not found");
 
         let updatedActions:any = existingData?.actions || [];
         const actionExists = updatedActions.some((entry:any) => entry.productId === event.productId && event.action === event.action)
@@ -71,8 +79,12 @@ export const updateUserAnalytics = async(event:any) => {
             extraFields.device = event.device
         }
 
+        console.log("💾 About to upsert user analytics...");
+        console.log("📋 Actions to save:", updatedActions.length);
+        console.log("📋 Extra fields:", extraFields);
+        
         //update or create analytics data
-        await prisma.userAnalytics.upsert({
+        const userResult = await prisma.userAnalytics.upsert({
             where: {userId: event.userId},
             update: {
                 lastVisited: new Date(),
@@ -85,25 +97,33 @@ export const updateUserAnalytics = async(event:any) => {
                 actions: updatedActions,
                 ...extraFields
             }
-        })
+        });
+        
+        console.log("✅ User analytics upserted successfully, ID:", userResult.id);
 
+        console.log("🔄 Now updating product analytics...");
         //Update product analytics
-        await updateProductAnalytics(event)
+        await updateProductAnalytics(event);
+        console.log("✅ Product analytics completed");
 
-    } catch (error) {
-        console.log("Error fetching user analytics ", error)
+    } catch (error: any) {
+        console.error("❌ Error in updateUserAnalytics:", error?.message || error);
+        console.error("📋 Full error:", error);
+        throw error; // Re-throw so the main service can see the error
     }
 }
 
 //Update product analytics
 export const updateProductAnalytics = async(event:any) => {
     try {
-        console.log("Updating product analytics")
+        console.log(`🔍 Starting updateProductAnalytics for productId: ${event.productId}, action: ${event.action}`);
+        
         if (!event.productId){
-            return
+            console.log("⚠️ No productId provided, skipping product analytics");
+            return;
         }
 
-        const updateFields: any = {}
+        const updateFields: any = {};
 
         if(event.action === "product_view"){
             updateFields.views = {
@@ -141,8 +161,11 @@ export const updateProductAnalytics = async(event:any) => {
             }
         }
 
+        console.log("💾 About to upsert product analytics...");
+        console.log("📋 Update fields:", updateFields);
+
         //Update or create the product analytics asynchronously
-        await prisma.productAnalytics.upsert({
+        const productResult = await prisma.productAnalytics.upsert({
             where: {productId: event.productId},
             update: {
                 lastViewedAt: new Date(),
@@ -157,9 +180,13 @@ export const updateProductAnalytics = async(event:any) => {
                 purchases: event.action === "purchase" ? 1 : 0,
                 lastViewedAt: new Date()
             }
-        })
+        });
+        
+        console.log("✅ Product analytics upserted successfully, ID:", productResult.id);
 
-    } catch (error) {
-        console.log("Error updating product analytics:", error)
+    } catch (error: any) {
+        console.error("❌ Error in updateProductAnalytics:", error?.message || error);
+        console.error("📋 Full error:", error);
+        throw error; // Re-throw so the main service can see the error
     }
 }

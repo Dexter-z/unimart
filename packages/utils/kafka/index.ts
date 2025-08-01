@@ -4,7 +4,7 @@ import { Kafka } from 'kafkajs';
 process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
 
 export const kafka = new Kafka({
-  clientId: 'kafka-sevice',
+  clientId: 'kafka-service',
   //GET BROKER ADDRESS FROM RED PANDA WEBSITE
   brokers: ["d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"],
   ssl: {
