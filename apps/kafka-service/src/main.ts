@@ -69,23 +69,9 @@ setInterval(() => {
 //kafka consumer for user events
 export const consumeKafkaMessages = async () => {
   try {
-    console.log('🔌 Connecting to Kafka...');
-    console.log('🌐 Testing DNS resolution first...');
-    
-    // Test DNS resolution
-    const dns = require('dns').promises;
-    try {
-      const addresses = await dns.lookup('d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com');
-      console.log('✅ DNS resolution successful:', addresses);
-    } catch (dnsError: any) {
-      console.error('❌ DNS resolution failed:', dnsError.message);
-      console.log('🔍 This means your Redpanda cluster address is incorrect or the cluster is offline');
-      console.log('💡 Please check your Redpanda dashboard for the correct broker address');
-      return;
-    }
-    
+    console.log('🔌 Connecting to Kafka consumer...');
     await consumer.connect();
-    console.log('✅ Connected to Kafka successfully');
+    console.log('✅ Consumer connected successfully');
     
     console.log('📡 Subscribing to users-events topic...');
     await consumer.subscribe({ topic: 'users-events', fromBeginning: false });
@@ -93,44 +79,32 @@ export const consumeKafkaMessages = async () => {
     
     console.log('🎧 Starting to consume messages...');
     await consumer.run({
-      eachMessage: async({message}) => {
+      eachMessage: async({ topic, partition, message }) => {
         if(!message.value){
           console.log('⚠️ Received empty message');
           return;
         }
+        
         try {
           const event = JSON.parse(message.value.toString());
-          console.log('📨 Received Kafka event:', event);
+          console.log('📨 Received Kafka event:', { topic, partition, event });
           eventQueue.push(event);
           console.log(`📦 Event added to queue (${eventQueue.length} total)`);
         } catch (parseError: any) {
           console.error('❌ Failed to parse message:', parseError?.message);
+          console.error('❌ Raw message:', message.value?.toString());
         }
       }
     });
   } catch (error: any) {
-    console.error('❌ Kafka connection error:', error?.message || error);
+    console.error('❌ Kafka consumer error:', error?.message || error);
+    console.error('❌ Full error stack:', error?.stack);
     
-    if (error.message.includes('ENOTFOUND')) {
-      console.log('🔍 DNS resolution error detected. Possible causes:');
-      console.log('   1. Redpanda cluster is offline or deleted');
-      console.log('   2. Broker address is incorrect');
-      console.log('   3. Network/firewall blocking DNS resolution');
-      console.log('   4. Internet connectivity issues');
-      console.log('💡 Please verify your Redpanda cluster status in the dashboard');
-    }
-    
-    // Close the consumer properly before retrying
-    try {
-      await consumer.disconnect();
-    } catch (disconnectError) {
-      // Ignore disconnect errors
-    }
-    
-    console.log('🔄 Retrying connection in 30 seconds...');
+    // Retry connection after 10 seconds
+    console.log('🔄 Retrying connection in 10 seconds...');
     setTimeout(() => {
-      consumeKafkaMessages();
-    }, 30000);
+      consumeKafkaMessages().catch(console.error);
+    }, 10000);
   }
 }
 
