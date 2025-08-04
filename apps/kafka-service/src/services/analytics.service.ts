@@ -19,7 +19,7 @@ export const updateUserAnalytics = async(event:any) => {
         console.log("📊 Existing data result:", existingData ? "Found" : "Not found");
 
         let updatedActions:any = existingData?.actions || [];
-        const actionExists = updatedActions.some((entry:any) => entry.productId === event.productId && event.action === event.action)
+        const actionExists = updatedActions.some((entry:any) => entry.productId === event.productId && entry.action === event.action)
 
         //Always store product view frequency for recommendations
         if(event.action === "product_view"){
