@@ -13,7 +13,8 @@ export const updateUserAnalytics = async(event:any) => {
         const existingData = await prisma.userAnalytics.findUnique({
             where: {
                 userId: event.userId
-            }
+            },
+            select: {actions: true}
         });
         console.log("📊 Existing data result:", existingData ? "Found" : "Not found");
 
