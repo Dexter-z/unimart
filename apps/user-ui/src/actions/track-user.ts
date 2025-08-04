@@ -6,7 +6,7 @@ import { kafka } from "@packages/utils/kafka";
 // TODO: Initialize producer when needed
 const producer = kafka.producer();
 
-export  async function sendKafkaEvent(eventData: {
+export async function sendKafkaEvent(eventData: {
     userId?: string;
     productId?: string;
     shopId?: string;
