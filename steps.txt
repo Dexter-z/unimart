@@ -1,2 +1,4 @@
 nx g @nx/express:app kafka-service --directory=apps/kafka-service --e2eTestRunner=none
 
+TO RUN THE CONSUMER
+node apps/kafka-service/dist/main.js
