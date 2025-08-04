@@ -3,6 +3,17 @@ import { Kafka } from 'kafkajs';
 // Suppress partitioner warning
 process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
 
+// Load environment variables if not already loaded
+if (!process.env.KAFKA_API_KEY || !process.env.KAFKA_API_SECRET) {
+  try {
+    const dotenv = require('dotenv');
+    const path = require('path');
+    dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+  } catch (error) {
+    console.error('Failed to load .env file:', error);
+  }
+}
+
 export const kafka = new Kafka({
   clientId: 'kafka-service',
   //GET BROKER ADDRESS FROM RED PANDA WEBSITE
@@ -13,10 +24,11 @@ export const kafka = new Kafka({
     username: process.env.KAFKA_API_KEY!,
     password: process.env.KAFKA_API_SECRET!,
   },
-  connectionTimeout: 30000,
-  requestTimeout: 30000,
+  connectionTimeout: 45000,
+  requestTimeout: 45000,
   retry: {
     initialRetryTime: 1000,
-    retries: 8
-  }
+    retries: 10
+  },
+  logLevel: 2 // INFO level logging
 });

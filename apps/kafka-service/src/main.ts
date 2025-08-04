@@ -6,9 +6,13 @@ console.log('⚙️ Creating consumer...');
 
 const consumer = kafka.consumer({ 
   groupId: 'user-events-group',
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-  maxWaitTimeInMs: 5000
+  sessionTimeout: 45000,
+  heartbeatInterval: 10000,
+  maxWaitTimeInMs: 15000,
+  retry: {
+    initialRetryTime: 1000,
+    retries: 10
+  }
 });
 
 const eventQueue: any[] = [];
@@ -134,7 +138,7 @@ process.on('SIGINT', async () => {
 console.log('🚀 Starting Kafka service...');
 console.log('🌍 Environment check:');
 console.log('- NODE_ENV:', process.env.NODE_ENV || 'not set');
-console.log('- KAFKA_API_KEY:', process.env.KAFKA_API_KEY ? '✅ Set' : '❌ Missing');
-console.log('- KAFKA_API_SECRET:', process.env.KAFKA_API_SECRET ? '✅ Set' : '❌ Missing');
+console.log('- KAFKA_API_KEY:', process.env.KAFKA_API_KEY ? `✅ Set (${process.env.KAFKA_API_KEY})` : '❌ Missing');
+console.log('- KAFKA_API_SECRET:', process.env.KAFKA_API_SECRET ? `✅ Set (${process.env.KAFKA_API_SECRET?.substring(0,10)}...)` : '❌ Missing');
 console.log('- DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Missing');
 consumeKafkaMessages().catch(console.error);
