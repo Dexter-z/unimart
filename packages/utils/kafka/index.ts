@@ -18,17 +18,16 @@ export const kafka = new Kafka({
   clientId: 'kafka-service',
   //GET BROKER ADDRESS FROM RED PANDA WEBSITE
   brokers: ["d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"],
-  ssl: true,
+  ssl: {},
   sasl: {
     mechanism: 'scram-sha-256',
     username: process.env.KAFKA_API_KEY!,
     password: process.env.KAFKA_API_SECRET!,
   },
-  connectionTimeout: 45000,
-  requestTimeout: 45000,
+  connectionTimeout: 60000,
+  requestTimeout: 60000,
   retry: {
-    initialRetryTime: 1000,
-    retries: 10
-  },
-  logLevel: 2 // INFO level logging
+    initialRetryTime: 2000,
+    retries: 5
+  }
 });

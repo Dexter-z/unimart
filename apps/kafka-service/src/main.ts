@@ -5,14 +5,7 @@ console.log('📚 Imports loaded successfully');
 console.log('⚙️ Creating consumer...');
 
 const consumer = kafka.consumer({ 
-  groupId: 'user-events-group',
-  sessionTimeout: 45000,
-  heartbeatInterval: 10000,
-  maxWaitTimeInMs: 15000,
-  retry: {
-    initialRetryTime: 1000,
-    retries: 10
-  }
+  groupId: 'user-events-group'
 });
 
 const eventQueue: any[] = [];
