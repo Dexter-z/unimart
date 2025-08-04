@@ -7,9 +7,7 @@ export const kafka = new Kafka({
   clientId: 'kafka-service',
   //GET BROKER ADDRESS FROM RED PANDA WEBSITE
   brokers: ["d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"],
-  ssl: {
-    rejectUnauthorized: false
-  },
+  ssl: true,
   sasl: {
     mechanism: 'scram-sha-256',
     username: process.env.KAFKA_API_KEY!,
