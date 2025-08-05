@@ -415,6 +415,64 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
         </div>
       </div>
 
+      {/* Remove from Wishlist Dialog */}
+      {showRemoveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] max-w-md w-full mx-auto p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Remove from Wishlist</h3>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to remove "{product.title}" from your wishlist?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRemoveDialog(false)}
+                className="flex-1 py-3 px-4 bg-[#18181b] border border-[#232326] text-white rounded-xl hover:border-[#ff8800] transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  removeFromWishlist(product.id, user, location, deviceInfo);
+                  setShowRemoveDialog(false);
+                }}
+                className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove from Cart Dialog */}
+      {showRemoveCartDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] max-w-md w-full mx-auto p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Remove from Cart</h3>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to remove "{product.title}" from your cart?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRemoveCartDialog(false)}
+                className="flex-1 py-3 px-4 bg-[#18181b] border border-[#232326] text-white rounded-xl hover:border-[#ff8800] transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  removeFromCart(product.id, user, location, deviceInfo);
+                  setShowRemoveCartDialog(false);
+                }}
+                className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Share Modal */}
       {showShareModal && (
         <ShareModal 
