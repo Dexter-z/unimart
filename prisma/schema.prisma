@@ -23,15 +23,16 @@ model images {
 }
 
 model users {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String        @unique
-  password    String?
-  following   String[]
-  images      images[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  shopReviews shopReviews[]
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String          @unique
+  password      String?
+  following     String[]
+  images        images[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  shopReviews   shopReviews[]
+  shopFollowers shopFollowers[]
 }
 
 model shopReviews {
@@ -46,8 +47,20 @@ model shopReviews {
   shops     shops    @relation(fields: [shopsId], references: [id])
 }
 
+model shopFollowers {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      users    @relation(fields: [userId], references: [id])
+  shopId    String   @db.ObjectId
+  shop      shops    @relation(fields: [shopId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, shopId]) // Prevent duplicate follows
+}
+
 model shops {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   bio          String?
   category     String
@@ -57,12 +70,13 @@ model shops {
   openingHours String?
   website      String?
   socialLinks  Json[]
-  ratings      Float         @default(0)
+  ratings      Float           @default(0)
   reviews      shopReviews[]
-  sellerId     String        @unique @db.ObjectId
-  sellers      sellers       @relation(fields: [sellerId], references: [id])
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  followers    shopFollowers[]
+  sellerId     String          @unique @db.ObjectId
+  sellers      sellers         @relation(fields: [sellerId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   products     products[]
 }
 
