@@ -1,3 +1,4 @@
+import ProductPage from '@/components/product-page';
 import axiosInstance from '@/utils/axiosInstance';
 import { Metadata } from 'next';
 import React from 'react'
@@ -29,10 +30,10 @@ export async function generateMetadata({params}: {params: {slug: string}}) : Pro
 
 const Page = async ({params}: {params: {slug: string}}) => {
     const productDetails = await fetchProductDetails(params?.slug);
-    console.log(productDetails)
+    //console.log(productDetails)
   return (
     <div>
-      
+      <ProductPage product={productDetails} />
     </div>
   )
 }
