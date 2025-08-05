@@ -10,6 +10,7 @@ import useDeviceTracking from '@/hooks/useDeviceTracking';
 import Ratings from '@/components/ratings';
 import ShareModal from '@/components/share-modal';
 import ProductReviews from '@/components/product-reviews';
+import RecommendedProducts from '@/components/recommended-products';
 
 interface ProductPageProps {
   product: any;
@@ -434,8 +435,10 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
           )}
 
           {/* Reviews Section - Commented out for now */}
-          {/* <ProductReviews reviews={product.reviews} /> */}
           <ProductReviews reviews={product.reviews} />
+
+          {/* Recommended Products Section - Commented out for now */}
+          <RecommendedProducts recommendedProducts={product.recommendedProducts} />
         </div>
       </div>
 
