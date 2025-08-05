@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart } from "lucide-react";
@@ -27,6 +28,7 @@ const CartItems: React.FC = () => {
   const { user } = useUser();
   const location = useLocationTracking();
   const deviceInfo = useDeviceTracking();
+  const router = useRouter();
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
@@ -118,6 +120,10 @@ const CartItems: React.FC = () => {
     });
   };
 
+  const handleCardClick = (item: any) => {
+    router.push(`/product/${item.slug}`);
+  };
+
   if (cart.length === 0) {
     return <p className="text-center text-gray-500">Your cart is empty, Start adding products</p>;
   }
@@ -162,7 +168,8 @@ const CartItems: React.FC = () => {
       {cart.map((item) => (
         <div
           key={item.id}
-          className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-4 sm:p-6 border border-[#232326] hover:border-[#ff8800] transition-all duration-200 shadow-lg group"
+          onClick={() => handleCardClick(item)}
+          className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-4 sm:p-6 border border-[#232326] hover:border-[#ff8800] transition-all duration-200 shadow-lg group cursor-pointer"
         >
           <div className="flex items-start gap-4 sm:gap-6">
             {/* Product Image */}
@@ -210,7 +217,10 @@ const CartItems: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 ml-2 sm:ml-4">
                   {/* Wishlist Button */}
                   <button 
-                    onClick={() => handleAddToWishlist(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToWishlist(item);
+                    }}
                     className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-200 ${
                       wishlist.some((wishItem: any) => wishItem.id === item.id)
                         ? 'border-[#ff8800] bg-[#ff8800]/10 text-[#ff8800] hover:bg-[#ff8800]/20' 
@@ -228,6 +238,7 @@ const CartItems: React.FC = () => {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <button 
+                        onClick={(e) => e.stopPropagation()}
                         className="p-1.5 sm:p-2 rounded-xl border border-[#232326] bg-gradient-to-b from-[#232326] to-[#18181b] text-gray-400 hover:border-red-500 hover:text-red-400 hover:bg-red-900/10 transition-all duration-200"
                         title="Remove from cart"
                       >
@@ -282,7 +293,7 @@ const CartItems: React.FC = () => {
 
                 {/* Quantity Controls and Total */}
                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                  <div className="flex items-center bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl border border-[#232326]">
+                  <div className="flex items-center bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl border border-[#232326]" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock)}
                       disabled={item.quantity <= 1}
