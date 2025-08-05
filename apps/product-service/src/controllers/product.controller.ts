@@ -379,15 +379,15 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
         const type = req.query.type;
 
         const baseFilter = {
-            OR:[{
-                startingDate: null, 
-            },{
+            OR: [{
+                startingDate: null,
+            }, {
                 endingDate: null,
             }
-        ]
+            ]
         }
 
-        const orderBy: Prisma.productsOrderByWithRelationInput = type === "latest" ? {createdAt: "desc" as Prisma.SortOrder} : {totalSales: "desc" as Prisma.SortOrder}
+        const orderBy: Prisma.productsOrderByWithRelationInput = type === "latest" ? { createdAt: "desc" as Prisma.SortOrder } : { totalSales: "desc" as Prisma.SortOrder }
 
         const [products, total, top10Products] = await Promise.all([
             prisma.products.findMany({
@@ -403,7 +403,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
                 },
             }),
 
-            prisma.products.count({where: baseFilter}),
+            prisma.products.count({ where: baseFilter }),
             prisma.products.findMany({
                 take: 10,
                 where: baseFilter,
@@ -471,3 +471,206 @@ export const getProductDetails = async (req: Request, res: Response, next: NextF
         return next(error);
     }
 }
+
+// Get filtered products
+export const getFilteredProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { priceRange = [0, 10000],
+            categories = [],
+            colors = [],
+            sizes = [],
+            page = 1,
+            limit = 12,
+        } = req.query;
+
+        const parsedPriceRange = typeof priceRange === 'string' ? priceRange.split(',').map(Number) : [0, 10000]
+        const parsedPage = Number(page)
+        const parsedLimit = Number(limit)
+
+        const skip = (parsedPage - 1) * parsedLimit;
+
+        const filters: Record<string, any> = {
+            salePrice: {
+                gte: parsedPriceRange[0],
+                lte: parsedPriceRange[1]
+            },
+            startingDate: null,
+        }
+
+        if (categories && (categories as string[]).length > 0) {
+            filters.category = {
+                in: Array.isArray(categories) ? categories : String(categories).split(',')
+            }
+        }
+
+        if (colors && (colors as string[]).length > 0) {
+            filters.colors = {
+                hasSome: Array.isArray(colors) ? colors : [colors]
+            }
+        }
+
+        if (sizes && (sizes as string[]).length > 0) {
+            filters.sizes = {
+                hasSome: Array.isArray(sizes) ? sizes : [sizes]
+            }
+        }
+
+        const [products, total] = await Promise.all([
+            prisma.products.findMany({
+                where: filters,
+                skip,
+                take: parsedLimit,
+                include: {
+                    images: true,
+                    Shop: true,
+                },
+            }),
+            prisma.products.count({
+                where: filters
+            })
+        ])
+
+        const totalPages = Math.ceil(total / parsedLimit);
+
+        res.json({
+            products,
+            pagination: {
+                total,
+                page: parsedPage,
+                totalPages,
+            }
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+//Get filtered Events
+export const getFilteredEvents = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { priceRange = [0, 10000],
+            categories = [],
+            colors = [],
+            sizes = [],
+            page = 1,
+            limit = 12,
+        } = req.query;
+
+        const parsedPriceRange = typeof priceRange === 'string' ? priceRange.split(',').map(Number) : [0, 10000]
+        const parsedPage = Number(page)
+        const parsedLimit = Number(limit)
+
+        const skip = (parsedPage - 1) * parsedLimit;
+
+        const filters: Record<string, any> = {
+            salePrice: {
+                gte: parsedPriceRange[0],
+                lte: parsedPriceRange[1]
+            },
+            NOT: {
+                startingDate: null,
+            }
+
+        }
+
+        if (categories && (categories as string[]).length > 0) {
+            filters.category = {
+                in: Array.isArray(categories) ? categories : String(categories).split(',')
+            }
+        }
+
+        if (colors && (colors as string[]).length > 0) {
+            filters.colors = {
+                hasSome: Array.isArray(colors) ? colors : [colors]
+            }
+        }
+
+        if (sizes && (sizes as string[]).length > 0) {
+            filters.sizes = {
+                hasSome: Array.isArray(sizes) ? sizes : [sizes]
+            }
+        }
+
+        const [products, total] = await Promise.all([
+            prisma.products.findMany({
+                where: filters,
+                skip,
+                take: parsedLimit,
+                include: {
+                    images: true,
+                    Shop: true,
+                },
+            }),
+            prisma.products.count({
+                where: filters
+            })
+        ])
+
+        const totalPages = Math.ceil(total / parsedLimit);
+
+        res.json({
+            products,
+            pagination: {
+                total,
+                page: parsedPage,
+                totalPages,
+            }
+        })
+    } catch (error) {
+        next(error);
+    }
+}
+
+//Get filtered shops
+export const getFilteredShops = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { categories = [], countries = [], page = 1, limit = 12 } = req.query;
+
+        const parsedPage = Number(page);
+        const parsedLimit = Number(limit);
+        const skip = (parsedPage - 1) * parsedLimit;
+
+        const filters: Record<string, any> = {};
+
+        if (categories && String(categories).length > 0) {
+            filters.category = {
+                in: Array.isArray(categories) ? categories : String(categories).split(',')
+            }
+        }
+
+        if (countries && String(countries).length > 0) {
+            filters.country = {
+                in: Array.isArray(countries) ? countries : String(countries).split(',')
+            }
+        }
+
+        const [shops, total] = await Promise.all([
+            prisma.shops.findMany({
+                where: filters,
+                skip,
+                take: parsedLimit,
+                include: {
+                    sellers: true,
+                    followers: true,
+                    products: true,
+                },
+            }),
+            prisma.shops.count({
+                where: filters
+            })
+        ]);
+
+        const totalPages = Math.ceil(total / parsedLimit);
+
+        res.json({
+            shops,
+            pagination: {
+                total,
+                page: parsedPage,
+                totalPages,
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
