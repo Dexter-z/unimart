@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Heart, Share2, ShoppingCart, Star, Truck, Shield, RotateCcw, Plus, Minus } from 'lucide-react';
 import { useStore } from '@/store';
 import useUser from '@/hooks/useUser';
@@ -347,9 +348,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
                     </svg>
                     Chat with Seller
                   </button>
-                  <button className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-all duration-200">
+                  <Link 
+                    href={`/shop/${product?.Shop.id}`}
+                    className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-all duration-200 inline-block"
+                  >
                     View Shop
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}
