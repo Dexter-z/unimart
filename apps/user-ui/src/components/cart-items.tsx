@@ -162,12 +162,12 @@ const CartItems: React.FC = () => {
       {cart.map((item) => (
         <div
           key={item.id}
-          className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-6 border border-[#232326] hover:border-[#ff8800] transition-all duration-200 shadow-lg group"
+          className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-4 sm:p-6 border border-[#232326] hover:border-[#ff8800] transition-all duration-200 shadow-lg group"
         >
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-4 sm:gap-6">
             {/* Product Image */}
             <div className="relative flex-shrink-0">
-              <div className="w-24 h-24 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl border border-[#232326] overflow-hidden">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl border border-[#232326] overflow-hidden">
                 <Image
                   src={item.images[0].url}
                   alt={item.title}
@@ -179,37 +179,39 @@ const CartItems: React.FC = () => {
             </div>
 
             {/* Product Info - Main Content */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
               {/* Title and Actions Row */}
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-bold text-white text-lg leading-tight mb-1 line-clamp-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-white text-sm sm:text-lg leading-tight mb-1 line-clamp-2">
                     {item.title}
                   </h3>
                   
                   {/* Stock Badge */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-xs font-medium ${
                       item.stock > 10 
                         ? 'bg-green-900/20 text-green-400 border border-green-500/20' 
                         : item.stock > 0 
                         ? 'bg-yellow-900/20 text-yellow-400 border border-yellow-500/20' 
                         : 'bg-red-900/20 text-red-400 border border-red-500/20'
                     }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                      <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full mr-1 sm:mr-1.5 ${
                         item.stock > 10 ? 'bg-green-400' : item.stock > 0 ? 'bg-yellow-400' : 'bg-red-400'
                       }`}></div>
-                      {item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}
+                      <span className="text-xs whitespace-nowrap">
+                        {item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}
+                      </span>
                     </span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 ml-2 sm:ml-4">
                   {/* Wishlist Button */}
                   <button 
                     onClick={() => handleAddToWishlist(item)}
-                    className={`p-2 rounded-xl border transition-all duration-200 ${
+                    className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-200 ${
                       wishlist.some((wishItem: any) => wishItem.id === item.id)
                         ? 'border-[#ff8800] bg-[#ff8800]/10 text-[#ff8800] hover:bg-[#ff8800]/20' 
                         : 'border-[#232326] bg-gradient-to-b from-[#232326] to-[#18181b] text-gray-400 hover:border-[#ff8800] hover:text-[#ff8800]'
@@ -217,7 +219,7 @@ const CartItems: React.FC = () => {
                     title={wishlist.some((wishItem: any) => wishItem.id === item.id) ? "Remove from wishlist" : "Add to wishlist"}
                   >
                     <Heart 
-                      className="w-4 h-4" 
+                      className="w-3 h-3 sm:w-4 sm:h-4" 
                       fill={wishlist.some((wishItem: any) => wishItem.id === item.id) ? '#ff8800' : 'none'}
                     />
                   </button>
@@ -226,10 +228,10 @@ const CartItems: React.FC = () => {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <button 
-                        className="p-2 rounded-xl border border-[#232326] bg-gradient-to-b from-[#232326] to-[#18181b] text-gray-400 hover:border-red-500 hover:text-red-400 hover:bg-red-900/10 transition-all duration-200"
+                        className="p-1.5 sm:p-2 rounded-xl border border-[#232326] bg-gradient-to-b from-[#232326] to-[#18181b] text-gray-400 hover:border-red-500 hover:text-red-400 hover:bg-red-900/10 transition-all duration-200"
                         title="Remove from cart"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
@@ -258,47 +260,47 @@ const CartItems: React.FC = () => {
               </div>
 
               {/* Price and Quantity Row */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 {/* Price Section */}
                 <div className="space-y-1">
                   {appliedDiscount && item.discountCodes.includes(appliedDiscount.id) ? (
-                    <div className="flex items-center gap-3">
-                      <span className="text-gray-400 line-through text-sm">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="text-gray-400 line-through text-xs sm:text-sm">
                         ₦{calculateOriginalItemPrice(item).toLocaleString()}
                       </span>
-                      <span className="text-[#ff8800] font-bold text-lg">
+                      <span className="text-[#ff8800] font-bold text-sm sm:text-lg">
                         ₦{calculateDiscountedItemPrice(item).toLocaleString()}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-[#ff8800] font-bold text-lg">
+                    <span className="text-[#ff8800] font-bold text-sm sm:text-lg">
                       ₦{calculateOriginalItemPrice(item).toLocaleString()}
                     </span>
                   )}
                   <p className="text-gray-400 text-xs">per item</p>
                 </div>
 
-                {/* Quantity Controls */}
-                <div className="flex items-center gap-4">
+                {/* Quantity Controls and Total */}
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                   <div className="flex items-center bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl border border-[#232326]">
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock)}
                       disabled={item.quantity <= 1}
-                      className="p-2 hover:bg-[#ff8800] hover:text-[#18181b] transition-all duration-200 rounded-l-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1.5 sm:p-2 hover:bg-[#ff8800] hover:text-[#18181b] transition-all duration-200 rounded-l-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                       </svg>
                     </button>
-                    <div className="px-4 py-2 font-semibold text-center min-w-[50px] text-white">
+                    <div className="px-3 py-1.5 sm:px-4 sm:py-2 font-semibold text-center min-w-[40px] sm:min-w-[50px] text-white text-sm sm:text-base">
                       {item.quantity}
                     </div>
                     <button
                       onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock)}
                       disabled={item.quantity >= item.stock}
-                      className="p-2 hover:bg-[#ff8800] hover:text-[#18181b] transition-all duration-200 rounded-r-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-1.5 sm:p-2 hover:bg-[#ff8800] hover:text-[#18181b] transition-all duration-200 rounded-r-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </button>
@@ -306,7 +308,7 @@ const CartItems: React.FC = () => {
 
                   {/* Total Price */}
                   <div className="text-right">
-                    <div className="text-white font-bold text-xl">
+                    <div className="text-white font-bold text-sm sm:text-xl">
                       ₦{(appliedDiscount && item.discountCodes.includes(appliedDiscount.id) 
                         ? calculateDiscountedItemPrice(item) * item.quantity 
                         : calculateOriginalItemPrice(item) * item.quantity
@@ -323,63 +325,65 @@ const CartItems: React.FC = () => {
       {/* Cart Summary */}
       <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-6 border border-[#232326] shadow-lg">
         {/* Summary Header */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#232326]">
-          <h2 className="text-2xl font-bold text-white">Order Summary</h2>
-          <span className="px-3 py-1 bg-[#ff8800]/10 border border-[#ff8800]/20 rounded-full text-[#ff8800] text-sm font-medium">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-[#232326]">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Order Summary</h2>
+          <span className="px-3 py-1 bg-[#ff8800]/10 border border-[#ff8800]/20 rounded-full text-[#ff8800] text-sm font-medium self-start sm:self-auto">
             {cart.length} item{cart.length !== 1 ? 's' : ''}
           </span>
         </div>
 
         {/* Price Breakdown */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-4">
           <div className="flex justify-between items-center">
-            <span className="text-gray-300 text-lg">Subtotal</span>
-            <span className="text-white font-semibold text-lg">₦{calculateOriginalSubtotal().toLocaleString()}</span>
+            <span className="text-gray-300 text-base sm:text-lg">Subtotal</span>
+            <span className="text-white font-semibold text-base sm:text-lg">₦{calculateOriginalSubtotal().toLocaleString()}</span>
           </div>
           
           {appliedDiscount && (
-            <div className="flex justify-between items-center text-green-400 bg-green-900/10 border border-green-500/20 rounded-xl p-3">
-              <span className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Discount Applied</span>
-                <span className="px-2 py-0.5 bg-green-900/30 rounded-full text-xs font-medium">
-                  {appliedDiscount.public_name}
+            <div className="bg-green-900/10 border border-green-500/20 rounded-xl p-2.5 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-green-400">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm sm:text-base">Discount Applied</span>
+                  <span className="px-2 py-0.5 bg-green-900/30 rounded-full text-xs font-medium text-green-400">
+                    {appliedDiscount.public_name}
+                  </span>
+                </div>
+                <span className="text-green-400 font-bold text-sm sm:text-base">
+                  -₦{(calculateOriginalSubtotal() - calculateFinalTotal()).toLocaleString()}
                 </span>
-              </span>
-              <span className="font-bold">
-                -₦{(calculateOriginalSubtotal() - calculateFinalTotal()).toLocaleString()}
-              </span>
+              </div>
             </div>
           )}
           
-          <div className="border-t border-[#232326] pt-4">
+          <div className="border-t border-[#232326] pt-3">
             <div className="flex justify-between items-center">
-              <span className="text-xl font-bold text-white">Total</span>
-              <span className="text-2xl font-bold text-[#ff8800]">₦{calculateFinalTotal().toLocaleString()}</span>
+              <span className="text-lg sm:text-xl font-bold text-white">Total</span>
+              <span className="text-xl sm:text-2xl font-bold text-[#ff8800]">₦{calculateFinalTotal().toLocaleString()}</span>
             </div>
           </div>
         </div>
         
         {/* Discount Code Section */}
-        <div className="mb-6">
-          <label className="block text-white font-medium mb-3">Have a discount code?</label>
-          <div className="flex gap-3">
+        <div className="mb-4">
+          <label className="block text-white font-medium mb-2 text-sm sm:text-base">Have a discount code?</label>
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1">
               <Input
                 type="text"
                 placeholder="Enter discount code"
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                className="w-full bg-[#18181b] border-[#232326] text-white placeholder-gray-400 focus:border-[#ff8800] focus:ring-[#ff8800]/20 rounded-xl h-12 text-base"
+                className="w-full bg-[#18181b] border-[#232326] text-white placeholder-gray-400 focus:border-[#ff8800] focus:ring-[#ff8800]/20 rounded-xl h-12 text-sm sm:text-base"
                 style={{ textTransform: 'uppercase' }}
                 disabled={isApplyingDiscount}
               />
             </div>
             <Button 
               onClick={applyDiscountCode} 
-              className="bg-gradient-to-b from-[#232326] to-[#18181b] hover:bg-[#ff8800] hover:text-[#18181b] text-white border border-[#232326] hover:border-[#ff8800] px-6 h-12 rounded-xl transition-all duration-200"
+              className="bg-gradient-to-b from-[#232326] to-[#18181b] hover:bg-[#ff8800] hover:text-[#18181b] text-white border border-[#232326] hover:border-[#ff8800] px-4 sm:px-6 h-12 rounded-xl transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
               disabled={isApplyingDiscount || !discountCode.trim()}
             >
               {isApplyingDiscount ? (
@@ -401,14 +405,14 @@ const CartItems: React.FC = () => {
         <Button 
           size="lg" 
           onClick={handleCheckout} 
-          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-lg"
+          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] font-bold py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-base sm:text-lg"
         >
-          <span className="flex items-center justify-center gap-3">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span className="flex items-center justify-center gap-2 sm:gap-3">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            Proceed to Checkout
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="whitespace-nowrap">Proceed to Checkout</span>
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </span>
