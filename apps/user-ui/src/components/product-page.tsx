@@ -456,7 +456,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
                     <ProductReviews reviews={product.reviews} />
 
                     {/* Recommended Products Section - Commented out for now */}
-                    <RecommendedProducts recommendedProducts={product.recommendedProducts} />
+                    <RecommendedProducts recommendedProducts={recommendedProducts} />
                 </div>
             </div>
 
