@@ -2,21 +2,21 @@ import prisma from "@packages/libs/prisma"
 
 export const updateUserAnalytics = async(event:any) => {
     try {
-        console.log(`🔍 Starting updateUserAnalytics for userId: ${event.userId}, action: ${event.action}`);
+        // console.log(`🔍 Starting updateUserAnalytics for userId: ${event.userId}, action: ${event.action}`);
         
         if (!event.userId) {
-            console.warn('⚠️ No userId provided in event, skipping user analytics');
+            // console.warn('⚠️ No userId provided in event, skipping user analytics');
             return;
         }
         
-        console.log("📊 Fetching existing user analytics data...");
+        // console.log("📊 Fetching existing user analytics data...");
         const existingData = await prisma.userAnalytics.findUnique({
             where: {
                 userId: event.userId
             },
             select: {actions: true}
         });
-        console.log("📊 Existing data result:", existingData ? "Found" : "Not found");
+        // console.log("📊 Existing data result:", existingData ? "Found" : "Not found");
 
         let updatedActions:any = existingData?.actions || [];
         const actionExists = updatedActions.some((entry:any) => entry.productId === event.productId && entry.action === event.action)
@@ -80,12 +80,12 @@ export const updateUserAnalytics = async(event:any) => {
             extraFields.device = event.device
         }
 
-        console.log("💾 About to upsert user analytics...");
-        console.log("📋 Actions to save:", updatedActions.length);
-        console.log("📋 Extra fields:", extraFields);
+        // console.log("💾 About to upsert user analytics...");
+        // console.log("📋 Actions to save:", updatedActions.length);
+        // console.log("📋 Extra fields:", extraFields);
         
         //update or create analytics data
-        const userResult = await prisma.userAnalytics.upsert({
+        await prisma.userAnalytics.upsert({
             where: {userId: event.userId},
             update: {
                 lastVisited: new Date(),
@@ -100,12 +100,12 @@ export const updateUserAnalytics = async(event:any) => {
             }
         });
         
-        console.log("✅ User analytics upserted successfully, ID:", userResult.id);
+        // console.log("✅ User analytics upserted successfully, ID:", userResult.id);
 
-        console.log("🔄 Now updating product analytics...");
+        // console.log("🔄 Now updating product analytics...");
         //Update product analytics
         await updateProductAnalytics(event);
-        console.log("✅ Product analytics completed");
+        // console.log("✅ Product analytics completed");
 
     } catch (error: any) {
         console.error("❌ Error in updateUserAnalytics:", error?.message || error);
@@ -117,10 +117,10 @@ export const updateUserAnalytics = async(event:any) => {
 //Update product analytics
 export const updateProductAnalytics = async(event:any) => {
     try {
-        console.log(`🔍 Starting updateProductAnalytics for productId: ${event.productId}, action: ${event.action}`);
+        // console.log(`🔍 Starting updateProductAnalytics for productId: ${event.productId}, action: ${event.action}`);
         
         if (!event.productId){
-            console.log("⚠️ No productId provided, skipping product analytics");
+            // console.log("⚠️ No productId provided, skipping product analytics");
             return;
         }
 
@@ -162,11 +162,11 @@ export const updateProductAnalytics = async(event:any) => {
             }
         }
 
-        console.log("💾 About to upsert product analytics...");
-        console.log("📋 Update fields:", updateFields);
+        // console.log("💾 About to upsert product analytics...");
+        // console.log("📋 Update fields:", updateFields);
 
         //Update or create the product analytics asynchronously
-        const productResult = await prisma.productAnalytics.upsert({
+        await prisma.productAnalytics.upsert({
             where: {productId: event.productId},
             update: {
                 lastViewedAt: new Date(),
@@ -183,7 +183,7 @@ export const updateProductAnalytics = async(event:any) => {
             }
         });
         
-        console.log("✅ Product analytics upserted successfully, ID:", productResult.id);
+        // console.log("✅ Product analytics upserted successfully, ID:", productResult.id);
 
     } catch (error: any) {
         console.error("❌ Error in updateProductAnalytics:", error?.message || error);
