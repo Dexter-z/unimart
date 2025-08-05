@@ -9,6 +9,7 @@ import useLocationTracking from '@/hooks/useLocationTracking';
 import useDeviceTracking from '@/hooks/useDeviceTracking';
 import Ratings from '@/components/ratings';
 import ShareModal from '@/components/share-modal';
+import ProductReviews from '@/components/product-reviews';
 
 interface ProductPageProps {
   product: any;
@@ -431,6 +432,9 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
               </div>
             </div>
           )}
+
+          {/* Reviews Section - Commented out for now */}
+          {/* <ProductReviews reviews={product.reviews} /> */}
         </div>
       </div>
 
