@@ -713,7 +713,7 @@ export const topShops = async (req: Request, res: Response, next: NextFunction) 
     })
 
     const enrichedShops = shops.map((shop) => {
-        const salesData = topShopsData.find((data) => data.shopId === shop.id);
+        const salesData = topShopsData.find((data: any) => data.shopId === shop.id);
         return{
             ...shop,
             totalSales: salesData?._sum?.total ?? 0,
@@ -730,4 +730,40 @@ export const topShops = async (req: Request, res: Response, next: NextFunction) 
         return next(error);
     }
     
+}
+
+// Get recommended products
+export const getRecommendedProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { productId, category } = req.body;
+
+        if (!productId || !category) {
+            return next(new ValidationError("Product ID and category are required"));
+        }
+
+        // Get recommended products based on category (excluding the current product)
+        const recommendedProducts = await prisma.products.findMany({
+            where: {
+                category: category,
+                id: { not: productId },
+                isDeleted: { not: true },
+                startingDate: null, // Only regular products, not events
+            },
+            include: {
+                images: true,
+                Shop: true,
+            },
+            take: 8, // Limit to 8 recommendations
+            orderBy: {
+                totalSales: "desc", // Order by popularity
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            products: recommendedProducts,
+        });
+    } catch (error) {
+        next(error);
+    }
 }
