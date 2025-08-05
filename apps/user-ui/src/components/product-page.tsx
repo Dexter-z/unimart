@@ -435,6 +435,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
 
           {/* Reviews Section - Commented out for now */}
           {/* <ProductReviews reviews={product.reviews} /> */}
+          <ProductReviews reviews={product.reviews} />
         </div>
       </div>
 

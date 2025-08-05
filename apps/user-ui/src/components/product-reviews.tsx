@@ -29,10 +29,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ reviews }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4-8 9-8s9 3.582 9 8z" />
           </svg>
           <p className="text-gray-400 text-lg mb-2">No reviews available yet</p>
-          <p className="text-gray-500 text-sm">Be the first to review this product!</p>
-          <button className="mt-4 px-6 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-all duration-200">
-            Write a Review
-          </button>
+          <p className="text-gray-500 text-sm">Reviews will appear here from verified purchases</p>
         </div>
       </div>
     );
