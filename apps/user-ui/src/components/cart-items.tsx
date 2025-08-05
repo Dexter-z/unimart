@@ -423,7 +423,7 @@ const CartItems: React.FC = () => {
               Remove from Wishlist
             </h3>
             <p className="text-gray-300 text-sm mb-6">
-              Are you sure you want to remove "{itemToRemoveFromWishlist.name}" from your wishlist?
+              Are you sure you want to remove "{itemToRemoveFromWishlist.title}" from your wishlist?
             </p>
             <div className="flex justify-end space-x-3">
               <Button
