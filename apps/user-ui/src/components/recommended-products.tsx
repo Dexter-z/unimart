@@ -30,7 +30,8 @@ const RecommendedProducts: React.FC<RecommendedProductsProps> = ({ recommendedPr
   return (
     <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
       <h3 className="text-xl font-bold text-white mb-6">You may also like</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* Use the exact same grid layout as home page suggested products */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-2 auto-rows-fr">
         {recommendedProducts.map((product: Product) => (
           <ProductCard key={product.id} product={product} isEvent={false} />
         ))}
