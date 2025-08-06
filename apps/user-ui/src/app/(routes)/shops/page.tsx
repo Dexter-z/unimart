@@ -230,20 +230,20 @@ const Page = () => {
                                         className="w-16 h-16 rounded-xl object-cover border-2 border-[#232326] group-hover:border-[#ff8800] transition-all duration-200"
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-white font-semibold text-lg truncate group-hover:text-[#ff8800] transition-colors duration-200">
+                                        <h3 className="text-white font-semibold text-2xl truncate group-hover:text-[#ff8800] transition-colors duration-200">
                                             {shop.name}
                                         </h3>
-                                        <p className="text-[#ff8800] text-sm font-medium">
+                                        <p className="text-[#ff8800] text-base font-medium">
                                             {getCategoryLabel(shop.category)}
                                         </p>
                                     </div>
                                 </div>
                                 
-                                <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                                <p className="text-gray-400 text-base mb-4 line-clamp-2">
                                     {shop.bio || 'No description available'}
                                 </p>
                                 
-                                <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center justify-between text-base">
                                     <div className="flex items-center space-x-4">
                                         <div className="flex items-center space-x-1">
                                             <span className="text-yellow-500">★</span>
@@ -259,7 +259,7 @@ const Page = () => {
                                 </div>
                                 
                                 <div className="mt-4 pt-4 border-t border-[#232326]">
-                                    <p className="text-gray-400 text-xs truncate">
+                                    <p className="text-gray-400 text-sm truncate">
                                         📍 {shop.address}
                                     </p>
                                 </div>
