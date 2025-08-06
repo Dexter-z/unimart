@@ -63,7 +63,7 @@ const Page = () => {
             query.set("page", page.toString())
             query.set("limit", "12")
 
-            const res = await axiosInstance.get(`/product/api/get-filtered-offers?${query.toString()}`)
+            const res = await axiosInstance.get(`/product/api/get-filtered-events?${query.toString()}`)
             setProducts(res.data.products)
             setTotalPages(res.data.pagination.totalPages)
 
