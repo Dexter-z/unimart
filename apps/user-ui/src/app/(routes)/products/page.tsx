@@ -3,11 +3,11 @@
 import axiosInstance from '@/utils/axiosInstance'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, Suspense } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import ProductCard from '@/components/product-card'
 
-const Page = () => {
+const ProductsContent = () => {
     const router = useRouter()
     const searchParams = useSearchParams()
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -552,6 +552,21 @@ const Page = () => {
                 </div>
             )}
         </div>
+    )
+}
+
+const Page = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#18181b] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#ff8800] mx-auto"></div>
+                    <p className="text-white mt-4">Loading products...</p>
+                </div>
+            </div>
+        }>
+            <ProductsContent />
+        </Suspense>
     )
 }
 
