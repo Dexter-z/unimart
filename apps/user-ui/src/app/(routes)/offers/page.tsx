@@ -276,7 +276,7 @@ const Page = () => {
                         : 'grid-cols-1 gap-4'
                     }`}>
                         {products.map((product: any) => (
-                            <ProductCard key={product.id} product={product} isEvent={false} />
+                            <ProductCard key={product.id} product={product} isEvent={true} />
                         ))}
                     </div>
                 ) : (
