@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import ProductCard from '@/components/product-card'
-import {Range} from "react-range"
 
 const Page = () => {
     const router = useRouter()
@@ -335,39 +334,47 @@ const Page = () => {
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-4">Price Range</h3>
                                 <div className="px-4">
-                                    <Range
-                                        step={1}
-                                        min={0}
-                                        max={1199}
-                                        values={tempPriceRange}
-                                        onChange={(values) => setTempPriceRange(values)}
-                                        renderTrack={({ props, children }) => (
-                                            <div
-                                                {...props}
-                                                className="h-2 bg-[#18181b] rounded-full"
-                                                style={{
-                                                    ...props.style,
-                                                    background: `linear-gradient(to right, #18181b 0%, #18181b ${((tempPriceRange[0] - 0) / (1199 - 0)) * 100}%, #ff8800 ${((tempPriceRange[0] - 0) / (1199 - 0)) * 100}%, #ff8800 ${((tempPriceRange[1] - 0) / (1199 - 0)) * 100}%, #18181b ${((tempPriceRange[1] - 0) / (1199 - 0)) * 100}%, #18181b 100%)`
-                                                }}
-                                            >
-                                                {children}
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1">
+                                            <label className="block text-sm text-gray-400 mb-1">Min Price</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₦</span>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    max={tempPriceRange[1]}
+                                                    value={tempPriceRange[0]}
+                                                    onChange={(e) => {
+                                                        const value = parseInt(e.target.value) || 0;
+                                                        setTempPriceRange([Math.max(0, Math.min(value, tempPriceRange[1])), tempPriceRange[1]]);
+                                                    }}
+                                                    className="w-full pl-8 pr-3 py-2 bg-[#18181b] border border-[#232326] rounded-xl text-white placeholder-gray-400 focus:border-[#ff8800] focus:outline-none"
+                                                    placeholder="0"
+                                                />
                                             </div>
-                                        )}
-                                        renderThumb={({ props, isDragged }) => (
-                                            <div
-                                                {...props}
-                                                className={`h-5 w-5 bg-[#ff8800] rounded-full shadow-lg focus:outline-none transition-transform duration-150 ${
-                                                    isDragged ? 'scale-110' : 'hover:scale-105'
-                                                }`}
-                                                style={{
-                                                    ...props.style
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                    <div className="flex justify-between mt-2 text-sm text-gray-300">
-                                        <span>₦{tempPriceRange[0].toLocaleString()}</span>
-                                        <span>₦{tempPriceRange[1].toLocaleString()}</span>
+                                        </div>
+                                        <div className="text-gray-400 mt-6">to</div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm text-gray-400 mb-1">Max Price</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₦</span>
+                                                <input
+                                                    type="number"
+                                                    min={tempPriceRange[0]}
+                                                    max={1199}
+                                                    value={tempPriceRange[1]}
+                                                    onChange={(e) => {
+                                                        const value = parseInt(e.target.value) || 1199;
+                                                        setTempPriceRange([tempPriceRange[0], Math.min(1199, Math.max(value, tempPriceRange[0]))]);
+                                                    }}
+                                                    className="w-full pl-8 pr-3 py-2 bg-[#18181b] border border-[#232326] rounded-xl text-white placeholder-gray-400 focus:border-[#ff8800] focus:outline-none"
+                                                    placeholder="1199"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 text-xs text-gray-400 text-center">
+                                        Enter your desired price range in Naira (₦)
                                     </div>
                                 </div>
                             </div>
