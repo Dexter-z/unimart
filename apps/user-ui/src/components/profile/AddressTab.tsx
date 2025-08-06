@@ -10,9 +10,29 @@ import {
   User,
   Check
 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 
 const AddressTab = () => {
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      name: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      landmark: '',
+      addressType: 'home',
+      isDefault: false
+    }
+  })
 
   // Mock addresses data
   const addresses = [
