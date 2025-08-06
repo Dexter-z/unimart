@@ -34,6 +34,10 @@ const AddressTab = () => {
     }
   })
 
+  const onSubmit = async () => {
+    
+  }
+
   // Mock addresses data
   const addresses = [
     {
