@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
 import ProductCard from '@/components/product-card'
+import {Range} from "react-range"
 
 const Page = () => {
     const router = useRouter()
@@ -149,60 +150,6 @@ const Page = () => {
 
     const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36', '38', '40', '42'];
     const availableColors = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Gray', 'Pink', 'Purple', 'Orange'];
-
-    // Custom Range Slider Component
-    const CustomRangeSlider = ({ values, onChange }: { values: number[], onChange: (values: number[]) => void }) => {
-        const handleChange = (index: number, value: number) => {
-            const newValues = [...values];
-            newValues[index] = value;
-            
-            // Ensure min doesn't exceed max and vice versa
-            if (index === 0 && newValues[0] > newValues[1]) {
-                newValues[1] = newValues[0];
-            }
-            if (index === 1 && newValues[1] < newValues[0]) {
-                newValues[0] = newValues[1];
-            }
-            
-            onChange(newValues);
-        };
-
-        return (
-            <div className="px-4">
-                <div className="relative">
-                    <div className="h-2 bg-[#18181b] rounded-full relative">
-                        <div 
-                            className="absolute h-2 bg-[#ff8800] rounded-full"
-                            style={{
-                                left: `${(values[0] / 1199) * 100}%`,
-                                width: `${((values[1] - values[0]) / 1199) * 100}%`
-                            }}
-                        />
-                    </div>
-                    <input
-                        type="range"
-                        min={0}
-                        max={1199}
-                        value={values[0]}
-                        onChange={(e) => handleChange(0, parseInt(e.target.value))}
-                        className="absolute top-0 w-full h-2 appearance-none bg-transparent pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#ff8800] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg"
-                    />
-                    <input
-                        type="range"
-                        min={0}
-                        max={1199}
-                        value={values[1]}
-                        onChange={(e) => handleChange(1, parseInt(e.target.value))}
-                        className="absolute top-0 w-full h-2 appearance-none bg-transparent pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#ff8800] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg"
-                    />
-                </div>
-                <div className="flex justify-between mt-2 text-sm text-gray-300">
-                    <span>₦{values[0].toLocaleString()}</span>
-                    <span>₦{values[1].toLocaleString()}</span>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="min-h-screen bg-[#18181b]">
@@ -387,10 +334,42 @@ const Page = () => {
                             {/* Price Range */}
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-4">Price Range</h3>
-                                <CustomRangeSlider 
-                                    values={tempPriceRange} 
-                                    onChange={setTempPriceRange} 
-                                />
+                                <div className="px-4">
+                                    <Range
+                                        step={1}
+                                        min={0}
+                                        max={1199}
+                                        values={tempPriceRange}
+                                        onChange={(values) => setTempPriceRange(values)}
+                                        renderTrack={({ props, children }) => (
+                                            <div
+                                                {...props}
+                                                className="h-2 bg-[#18181b] rounded-full"
+                                                style={{
+                                                    ...props.style,
+                                                    background: `linear-gradient(to right, #18181b 0%, #18181b ${((tempPriceRange[0] - 0) / (1199 - 0)) * 100}%, #ff8800 ${((tempPriceRange[0] - 0) / (1199 - 0)) * 100}%, #ff8800 ${((tempPriceRange[1] - 0) / (1199 - 0)) * 100}%, #18181b ${((tempPriceRange[1] - 0) / (1199 - 0)) * 100}%, #18181b 100%)`
+                                                }}
+                                            >
+                                                {children}
+                                            </div>
+                                        )}
+                                        renderThumb={({ props, isDragged }) => (
+                                            <div
+                                                {...props}
+                                                className={`h-5 w-5 bg-[#ff8800] rounded-full shadow-lg focus:outline-none transition-transform duration-150 ${
+                                                    isDragged ? 'scale-110' : 'hover:scale-105'
+                                                }`}
+                                                style={{
+                                                    ...props.style
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                    <div className="flex justify-between mt-2 text-sm text-gray-300">
+                                        <span>₦{tempPriceRange[0].toLocaleString()}</span>
+                                        <span>₦{tempPriceRange[1].toLocaleString()}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Categories */}
