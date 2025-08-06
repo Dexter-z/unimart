@@ -1,13 +1,14 @@
 "use client"
 
 import axiosInstance from '@/utils/axiosInstance'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { Filter, X, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Filter, X, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { SHOP_CATEGORIES, getCategoryLabel } from '@/configs/categories'
 
 const Page = () => {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [isShopLoading, setIsShopLoading] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
@@ -16,9 +17,22 @@ const Page = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Initialize search query from URL parameters
+    useEffect(() => {
+        const q = searchParams.get('q');
+        if (q) {
+            setSearchQuery(q);
+        }
+    }, [searchParams]);
 
     const updateURL = () => {
         const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.set("q", searchQuery);
+        }
 
         if (selectedCategories.length > 0) {
             params.set("categories", selectedCategories.join(","))
@@ -37,6 +51,10 @@ const Page = () => {
 
         try {
             const query = new URLSearchParams()
+
+            if (searchQuery.trim()) {
+                query.set("q", searchQuery);
+            }
 
             if (selectedCategories.length > 0) {
                 query.set("categories", selectedCategories.join(","))
@@ -63,7 +81,19 @@ const Page = () => {
     useEffect(() => {
         updateURL()
         fetchFilteredShops();
-    }, [selectedCategories, selectedCountries, page]);
+    }, [selectedCategories, selectedCountries, page, searchQuery]);
+
+    const handleSearchSubmit = () => {
+        setPage(1);
+        updateURL();
+        fetchFilteredShops();
+    };
+
+    const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    };
 
     const availableCountries = ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Egypt', 'Morocco', 'Uganda', 'Tanzania'];
 
@@ -133,6 +163,26 @@ const Page = () => {
                     <p className="text-gray-400">
                         Showing {shops.length} of {totalPages * 12} shops
                     </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-4 mb-6">
+                    <div className="relative flex items-center max-w-2xl mx-auto">
+                        <input
+                            type="text"
+                            placeholder='Search shops...'
+                            className='w-full px-4 pr-12 font-medium border-2 border-[#ff8800] outline-none h-12 rounded-full shadow-sm focus:ring-2 focus:ring-orange-200 transition bg-[#232326] text-white placeholder-gray-300'
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearchKeyDown}
+                        />
+                        <button
+                            className='absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-[#ff8800] rounded-full shadow-md hover:bg-orange-600 transition'
+                            onClick={handleSearchSubmit}
+                        >
+                            <Search color='#18181b' size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Top Bar - Filters, View Toggle */}

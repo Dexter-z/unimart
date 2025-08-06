@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState, useRef, useEffect } from 'react'
 import { HeartIcon, Search, ShoppingCart, UserRound } from 'lucide-react';
 import HeaderBottom from './header-bottom';
@@ -9,6 +10,7 @@ import axiosInstance from '@/utils/axiosInstance';
 import { useStore } from '@/store';
 
 const Header = () => {
+    const router = useRouter()
     const { user, isLoading } = useUser()
 
     const [searchQuery, setSearchQuery] = useState("")
@@ -65,15 +67,16 @@ const Header = () => {
 
     const handleSearchClick = async () => {
         if (!searchQuery.trim()) return;
-        setLoadingSuggestions(true)
+        
+        // Redirect to products page with search query
+        router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+        setShowSuggestions(false);
+        setSearchQuery("");
+    }
 
-        try {
-            const res = await axiosInstance.get(`/product/api/search-products?q=${encodeURIComponent(searchQuery)}`)
-            setSuggestions(res.data.products.slice(0, 10))
-        } catch (error) {
-
-        } finally {
-            setLoadingSuggestions(false)
+    const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSearchClick();
         }
     }
 
@@ -109,7 +112,7 @@ const Header = () => {
                             onFocus={() => {
                                 if (searchQuery.trim()) setShowSuggestions(true)
                             }}
-                            onKeyDown={e => { if (e.key === 'Enter') {/* Optionally handle search submit */} }}
+                            onKeyDown={handleSearchKeyDown}
                         />
                         <button
                             className='absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-[#ff8800] rounded-full shadow-md hover:bg-orange-600 transition'

@@ -450,6 +450,36 @@ export const searchProducts = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+// Search Shops
+export const searchShops = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const q = (req.query.q as string)?.trim();
+        if (!q) {
+            return res.status(400).json({ message: "Missing search query" });
+        }
+        // Search by shop name, bio, or category (case-insensitive)
+        const shops = await prisma.shops.findMany({
+            where: {
+                OR: [
+                    { name: { contains: q, mode: 'insensitive' } },
+                    { bio: { contains: q, mode: 'insensitive' } },
+                    { category: { contains: q, mode: 'insensitive' } }
+                ],
+            },
+            include: {
+                sellers: true,
+                followers: true,
+                reviews: true,
+                products: true,
+            },
+            take: 10,
+        });
+        return res.status(200).json({ shops });
+    } catch (error) {
+        next(error);
+    }
+}
+
 //Get product details
 export const getProductDetails = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -481,11 +511,13 @@ export const getFilteredProducts = async (req: Request, res: Response, next: Nex
             sizes = [],
             page = 1,
             limit = 12,
+            q = ""
         } = req.query;
 
         const parsedPriceRange = typeof priceRange === 'string' ? priceRange.split(',').map(Number) : [0, 10000]
         const parsedPage = Number(page)
         const parsedLimit = Number(limit)
+        const searchQuery = (q as string)?.trim()
 
         const skip = (parsedPage - 1) * parsedLimit;
 
@@ -495,6 +527,16 @@ export const getFilteredProducts = async (req: Request, res: Response, next: Nex
                 lte: parsedPriceRange[1]
             },
             startingDate: null,
+            isDeleted: { not: true }
+        }
+
+        // Add search functionality
+        if (searchQuery) {
+            filters.OR = [
+                { title: { contains: searchQuery, mode: 'insensitive' } },
+                { shortDescription: { contains: searchQuery, mode: 'insensitive' } },
+                { tags: { has: searchQuery } }
+            ]
         }
 
         if (categories && (categories as string[]).length > 0) {
@@ -624,13 +666,23 @@ export const getFilteredEvents = async (req: Request, res: Response, next: NextF
 //Get filtered shops
 export const getFilteredShops = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { categories = [], countries = [], page = 1, limit = 12 } = req.query;
+        const { categories = [], countries = [], page = 1, limit = 12, q = "" } = req.query;
 
         const parsedPage = Number(page);
         const parsedLimit = Number(limit);
+        const searchQuery = (q as string)?.trim();
         const skip = (parsedPage - 1) * parsedLimit;
 
         const filters: Record<string, any> = {};
+
+        // Add search functionality
+        if (searchQuery) {
+            filters.OR = [
+                { name: { contains: searchQuery, mode: 'insensitive' } },
+                { bio: { contains: searchQuery, mode: 'insensitive' } },
+                { category: { contains: searchQuery, mode: 'insensitive' } }
+            ];
+        }
 
         if (categories && String(categories).length > 0) {
             filters.category = {

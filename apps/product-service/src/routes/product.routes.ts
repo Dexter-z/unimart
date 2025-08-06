@@ -1,10 +1,11 @@
 import express, { Router } from "express";
-import { createDiscountCodes, createProduct, deleteDiscountCodes, deleteProduct, deleteProductImage, getAllProducts, getCategories, getDiscountCodeByName, getDiscountCodes, getShopProducts, restoreProduct, uploadProductImage, searchProducts, getProductDetails, getFilteredEvents, getFilteredProducts, getFilteredShops, topShops, getRecommendedProducts } from "../controllers/product.controller";
+import { createDiscountCodes, createProduct, deleteDiscountCodes, deleteProduct, deleteProductImage, getAllProducts, getCategories, getDiscountCodeByName, getDiscountCodes, getShopProducts, restoreProduct, uploadProductImage, searchProducts, searchShops, getProductDetails, getFilteredEvents, getFilteredProducts, getFilteredShops, topShops, getRecommendedProducts } from "../controllers/product.controller";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 
 const router: Router = express.Router();
 
 router.get("/search-products", searchProducts)
+router.get("/search-shops", searchShops)
 router.get("/get-categories", getCategories)
 router.post("/create-discount-code",isAuthenticated, createDiscountCodes);
 router.get("/get-discount-codes",isAuthenticated, getDiscountCodes);

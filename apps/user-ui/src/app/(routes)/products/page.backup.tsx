@@ -98,7 +98,7 @@ const Page = () => {
         fetchFilteredProducts();
     }, [priceRange, selectedCategories, selectedSizes, selectedColors, page, searchQuery]);
 
-    const { data } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["categories"],
         queryFn: async () => {
             const res = await axiosInstance.get("/product/api/get-categories")
@@ -164,8 +164,6 @@ const Page = () => {
         }
         
         return pages;
-    };
-
     const handleSearchSubmit = () => {
         setPage(1);
         updateURL();
