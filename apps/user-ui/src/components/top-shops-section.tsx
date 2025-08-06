@@ -8,19 +8,23 @@ import { getCategoryLabel } from '@/configs/categories';
 const dummyShops = Array.from({ length: 10 }, (_, i) => ({ id: i + 1 }));
 
 const TopShopsSection = () => {
-  const { data: shops, isLoading, isError } = useQuery({
+  const { data: shops, isLoading, isError, error } = useQuery({
     queryKey: ["top-shops"],
     queryFn: async () => {
       const res = await axiosInstance.get("/product/api/top-shops");
       return res.data.shops;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes cache
+    retry: 3, // Retry 3 times on failure
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 
   console.log("Top Shops: ", shops);
+  console.log("Top Shops Error: ", error);
 
   const showSkeleton = isLoading;
-  const hasNoShops = !isLoading && (!shops || shops.length === 0 || isError);
+  const hasNoShops = !isLoading && (!shops || shops.length === 0);
+  const hasError = isError && !isLoading;
 
   return (
     <section className="w-full py-8 md:py-12 bg-[#18181b]">
@@ -33,7 +37,12 @@ const TopShopsSection = () => {
           </div>
         </div>
         
-        {hasNoShops ? (
+        {hasError ? (
+          <div className="text-center py-12">
+            <div className="text-red-400 text-lg mb-4">Unable to load top shops</div>
+            <p className="text-gray-500 text-sm">Database connection issue. Please try refreshing the page.</p>
+          </div>
+        ) : hasNoShops ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-lg mb-4">No top shops yet</div>
             <p className="text-gray-500 text-sm">Shops will appear here once they start making sales</p>
