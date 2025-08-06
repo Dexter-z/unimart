@@ -26,7 +26,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ user }) => {
   }
 
   return (
-    <div>
+    <div className="min-h-[130vh]">
       {/* Profile header */}
       <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6 mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">

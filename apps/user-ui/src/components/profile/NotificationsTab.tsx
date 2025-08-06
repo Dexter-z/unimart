@@ -119,7 +119,7 @@ const NotificationsTab = () => {
   ]
 
   return (
-    <div>
+    <div className="min-h-[130vh]">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
         <div>

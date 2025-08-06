@@ -79,7 +79,7 @@ const OrdersTab = () => {
   }
 
   return (
-    <div>
+    <div className="min-h-[200vh]">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
         <div>

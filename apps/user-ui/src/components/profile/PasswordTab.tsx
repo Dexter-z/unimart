@@ -81,7 +81,7 @@ const PasswordTab = () => {
   ]
 
   return (
-    <div>
+    <div className="min-h-[130vh]">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white">Change Password</h2>
