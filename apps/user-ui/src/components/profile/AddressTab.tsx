@@ -262,7 +262,10 @@ const AddressTab = ({ user }: AddressTabProps) => {
                         <MapPin className="w-4 h-4 mt-0.5" />
                         <div>
                           <p>{address.address}</p>
-                          <p>{address.landmark}</p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-xs text-gray-400 font-medium">📍 Landmark:</span>
+                            <span className="text-sm">{address.landmark}</span>
+                          </div>
                           <p>{address.city}, {address.state}</p>
                         </div>
                       </div>
@@ -369,17 +372,17 @@ const AddressTab = ({ user }: AddressTabProps) => {
                 </div>
                 
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Street Address *</label>
+                  <label className="block text-gray-400 text-sm mb-2">Lodge Address *</label>
                   <input
                     type="text"
                     {...register('address', {
-                      required: 'Street address is required',
-                      minLength: { value: 5, message: 'Address must be at least 5 characters' }
+                      required: 'Lodge address is required',
+                      minLength: { value: 5, message: 'Lodge address must be at least 5 characters' }
                     })}
                     className={`w-full bg-[#18181b] border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] ${
                       errors.address ? 'border-red-500' : 'border-[#232326]'
                     }`}
-                    placeholder="Enter street address"
+                    placeholder="Enter lodge address"
                   />
                   {errors.address && (
                     <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
