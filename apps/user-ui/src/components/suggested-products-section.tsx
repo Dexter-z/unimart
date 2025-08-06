@@ -23,7 +23,7 @@ const SuggestedProductsSection = () => {
   return (
     <section className="w-full py-8 md:py-12 bg-[#18181b]">
       <div className="w-[95%] md:w-[80%] mx-auto">
-        <h2 className="text-xl md:text-2xl font-bold text-[#ff8800] mb-4">Suggested Products</h2>
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#ff8800] mb-4">Suggested Products</h2>
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-2 auto-rows-fr">
           {showSkeleton
             ? dummyProducts.map((product) => (

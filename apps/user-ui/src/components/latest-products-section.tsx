@@ -24,8 +24,8 @@ const LatestProductsSection = () => {
     <section className="w-full py-8 md:py-12 bg-[#18181b]">
       <div className="w-[95%] md:w-[80%] mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-bold text-[#ff8800]">Latest Products</h2>
-          <div className="flex items-center text-gray-400 text-sm">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#ff8800]">Latest Products</h2>
+          <div className="flex items-center text-gray-400 text-sm md:text-base">
             <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
             Recently Added
           </div>
