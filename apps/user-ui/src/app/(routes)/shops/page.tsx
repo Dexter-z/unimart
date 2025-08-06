@@ -3,6 +3,7 @@
 import axiosInstance from '@/utils/axiosInstance'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { SHOP_CATEGORIES, getCategoryLabel } from '@/configs/categories'
 
@@ -336,9 +337,17 @@ const Page = () => {
                                 </div>
                                 
                                 <div className="mt-4 pt-4 border-t border-[#232326]">
-                                    <p className="text-gray-400 text-sm truncate">
-                                        📍 {shop.address}
-                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-gray-400 text-sm truncate flex-1 mr-4">
+                                            📍 {shop.address}
+                                        </p>
+                                        <Link
+                                            href={`/shop/${shop.id}`}
+                                            className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-lg text-sm font-semibold hover:bg-orange-600 transition-all duration-200 whitespace-nowrap"
+                                        >
+                                            Visit Shop
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         ))}
