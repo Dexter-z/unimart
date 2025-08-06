@@ -398,9 +398,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
                     Shop: true,
                 },
                 where: baseFilter,
-                orderBy: {
-                    totalSales: "desc",
-                },
+                orderBy,
             }),
 
             prisma.products.count({ where: baseFilter }),
@@ -446,7 +444,7 @@ export const searchProducts = async (req: Request, res: Response, next: NextFunc
         });
         return res.status(200).json({ products });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
@@ -476,7 +474,7 @@ export const searchShops = async (req: Request, res: Response, next: NextFunctio
         });
         return res.status(200).json({ shops });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
