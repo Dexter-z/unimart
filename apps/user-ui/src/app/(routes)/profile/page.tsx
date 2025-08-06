@@ -53,7 +53,7 @@ const Page = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#18181b]">
+    <div className="min-h-[180vh] bg-[#18181b]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
@@ -68,7 +68,7 @@ const Page = () => {
           <h2 className="text-xl font-bold text-[#ff8800]">Account</h2>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-[#232326] transition-colors"
+            className="p-2 rounded-lg hover:bg-[#232326] transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -98,7 +98,7 @@ const Page = () => {
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-64 min-h-screen">
+      <div className="lg:ml-64 min-h-[130vh]">
         {/* Top bar */}
         <div className="bg-gradient-to-r from-[#232326] to-[#18181b] border-b border-[#232326] p-4">
           <div className="flex items-center justify-between">
