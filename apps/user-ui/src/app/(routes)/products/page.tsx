@@ -3,13 +3,14 @@
 import axiosInstance from '@/utils/axiosInstance'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import ProductCard from '@/components/product-card'
 
 const Page = () => {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
     const [isProductLoading, setIsProductLoading] = useState(false);
     const [priceRange, setPriceRange] = useState([0, 1199]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -93,9 +94,35 @@ const Page = () => {
         }
     }
 
+    const debouncedFetch = () => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        
+        debounceTimerRef.current = setTimeout(() => {
+            updateURL();
+            fetchFilteredProducts();
+        }, 500); // 500ms delay
+    };
+
+    // Cleanup function
     useEffect(() => {
-        updateURL()
-        fetchFilteredProducts();
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        // For immediate actions like pagination, category selection, etc.
+        if (page !== 1 || selectedCategories.length > 0 || selectedSizes.length > 0 || selectedColors.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 1199) {
+            updateURL();
+            fetchFilteredProducts();
+        } else {
+            // For search queries, use debouncing
+            debouncedFetch();
+        }
     }, [priceRange, selectedCategories, selectedSizes, selectedColors, page, searchQuery]);
 
     const { data } = useQuery({

@@ -2,7 +2,7 @@
 
 import axiosInstance from '@/utils/axiosInstance'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { SHOP_CATEGORIES, getCategoryLabel } from '@/configs/categories'
 
@@ -18,6 +18,7 @@ const Page = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Initialize search query from URL parameters
     useEffect(() => {
@@ -78,9 +79,35 @@ const Page = () => {
         }
     }
 
+    const debouncedFetch = () => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        
+        debounceTimerRef.current = setTimeout(() => {
+            updateURL();
+            fetchFilteredShops();
+        }, 500); // 500ms delay
+    };
+
+    // Cleanup function
     useEffect(() => {
-        updateURL()
-        fetchFilteredShops();
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        // For immediate actions like pagination, category selection, etc.
+        if (page !== 1 || selectedCategories.length > 0 || selectedCountries.length > 0) {
+            updateURL();
+            fetchFilteredShops();
+        } else {
+            // For search queries, use debouncing
+            debouncedFetch();
+        }
     }, [selectedCategories, selectedCountries, page, searchQuery]);
 
     const handleSearchSubmit = () => {
