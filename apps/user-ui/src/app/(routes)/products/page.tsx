@@ -163,7 +163,7 @@ const Page = () => {
 
                 {/* Top Bar - Filters, View Toggle */}
                 <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-4 mb-6">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-between gap-3">
                         {/* Filters Button */}
                         <button
                             onClick={() => setShowFilters(true)}
@@ -195,44 +195,44 @@ const Page = () => {
                         </div>
                     </div>
 
-                    {/* Active Filters */}
+                    {/* Active Filters - Enhanced with your color scheme */}
                     {(selectedCategories.length > 0 || selectedSizes.length > 0 || selectedColors.length > 0 || priceRange[0] > 0 || priceRange[1] < 1199) && (
                         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#232326]">
                             {selectedCategories.map(category => (
-                                <span key={category} className="inline-flex items-center gap-1 px-3 py-1 bg-[#ff8800] text-[#18181b] rounded-full text-sm font-medium">
-                                    {category}
-                                    <button onClick={() => handleCategoryToggle(category)} className="hover:bg-orange-600 rounded-full p-0.5">
+                                <span key={category} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
+                                    Category: {category}
+                                    <button onClick={() => handleCategoryToggle(category)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
                             {selectedSizes.map(size => (
-                                <span key={size} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium">
+                                <span key={size} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
                                     Size: {size}
-                                    <button onClick={() => handleSizeToggle(size)} className="hover:bg-blue-700 rounded-full p-0.5">
+                                    <button onClick={() => handleSizeToggle(size)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
                             {selectedColors.map(color => (
-                                <span key={color} className="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-full text-sm font-medium">
-                                    {color}
-                                    <button onClick={() => handleColorToggle(color)} className="hover:bg-green-700 rounded-full p-0.5">
+                                <span key={color} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
+                                    Color: {color}
+                                    <button onClick={() => handleColorToggle(color)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
                             {(priceRange[0] > 0 || priceRange[1] < 1199) && (
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-medium">
-                                    ₦{priceRange[0].toLocaleString()} - ₦{priceRange[1].toLocaleString()}
-                                    <button onClick={() => setPriceRange([0, 1199])} className="hover:bg-purple-700 rounded-full p-0.5">
+                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
+                                    Price: ₦{priceRange[0].toLocaleString()} - ₦{priceRange[1].toLocaleString()}
+                                    <button onClick={() => setPriceRange([0, 1199])} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             )}
                             <button
                                 onClick={clearAllFilters}
-                                className="px-3 py-1 text-red-400 hover:text-red-300 text-sm font-medium border border-red-400 hover:border-red-300 rounded-full transition-all duration-200"
+                                className="px-3 py-1 text-[#ff8800] hover:text-orange-400 text-sm font-medium border border-[#ff8800] hover:border-orange-400 rounded-full transition-all duration-200"
                             >
                                 Clear All
                             </button>
