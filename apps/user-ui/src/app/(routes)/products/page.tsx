@@ -106,11 +106,11 @@ const Page = () => {
         setPage(1);
     };
 
-    const handleColorToggle = (color: string) => {
+    const handleColorToggle = (colorCode: string) => {
         setSelectedColors(prev => 
-            prev.includes(color) 
-                ? prev.filter(c => c !== color)
-                : [...prev, color]
+            prev.includes(colorCode) 
+                ? prev.filter(c => c !== colorCode)
+                : [...prev, colorCode]
         );
         setPage(1);
     };
@@ -148,7 +148,18 @@ const Page = () => {
     };
 
     const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36', '38', '40', '42'];
-    const availableColors = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Gray', 'Pink', 'Purple', 'Orange'];
+    const availableColors = [
+        { name: 'Red', code: '#ff0000' },
+        { name: 'Blue', code: '#0000ff' },
+        { name: 'Green', code: '#008000' },
+        { name: 'Yellow', code: '#ffff00' },
+        { name: 'Black', code: '#000000' },
+        { name: 'White', code: '#ffffff' },
+        { name: 'Gray', code: '#808080' },
+        { name: 'Pink', code: '#ffc0cb' },
+        { name: 'Purple', code: '#800080' },
+        { name: 'Orange', code: '#ffa500' }
+    ];
 
     return (
         <div className="min-h-screen bg-[#18181b]">
@@ -214,14 +225,18 @@ const Page = () => {
                                     </button>
                                 </span>
                             ))}
-                            {selectedColors.map(color => (
-                                <span key={color} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
-                                    Color: {color}
-                                    <button onClick={() => handleColorToggle(color)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            ))}
+                            {selectedColors.map(colorCode => {
+                                const colorInfo = availableColors.find(c => c.code === colorCode);
+                                const colorName = colorInfo ? colorInfo.name : colorCode;
+                                return (
+                                    <span key={colorCode} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
+                                        Color: {colorName}
+                                        <button onClick={() => handleColorToggle(colorCode)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                );
+                            })}
                             {(priceRange[0] > 0 || priceRange[1] < 1199) && (
                                 <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
                                     Price: ₦{priceRange[0].toLocaleString()} - ₦{priceRange[1].toLocaleString()}
@@ -425,15 +440,15 @@ const Page = () => {
                                 <div className="flex flex-wrap gap-3">
                                     {availableColors.map((color) => (
                                         <button
-                                            key={color}
-                                            onClick={() => handleColorToggle(color)}
+                                            key={color.code}
+                                            onClick={() => handleColorToggle(color.code)}
                                             className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
-                                                selectedColors.includes(color)
+                                                selectedColors.includes(color.code)
                                                     ? 'border-[#ff8800] scale-110'
                                                     : 'border-[#232326] hover:border-[#ff8800]'
                                             }`}
-                                            style={{ backgroundColor: color.toLowerCase() }}
-                                            title={color}
+                                            style={{ backgroundColor: color.code }}
+                                            title={color.name}
                                         />
                                     ))}
                                 </div>
