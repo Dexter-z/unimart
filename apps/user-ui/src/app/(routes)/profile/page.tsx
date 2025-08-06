@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { 
   User, 
   ShoppingBag, 
@@ -13,6 +14,7 @@ import {
   X
 } from 'lucide-react'
 import useUser from '@/hooks/useUser'
+import axiosInstance from '@/utils/axiosInstance'
 import ProfileTab from '@/components/profile/ProfileTab'
 import OrdersTab from '@/components/profile/OrdersTab'
 import InboxTab from '@/components/profile/InboxTab'
@@ -24,8 +26,10 @@ const ProfileContent = () => {
   const { user, isLoading } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Valid tab names
   const validTabs = ['profile', 'orders', 'inbox', 'notifications', 'address', 'password']
@@ -54,10 +58,31 @@ const ProfileContent = () => {
     }
   }, [searchParams, router])
 
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      
+      // Call logout API
+      await axiosInstance.get("/api/logout-user").then((res) => {
+        queryClient.invalidateQueries({ queryKey: ["user"] })
+        router.push("/login")
+      })
+      queryClient.clear()
+      
+      
+      
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Still redirect to profile page if API call fails
+      router.push("/profile")
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   const handleNavClick = (itemId: string) => {
     if (itemId === 'logout') {
-      // Handle logout logic here
-      console.log('Logout clicked')
+      handleLogout()
       return
     }
     
@@ -97,7 +122,7 @@ const ProfileContent = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'profile':
-        return <ProfileTab user={user} />
+        return <ProfileTab user={user} onLogout={handleLogout} />
       case 'orders':
         return <OrdersTab />
       case 'inbox':
@@ -109,7 +134,7 @@ const ProfileContent = () => {
       case 'password':
         return <PasswordTab />
       default:
-        return <ProfileTab user={user} />
+        return <ProfileTab user={user} onLogout={handleLogout} />
     }
   }
 
@@ -154,14 +179,17 @@ const ProfileContent = () => {
                 <li key={item.id}>
                   <button
                     onClick={() => handleNavClick(item.id)}
+                    disabled={item.id === 'logout' && isLoggingOut}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                       activeTab === item.id
                         ? 'bg-[#ff8800] text-[#18181b] font-semibold'
+                        : item.id === 'logout' && isLoggingOut
+                        ? 'text-gray-500 cursor-not-allowed'
                         : 'text-gray-300 hover:bg-[#232326] hover:text-white'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
-                    <span>{item.label}</span>
+                    <span>{item.id === 'logout' && isLoggingOut ? 'Logging out...' : item.label}</span>
                   </button>
                 </li>
               )

@@ -15,9 +15,10 @@ import {
 
 interface ProfileTabProps {
   user: any
+  onLogout: () => void
 }
 
-const ProfileTab: React.FC<ProfileTabProps> = ({ user }) => {
+const ProfileTab: React.FC<ProfileTabProps> = ({ user, onLogout }) => {
   // Hardcoded order statistics for now
   const orderStats = {
     total: 24,
@@ -165,7 +166,10 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ user }) => {
               </div>
             </div>
 
-            <button className="w-full mt-4 px-4 py-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors flex items-center justify-center space-x-2">
+            <button 
+              onClick={onLogout}
+              className="w-full mt-4 px-4 py-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors flex items-center justify-center space-x-2"
+            >
               <LogOut className="w-5 h-5" />
               <span>Logout from Account</span>
             </button>
