@@ -495,11 +495,52 @@ export const addUserAddress = async (req: any, res: Response, next: NextFunction
         const userId = req.user?.id; 
         const { name, phone, address, city, state, landmark, addressType, isDefault } = req.body;
 
+        // Input validation and sanitization
         if (!name || !phone || !address || !city || !state || !landmark || !addressType) {
             return next(new ValidationError("Please fill in all required fields"));
         }
 
-        if(isDefault){
+        // Validate input lengths to prevent buffer overflow
+        if (name.length > 100 || phone.length > 20 || address.length > 500 || 
+            city.length > 100 || state.length > 100 || landmark.length > 200) {
+            return next(new ValidationError("Input data exceeds maximum length limits"));
+        }
+
+        // Validate address type to prevent injection
+        const validAddressTypes = ['home', 'work', 'other'];
+        if (!validAddressTypes.includes(addressType)) {
+            return next(new ValidationError("Invalid address type"));
+        }
+
+        // Sanitize inputs to prevent XSS
+        const sanitizedData = {
+            name: name.trim(),
+            phone: phone.trim().replace(/[^\d\s\-\+\(\)]/g, ''), // Only allow phone characters
+            address: address.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            landmark: landmark.trim(),
+            addressType: addressType.trim(),
+            isDefault: Boolean(isDefault),
+            userId
+        };
+
+        // Validate phone number format
+        const phoneRegex = /^[+]?[\d\s\-\(\)]{10,20}$/;
+        if (!phoneRegex.test(sanitizedData.phone)) {
+            return next(new ValidationError("Invalid phone number format"));
+        }
+
+        // Check user address limit (security measure)
+        const userAddressCount = await prisma.address.count({
+            where: { userId }
+        });
+
+        if (userAddressCount >= 10) { // Maximum 10 addresses per user
+            return next(new ValidationError("Maximum address limit reached (10 addresses)"));
+        }
+
+        if(sanitizedData.isDefault){
             // If this address is set as default, unset all other addresses
             await prisma.address.updateMany({
                 where: { userId, isDefault: true },
@@ -508,17 +549,7 @@ export const addUserAddress = async (req: any, res: Response, next: NextFunction
         }
 
         const newAddress = await prisma.address.create({
-            data: {
-                name,
-                phone,
-                address,
-                city,
-                state,
-                landmark,
-                addressType,
-                isDefault,
-                userId: req.user.id
-            }
+            data: sanitizedData
         });
 
         res.status(201).json({
@@ -540,15 +571,41 @@ export const deleteUserAddress = async (req: any, res: Response, next: NextFunct
             return next(new ValidationError("Address ID is required"));
         }
 
-        const address = await prisma.address.findUnique({
-            where: { id: addressId, userId }
+        // Validate ObjectId format to prevent injection
+        const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+        if (!objectIdRegex.test(addressId)) {
+            return next(new ValidationError("Invalid address ID format"));
+        }
+
+        // Secure query - explicitly check userId to prevent unauthorized access
+        const address = await prisma.address.findFirst({
+            where: { 
+                id: addressId,
+                userId: userId // Explicit userId check for security
+            }
         });
 
         if (!address) {
-            return next(new ValidationError("Address not found or does not belong to this user"));
+            return next(new ValidationError("Address not found or access denied"));
         }
 
-        await prisma.address.delete({ where: { id: addressId } });
+        // Prevent deletion if it's the only address and is default
+        if (address.isDefault) {
+            const addressCount = await prisma.address.count({
+                where: { userId }
+            });
+            
+            if (addressCount === 1) {
+                return next(new ValidationError("Cannot delete the only remaining address"));
+            }
+        }
+
+        await prisma.address.delete({ 
+            where: { 
+                id: addressId,
+                userId: userId // Double-check userId for security
+            } 
+        });
 
         res.status(200).json({
             success: true,
@@ -564,17 +621,180 @@ export const getUserAddresses = async (req: any, res: Response, next: NextFuncti
     try {
         const userId = req.user?.id; 
 
+        if (!userId) {
+            return next(new ValidationError("User authentication required"));
+        }
+
+        // Validate ObjectId format
+        const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+        if (!objectIdRegex.test(userId)) {
+            return next(new ValidationError("Invalid user ID format"));
+        }
+
+        // Secure query with explicit userId filtering
         const addresses = await prisma.address.findMany({
             where: { userId },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                name: true,
+                phone: true,
+                address: true,
+                city: true,
+                state: true,
+                landmark: true,
+                addressType: true,
+                isDefault: true,
+                createdAt: true,
+                updatedAt: true
+                // Explicitly exclude userId from response for security
+            }
         });
 
         res.status(200).json({
             success: true,
-            addresses
+            addresses: addresses || []
         });
     }
     catch (error) {
+        return next(error);
+    }
+}
+
+//Update user address
+export const updateUserAddress = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id;
+        const { addressId } = req.params;
+        const { name, phone, address, city, state, landmark, addressType, isDefault } = req.body;
+
+        if (!addressId) {
+            return next(new ValidationError("Address ID is required"));
+        }
+
+        // Validate ObjectId format to prevent injection
+        const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+        if (!objectIdRegex.test(addressId)) {
+            return next(new ValidationError("Invalid address ID format"));
+        }
+
+        if (!name || !phone || !address || !city || !state || !landmark || !addressType) {
+            return next(new ValidationError("Please fill in all required fields"));
+        }
+
+        // Validate input lengths to prevent buffer overflow
+        if (name.length > 100 || phone.length > 20 || address.length > 500 || 
+            city.length > 100 || state.length > 100 || landmark.length > 200) {
+            return next(new ValidationError("Input data exceeds maximum length limits"));
+        }
+
+        // Validate address type to prevent injection
+        const validAddressTypes = ['home', 'work', 'other'];
+        if (!validAddressTypes.includes(addressType)) {
+            return next(new ValidationError("Invalid address type"));
+        }
+
+        // Check if address exists and belongs to the user - using findFirst for security
+        const existingAddress = await prisma.address.findFirst({
+            where: { 
+                id: addressId, 
+                userId: userId // Explicit userId check
+            }
+        });
+
+        if (!existingAddress) {
+            return next(new ValidationError("Address not found or access denied"));
+        }
+
+        // Sanitize inputs to prevent XSS
+        const sanitizedData = {
+            name: name.trim(),
+            phone: phone.trim().replace(/[^\d\s\-\+\(\)]/g, ''), // Only allow phone characters
+            address: address.trim(),
+            city: city.trim(),
+            state: state.trim(),
+            landmark: landmark.trim(),
+            addressType: addressType.trim(),
+            isDefault: Boolean(isDefault)
+        };
+
+        // Validate phone number format
+        const phoneRegex = /^[+]?[\d\s\-\(\)]{10,20}$/;
+        if (!phoneRegex.test(sanitizedData.phone)) {
+            return next(new ValidationError("Invalid phone number format"));
+        }
+
+        if (sanitizedData.isDefault) {
+            // If this address is set as default, unset all other addresses
+            await prisma.address.updateMany({
+                where: { userId, isDefault: true },
+                data: { isDefault: false }
+            });
+        }
+
+        const updatedAddress = await prisma.address.update({
+            where: { 
+                id: addressId,
+                userId: userId // Double-check userId for security
+            },
+            data: sanitizedData
+        });
+
+        res.status(200).json({
+            success: true,
+            address: updatedAddress
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Logout User
+export const logoutUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // Clear the cookies
+        res.clearCookie("user_access_token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+        
+        res.clearCookie("user_refresh_token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Logout Seller
+export const logoutSeller = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // Clear the cookies
+        res.clearCookie("seller_access_token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+        
+        res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
         return next(error);
     }
 }

@@ -29,6 +29,7 @@ model users {
   password      String?
   following     String[]
   images        images[]
+  addresses     address[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   shopReviews   shopReviews[]
@@ -184,4 +185,20 @@ model orders {
   status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model address {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  phone       String
+  address     String
+  city        String
+  state       String
+  landmark    String
+  addressType String   @default("home") // home, work, other
+  isDefault   Boolean  @default(false)
+  userId      String   @db.ObjectId
+  user        users    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
