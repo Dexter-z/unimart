@@ -40,7 +40,16 @@ interface AddressFormData {
   isDefault: boolean
 }
 
-const AddressTab = () => {
+interface AddressTabProps {
+  user?: {
+    id: string
+    name?: string
+    email?: string
+    [key: string]: any
+  }
+}
+
+const AddressTab = ({ user }: AddressTabProps) => {
   const [showModal, setShowModal] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -54,7 +63,7 @@ const AddressTab = () => {
     formState: { errors, isSubmitting }
   } = useForm<AddressFormData>({
     defaultValues: {
-      name: '',
+      name: user?.name || '',
       phone: '',
       address: '',
       city: '',
@@ -139,7 +148,16 @@ const AddressTab = () => {
   }
 
   const resetForm = () => {
-    reset()
+    reset({
+      name: user?.name || '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      landmark: '',
+      addressType: 'home',
+      isDefault: false
+    })
     setEditingAddress(null)
     setShowModal(false)
   }

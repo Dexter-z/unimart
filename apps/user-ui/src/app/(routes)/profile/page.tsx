@@ -130,7 +130,7 @@ const ProfileContent = () => {
       case 'notifications':
         return <NotificationsTab />
       case 'address':
-        return <AddressTab />
+        return <AddressTab user={user} />
       case 'password':
         return <PasswordTab />
       default:
