@@ -1,5 +1,6 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   User, 
   ShoppingBag, 
@@ -9,23 +10,28 @@ import {
   Lock, 
   LogOut,
   Menu,
-  X,
-  Phone,
-  Calendar,
-  Package,
-  Clock,
-  CheckCircle,
-  TrendingUp,
-  Edit
+  X
 } from 'lucide-react'
 import useUser from '@/hooks/useUser'
+import ProfileTab from '@/components/profile/ProfileTab'
+import OrdersTab from '@/components/profile/OrdersTab'
+import InboxTab from '@/components/profile/InboxTab'
+import NotificationsTab from '@/components/profile/NotificationsTab'
+import AddressTab from '@/components/profile/AddressTab'
+import PasswordTab from '@/components/profile/PasswordTab'
 
-const Page = () => {
+const ProfileContent = () => {
   const { user, isLoading } = useUser()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
+
+  // Valid tab names
+  const validTabs = ['profile', 'orders', 'inbox', 'notifications', 'address', 'password']
 
   const navItems = [
-    { id: 'profile', label: 'Profile', icon: User, active: true },
+    { id: 'profile', label: 'Profile', icon: User },
     { id: 'orders', label: 'My Orders', icon: ShoppingBag },
     { id: 'inbox', label: 'Inbox', icon: Mail },
     { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -34,11 +40,77 @@ const Page = () => {
     { id: 'logout', label: 'Logout', icon: LogOut },
   ]
 
-  // Hardcoded order statistics for now
-  const orderStats = {
-    total: 24,
-    processing: 3,
-    completed: 21
+  // Initialize active tab from URL parameter on component mount
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam && validTabs.includes(tabParam)) {
+      setActiveTab(tabParam)
+    } else {
+      // If no valid tab in URL, default to profile and update URL
+      setActiveTab('profile')
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', 'profile')
+      router.replace(`/profile?${params.toString()}`, { scroll: false })
+    }
+  }, [searchParams, router])
+
+  const handleNavClick = (itemId: string) => {
+    if (itemId === 'logout') {
+      // Handle logout logic here
+      console.log('Logout clicked')
+      return
+    }
+    
+    // Update active tab state
+    setActiveTab(itemId)
+    
+    // Update URL with new tab parameter
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', itemId)
+    router.push(`/profile?${params.toString()}`, { scroll: false })
+    
+    // Close sidebar on mobile after selection
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false)
+    }
+  }
+
+  const getTabTitle = () => {
+    switch (activeTab) {
+      case 'profile':
+        return 'My Profile'
+      case 'orders':
+        return 'My Orders'
+      case 'inbox':
+        return 'Inbox'
+      case 'notifications':
+        return 'Notifications'
+      case 'address':
+        return 'Shipping Address'
+      case 'password':
+        return 'Change Password'
+      default:
+        return 'My Profile'
+    }
+  }
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'profile':
+        return <ProfileTab user={user} />
+      case 'orders':
+        return <OrdersTab />
+      case 'inbox':
+        return <InboxTab />
+      case 'notifications':
+        return <NotificationsTab />
+      case 'address':
+        return <AddressTab />
+      case 'password':
+        return <PasswordTab />
+      default:
+        return <ProfileTab user={user} />
+    }
   }
 
   if (isLoading) {
@@ -81,8 +153,9 @@ const Page = () => {
               return (
                 <li key={item.id}>
                   <button
+                    onClick={() => handleNavClick(item.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                      item.active
+                      activeTab === item.id
                         ? 'bg-[#ff8800] text-[#18181b] font-semibold'
                         : 'text-gray-300 hover:bg-[#232326] hover:text-white'
                     }`}
@@ -108,7 +181,7 @@ const Page = () => {
             >
               <Menu className="w-6 h-6 text-gray-400" />
             </button>
-            <h1 className="text-2xl font-bold text-white">My Profile</h1>
+            <h1 className="text-2xl font-bold text-white">{getTabTitle()}</h1>
             <div className="flex items-center space-x-4">
               <button className="p-2 rounded-lg hover:bg-[#232326] transition-colors">
                 <Bell className="w-5 h-5 text-gray-400" />
@@ -119,154 +192,25 @@ const Page = () => {
 
         {/* Profile content */}
         <div className="p-6">
-          {/* Profile header */}
-          <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6 mb-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-[#ff8800] rounded-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-[#18181b]" />
-                  </div>
-                  <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#ff8800] rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors">
-                    <Edit className="w-4 h-4 text-[#18181b]" />
-                  </button>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{user?.name || 'User Name'}</h2>
-                  <p className="text-[#ff8800] font-medium">{user?.email || 'user@example.com'}</p>
-                  <div className="flex items-center space-x-4 mt-2 text-sm text-gray-400">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>Joined Dec 2023</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Phone className="w-4 h-4" />
-                      <span>+234 xxx xxx xxxx</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button className="mt-4 lg:mt-0 px-6 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-colors">
-                Edit Profile
-              </button>
-            </div>
-          </div>
-
-          {/* Order statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Total Orders</p>
-                  <p className="text-3xl font-bold text-white">{orderStats.total}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                  <Package className="w-6 h-6 text-blue-400" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4 text-sm">
-                <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
-                <span className="text-green-400">+12%</span>
-                <span className="text-gray-400 ml-1">from last month</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Processing</p>
-                  <p className="text-3xl font-bold text-white">{orderStats.processing}</p>
-                </div>
-                <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-yellow-400" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4 text-sm">
-                <span className="text-yellow-400">In Progress</span>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Completed</p>
-                  <p className="text-3xl font-bold text-white">{orderStats.completed}</p>
-                </div>
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-400" />
-                </div>
-              </div>
-              <div className="flex items-center mt-4 text-sm">
-                <span className="text-green-400">Successfully delivered</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Profile details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Personal Information */}
-            <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
-              <h3 className="text-xl font-bold text-white mb-6">Personal Information</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-gray-400 text-sm">Full Name</label>
-                  <p className="text-white font-medium">{user?.name || 'John Doe'}</p>
-                </div>
-                <div>
-                  <label className="text-gray-400 text-sm">Email Address</label>
-                  <p className="text-white font-medium">{user?.email || 'john.doe@example.com'}</p>
-                </div>
-                <div>
-                  <label className="text-gray-400 text-sm">Phone Number</label>
-                  <p className="text-white font-medium">+234 xxx xxx xxxx</p>
-                </div>
-                <div>
-                  <label className="text-gray-400 text-sm">Date of Birth</label>
-                  <p className="text-white font-medium">January 15, 1990</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Settings */}
-            <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
-              <h3 className="text-xl font-bold text-white mb-6">Account Settings</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-[#18181b] rounded-xl">
-                  <div className="flex items-center space-x-3">
-                    <Bell className="w-5 h-5 text-[#ff8800]" />
-                    <div>
-                      <p className="text-white font-medium">Email Notifications</p>
-                      <p className="text-gray-400 text-sm">Receive order updates via email</p>
-                    </div>
-                  </div>
-                  <div className="w-12 h-6 bg-[#ff8800] rounded-full relative cursor-pointer">
-                    <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-[#18181b] rounded-xl">
-                  <div className="flex items-center space-x-3">
-                    <Lock className="w-5 h-5 text-[#ff8800]" />
-                    <div>
-                      <p className="text-white font-medium">Two-Factor Authentication</p>
-                      <p className="text-gray-400 text-sm">Add extra security to your account</p>
-                    </div>
-                  </div>
-                  <div className="w-12 h-6 bg-gray-600 rounded-full relative cursor-pointer">
-                    <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5"></div>
-                  </div>
-                </div>
-
-                <button className="w-full mt-4 px-4 py-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors flex items-center justify-center space-x-2">
-                  <LogOut className="w-5 h-5" />
-                  <span>Logout from Account</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          {renderTabContent()}
         </div>
       </div>
     </div>
+  )
+}
+
+const Page = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#18181b] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#ff8800] mx-auto"></div>
+          <p className="text-white mt-4">Loading profile...</p>
+        </div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   )
 }
 
