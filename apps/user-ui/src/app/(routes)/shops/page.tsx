@@ -1,11 +1,10 @@
 "use client"
 
 import axiosInstance from '@/utils/axiosInstance'
-import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { Filter, X, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react'
-import ProductCard from '@/components/product-card'
+import { SHOP_CATEGORIES, getCategoryLabel } from '@/configs/categories'
 
 const Page = () => {
     const router = useRouter()
@@ -15,7 +14,6 @@ const Page = () => {
     const [page, setPage] = useState(1);
     const [shops, setShops] = useState<any[]>([]);
     const [totalPages, setTotalPages] = useState(1);
-    const [tempPriceRange, setTempPriceRange] = useState([0, 1199]);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -65,7 +63,9 @@ const Page = () => {
     useEffect(() => {
         updateURL()
         fetchFilteredShops();
-    }, [ selectedCategories, page]);
+    }, [selectedCategories, selectedCountries, page]);
+
+    const availableCountries = ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Egypt', 'Morocco', 'Uganda', 'Tanzania'];
 
 
     const handleCategoryToggle = (category: string) => {
@@ -87,16 +87,12 @@ const Page = () => {
     };
 
     const clearAllFilters = () => {
-        setPriceRange([0, 1199]);
-        setTempPriceRange([0, 1199]);
         setSelectedCategories([]);
-        setSelectedSizes([]);
-        setSelectedColors([]);
+        setSelectedCountries([]);
         setPage(1);
     };
 
     const applyFilters = () => {
-        setPriceRange(tempPriceRange);
         setPage(1);
         setShowFilters(false);
     };
@@ -135,7 +131,7 @@ const Page = () => {
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-white mb-2">All Shops</h1>
                     <p className="text-gray-400">
-                        Showing {products.length} of {totalPages * 12} products
+                        Showing {shops.length} of {totalPages * 12} shops
                     </p>
                 </div>
 
@@ -149,9 +145,9 @@ const Page = () => {
                         >
                             <Filter className="w-4 h-4" />
                             Filters
-                            {(selectedCategories.length > 0 || selectedSizes.length > 0 || selectedColors.length > 0 || priceRange[0] > 0 || priceRange[1] < 1199) && (
+                            {(selectedCategories.length > 0 || selectedCountries.length > 0) && (
                                 <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                    {selectedCategories.length + selectedSizes.length + selectedColors.length + (priceRange[0] > 0 || priceRange[1] < 1199 ? 1 : 0)}
+                                    {selectedCategories.length + selectedCountries.length}
                                 </span>
                             )}
                         </button>
@@ -173,45 +169,25 @@ const Page = () => {
                         </div>
                     </div>
 
-                    {/* Active Filters - Enhanced with your color scheme */}
-                    {(selectedCategories.length > 0 || selectedSizes.length > 0 || selectedColors.length > 0 || priceRange[0] > 0 || priceRange[1] < 1199) && (
+                    {/* Active Filters */}
+                    {(selectedCategories.length > 0 || selectedCountries.length > 0) && (
                         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#232326]">
                             {selectedCategories.map(category => (
                                 <span key={category} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
-                                    Category: {category}
+                                    Category: {getCategoryLabel(category)}
                                     <button onClick={() => handleCategoryToggle(category)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
-                            {selectedSizes.map(size => (
-                                <span key={size} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
-                                    Size: {size}
-                                    <button onClick={() => handleSizeToggle(size)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
+                            {selectedCountries.map(country => (
+                                <span key={country} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
+                                    Country: {country}
+                                    <button onClick={() => handleCountryToggle(country)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
                             ))}
-                            {selectedColors.map(colorCode => {
-                                const colorInfo = availableColors.find(c => c.code === colorCode);
-                                const colorName = colorInfo ? colorInfo.name : colorCode;
-                                return (
-                                    <span key={colorCode} className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
-                                        Color: {colorName}
-                                        <button onClick={() => handleColorToggle(colorCode)} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    </span>
-                                );
-                            })}
-                            {(priceRange[0] > 0 || priceRange[1] < 1199) && (
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#232326] to-[#18181b] border border-[#ff8800] text-white rounded-full text-sm font-medium">
-                                    Price: ₦{priceRange[0].toLocaleString()} - ₦{priceRange[1].toLocaleString()}
-                                    <button onClick={() => setPriceRange([0, 1199])} className="text-[#ff8800] hover:text-red-400 rounded-full p-0.5 transition-colors duration-200">
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            )}
                             <button
                                 onClick={clearAllFilters}
                                 className="px-3 py-1 text-[#ff8800] hover:text-orange-400 text-sm font-medium border border-[#ff8800] hover:border-orange-400 rounded-full transition-all duration-200"
@@ -222,33 +198,77 @@ const Page = () => {
                     )}
                 </div>
 
-                {/* Products Grid */}
-                {isProductLoading ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-2 auto-rows-fr">
+                {/* Shops Grid */}
+                {isShopLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {Array.from({ length: 12 }).map((_, index) => (
-                            <div key={index} className="bg-[#232326] rounded-xl flex flex-col items-center animate-pulse border border-[#232326] shadow-sm min-h-[280px] aspect-[3/4] overflow-hidden">
-                                <div className="w-full" style={{ height: '66%' }}>
-                                    <div className="w-full h-full bg-gray-700" />
+                            <div key={index} className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6 animate-pulse">
+                                <div className="flex items-center space-x-4 mb-4">
+                                    <div className="w-16 h-16 bg-gray-700 rounded-xl" />
+                                    <div className="flex-1">
+                                        <div className="h-4 bg-gray-700 rounded mb-2" />
+                                        <div className="h-3 bg-gray-700 rounded w-3/4" />
+                                    </div>
                                 </div>
-                                <div className="flex-1 w-full flex flex-col items-center justify-between p-4">
-                                    <div className="w-full min-h-[2.5rem] bg-gray-700 rounded mb-2" />
-                                    <div className="w-12 h-3 bg-gray-700 rounded" />
+                                <div className="h-3 bg-gray-700 rounded mb-2" />
+                                <div className="h-3 bg-gray-700 rounded w-2/3 mb-4" />
+                                <div className="flex justify-between items-center">
+                                    <div className="h-4 bg-gray-700 rounded w-20" />
+                                    <div className="h-6 bg-gray-700 rounded w-16" />
                                 </div>
                             </div>
                         ))}
                     </div>
-                ) : products.length > 0 ? (
-                    <div className={`grid ${viewMode === 'grid' 
-                        ? 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-2 auto-rows-fr' 
-                        : 'grid-cols-1 gap-4'
-                    }`}>
-                        {products.map((product: any) => (
-                            <ProductCard key={product.id} product={product} isEvent={false} />
+                ) : shops.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {shops.map((shop: any) => (
+                            <div key={shop.id} className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] hover:border-[#ff8800] transition-all duration-200 p-6 cursor-pointer group">
+                                <div className="flex items-center space-x-4 mb-4">
+                                    <img 
+                                        src={shop.avatar || '/api/placeholder/64/64'} 
+                                        alt={shop.name}
+                                        className="w-16 h-16 rounded-xl object-cover border-2 border-[#232326] group-hover:border-[#ff8800] transition-all duration-200"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-semibold text-lg truncate group-hover:text-[#ff8800] transition-colors duration-200">
+                                            {shop.name}
+                                        </h3>
+                                        <p className="text-[#ff8800] text-sm font-medium">
+                                            {getCategoryLabel(shop.category)}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                                    {shop.bio || 'No description available'}
+                                </p>
+                                
+                                <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="flex items-center space-x-1">
+                                            <span className="text-yellow-500">★</span>
+                                            <span className="text-white">{shop.ratings || '5.0'}</span>
+                                        </div>
+                                        <div className="text-gray-400">
+                                            {shop.followers?.length || 0} followers
+                                        </div>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        {shop.products?.length || 0} products
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-4 pt-4 border-t border-[#232326]">
+                                    <p className="text-gray-400 text-xs truncate">
+                                        📍 {shop.address}
+                                    </p>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <div className="text-gray-400 text-lg mb-4">No products found</div>
+                        <div className="text-gray-400 text-lg mb-4">No shops found</div>
                         <button
                             onClick={clearAllFilters}
                             className="px-6 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-all duration-200"
@@ -259,7 +279,7 @@ const Page = () => {
                 )}
 
                 {/* Pagination */}
-                {totalPages > 1 && !isProductLoading && (
+                {totalPages > 1 && !isShopLoading && (
                     <div className="mt-8 flex justify-center">
                         <div className="flex items-center gap-2">
                             <button
@@ -302,7 +322,7 @@ const Page = () => {
                     <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] max-w-2xl w-full mx-auto max-h-[80vh] overflow-y-auto">
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-[#232326]">
-                            <h2 className="text-2xl font-bold text-white">Filter Products</h2>
+                            <h2 className="text-2xl font-bold text-white">Filter Shops</h2>
                             <button
                                 onClick={() => setShowFilters(false)}
                                 className="p-2 hover:bg-[#ff8800] hover:text-[#18181b] rounded-xl transition-all duration-200 text-white"
@@ -312,111 +332,38 @@ const Page = () => {
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {/* Price Range */}
-                            <div>
-                                <h3 className="text-lg font-semibold text-white mb-4">Price Range</h3>
-                                <div className="px-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1">
-                                            <label className="block text-sm text-gray-400 mb-1">Min Price</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₦</span>
-                                                <input
-                                                    type="number"
-                                                    min={0}
-                                                    max={tempPriceRange[1]}
-                                                    value={tempPriceRange[0]}
-                                                    onChange={(e) => {
-                                                        const value = parseInt(e.target.value) || 0;
-                                                        setTempPriceRange([Math.max(0, Math.min(value, tempPriceRange[1])), tempPriceRange[1]]);
-                                                    }}
-                                                    className="w-full pl-8 pr-3 py-2 bg-[#18181b] border border-[#232326] rounded-xl text-white placeholder-gray-400 focus:border-[#ff8800] focus:outline-none"
-                                                    placeholder="0"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="text-gray-400 mt-6">to</div>
-                                        <div className="flex-1">
-                                            <label className="block text-sm text-gray-400 mb-1">Max Price</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">₦</span>
-                                                <input
-                                                    type="number"
-                                                    min={tempPriceRange[0]}
-                                                    max={1199}
-                                                    value={tempPriceRange[1]}
-                                                    onChange={(e) => {
-                                                        const value = parseInt(e.target.value) || 1199;
-                                                        setTempPriceRange([tempPriceRange[0], Math.min(1199, Math.max(value, tempPriceRange[0]))]);
-                                                    }}
-                                                    className="w-full pl-8 pr-3 py-2 bg-[#18181b] border border-[#232326] rounded-xl text-white placeholder-gray-400 focus:border-[#ff8800] focus:outline-none"
-                                                    placeholder="1199"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-3 text-xs text-gray-400 text-center">
-                                        Enter your desired price range in Naira (₦)
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* Categories */}
-                            {data?.categories && data.categories.length > 0 && (
-                                <div>
-                                    <h3 className="text-lg font-semibold text-white mb-4">Categories</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {data.categories.map((category: string) => (
-                                            <label key={category} className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedCategories.includes(category)}
-                                                    onChange={() => handleCategoryToggle(category)}
-                                                    className="w-4 h-4 text-[#ff8800] bg-[#18181b] border-[#232326] rounded focus:ring-[#ff8800] focus:ring-2"
-                                                />
-                                                <span className="text-gray-300">{category}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Sizes */}
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-4">Sizes</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {availableSizes.map((size) => (
-                                        <button
-                                            key={size}
-                                            onClick={() => handleSizeToggle(size)}
-                                            className={`px-3 py-2 rounded-xl border transition-all duration-200 ${
-                                                selectedSizes.includes(size)
-                                                    ? 'border-[#ff8800] bg-[#ff8800] text-[#18181b] font-semibold'
-                                                    : 'border-[#232326] bg-[#18181b] text-white hover:border-[#ff8800]'
-                                            }`}
-                                        >
-                                            {size}
-                                        </button>
+                                <h3 className="text-lg font-semibold text-white mb-4">Categories</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {SHOP_CATEGORIES.map((category) => (
+                                        <label key={category.value} className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCategories.includes(category.value)}
+                                                onChange={() => handleCategoryToggle(category.value)}
+                                                className="w-4 h-4 text-[#ff8800] bg-[#18181b] border-[#232326] rounded focus:ring-[#ff8800] focus:ring-2"
+                                            />
+                                            <span className="text-gray-300">{category.label}</span>
+                                        </label>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Colors */}
+                            {/* Countries */}
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-4">Colors</h3>
-                                <div className="flex flex-wrap gap-3">
-                                    {availableColors.map((color) => (
-                                        <button
-                                            key={color.code}
-                                            onClick={() => handleColorToggle(color.code)}
-                                            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
-                                                selectedColors.includes(color.code)
-                                                    ? 'border-[#ff8800] scale-110'
-                                                    : 'border-[#232326] hover:border-[#ff8800]'
-                                            }`}
-                                            style={{ backgroundColor: color.code }}
-                                            title={color.name}
-                                        />
+                                <h3 className="text-lg font-semibold text-white mb-4">Countries</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {availableCountries.map((country: string) => (
+                                        <label key={country} className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCountries.includes(country)}
+                                                onChange={() => handleCountryToggle(country)}
+                                                className="w-4 h-4 text-[#ff8800] bg-[#18181b] border-[#232326] rounded focus:ring-[#ff8800] focus:ring-2"
+                                            />
+                                            <span className="text-gray-300">{country}</span>
+                                        </label>
                                     ))}
                                 </div>
                             </div>
