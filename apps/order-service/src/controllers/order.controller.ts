@@ -314,7 +314,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     }
                 }
 
-                //Send email notification
+                //Send email notification to user
                 await sendEmail(
                     email,
                     "Your Order has been placed",
@@ -365,10 +365,16 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         redirect_link: `https://${urlHead}/order/${sessionId}`,
                     }
                 })
+
+                //Delete session
+                await redis.del(sessionKey);
             }
         }
 
+        res.status(200).json({received: true})
+
     } catch (error) {
-        next(error);
+        console.log(error)
+        return next(error);
     }
 }
