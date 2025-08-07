@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import useUser from "@/hooks/useUser";
 import useLocationTracking from "@/hooks/useLocationTracking";
 import useDeviceTracking from "@/hooks/useDeviceTracking";
 import axiosInstance from "@/utils/axiosInstance";
+import { useQuery } from "@tanstack/react-query";
 
 const CartItems: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, addToWishlist, removeFromWishlist, wishlist } = useStore();
@@ -34,6 +35,7 @@ const CartItems: React.FC = () => {
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
   const [showRemoveWishlistDialog, setShowRemoveWishlistDialog] = useState(false);
   const [itemToRemoveFromWishlist, setItemToRemoveFromWishlist] = useState<any>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState("")
 
   const handleQuantityChange = (itemId: string, newQuantity: number, stock: number) => {
     if (newQuantity > 0 && newQuantity <= stock) {
@@ -123,6 +125,24 @@ const CartItems: React.FC = () => {
   const handleCardClick = (item: any) => {
     router.push(`/product/${item.slug}`);
   };
+
+  //Get addresses
+  const {data: addresses = []} = useQuery<any[], Error>({
+    queryKey: ["shipping-addresses"],
+    queryFn: async() => {
+      const res = await axiosInstance.get("/api/shipping-addresses");
+      return res.data.addresses
+    }
+  })
+
+  useEffect(() => {
+    if(addresses.length > 0 && !selectedAddressId) {
+      const defaultAddress = addresses.find(addr => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+      }
+    }
+  }, [addresses, selectedAddressId])
 
   if (cart.length === 0) {
     return <p className="text-center text-gray-500">Your cart is empty, Start adding products</p>;
