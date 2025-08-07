@@ -6,6 +6,7 @@ import Stripe from 'stripe';
 import crypto from 'crypto';
 import { timeStamp } from "console";
 import { Prisma } from "@prisma/client";
+import { sendEmail } from "../utils/sendEmail";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,
     {
