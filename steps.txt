@@ -6,3 +6,5 @@ node apps/kafka-service/dist/main.js
 To run stripe webhook service
 stripe login
 stripe listen --forward-to localhost:6004/api/create-order
+
+npx nx serve order-service

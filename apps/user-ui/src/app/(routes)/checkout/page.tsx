@@ -27,7 +27,9 @@ const Page = () => {
             const countdownInterval = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
-                        router.push('/cart');
+                        clearInterval(countdownInterval);
+                        // Use setTimeout to avoid updating component during render
+                        setTimeout(() => router.push('/cart'), 0);
                         return 0;
                     }
                     return prev - 1;

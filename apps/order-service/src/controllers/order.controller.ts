@@ -17,11 +17,34 @@ const urlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localho
 
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
-    const { amount, sellerStripeAccountId, sessionId } = req.body;
-    const customerAmount = Math.round(amount * 100); // Convert to cents
-    const platformFee = Math.floor(customerAmount * 0.1); // 10% platform fee
-
     try {
+        const { amount, sellerStripeAccountId, sessionId } = req.body;
+        
+        console.log("createPaymentIntent - Request body:", {
+            amount,
+            sellerStripeAccountId,
+            sessionId,
+            userId: req.user?.id
+        });
+
+        // Validate required fields
+        if (!amount || !sellerStripeAccountId || !sessionId) {
+            throw new ValidationError("Missing required fields: amount, sellerStripeAccountId, or sessionId");
+        }
+
+        if (!req.user?.id) {
+            throw new ValidationError("User not authenticated");
+        }
+
+        const customerAmount = Math.round(amount * 100); // Convert to cents
+        const platformFee = Math.floor(customerAmount * 0.1); // 10% platform fee
+
+        console.log("createPaymentIntent - Creating payment intent with:", {
+            customerAmount,
+            platformFee,
+            sellerStripeAccountId
+        });
+
         const paymentIntent = await stripe.paymentIntents.create({
             amount: customerAmount,
             currency: 'usd',
@@ -34,13 +57,16 @@ export const createPaymentIntent = async (req: any, res: Response, next: NextFun
                 sessionId, // Optional metadata
                 userId: req.user.id, // User ID from request
             }
-        })
+        });
+
+        console.log("createPaymentIntent - Payment intent created successfully:", paymentIntent.id);
 
         res.send({
             clientSecret: paymentIntent.client_secret
-        })
+        });
     } catch (error) {
-        next(error)
+        console.error("createPaymentIntent - Error:", error);
+        next(error);
     }
 }
 
