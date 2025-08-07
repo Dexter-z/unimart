@@ -36,6 +36,27 @@ const CartItems: React.FC = () => {
   const [showRemoveWishlistDialog, setShowRemoveWishlistDialog] = useState(false);
   const [itemToRemoveFromWishlist, setItemToRemoveFromWishlist] = useState<any>(null);
   const [selectedAddressId, setSelectedAddressId] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const createPaymentSession = async () => {
+    setLoading(true)
+
+    try{
+      const res = await axiosInstance.post("/order/api/create-payment-session", {
+        cart,
+        selectedAddressId,
+        coupon: {}
+      })
+      const sessionId = res.data.sessionId
+
+      router.push(`/checkout?sessionId=${sessionId}`)
+    }catch(error) {
+      console.error("Error creating payment session:", error);
+      //toast.error("Something went wrong. Please try again.");
+    }finally {
+      setLoading(false);
+    }
+  }
 
   const handleQuantityChange = (itemId: string, newQuantity: number, stock: number) => {
     if (newQuantity > 0 && newQuantity <= stock) {
@@ -517,7 +538,7 @@ const CartItems: React.FC = () => {
         {/* Checkout Button */}
         <Button 
           size="lg" 
-          onClick={handleCheckout} 
+          onClick={createPaymentSession} 
           className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] font-bold py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-base sm:text-lg"
         >
           <span className="flex items-center justify-center gap-2 sm:gap-3">
