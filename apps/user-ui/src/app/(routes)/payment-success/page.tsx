@@ -139,7 +139,7 @@ const PaymentSuccessPage = () => {
               View your complete order information and receipt
             </p>
             <button
-              onClick={() => router.push('/profile?active=orders')}
+              onClick={() => router.push('/profile?tab=orders')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors duration-200 text-sm font-medium"
             >
               View Order
