@@ -14,6 +14,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,
     }
 )
 
+const urlHead = process.env.NODE_ENV! === "production" ? "https://unimart.com" : "http://localhost:3000"
+
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
     const { amount, sellerStripeAccountId, sessionId } = req.body;
@@ -321,9 +323,48 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         name,
                         cart,
                         totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
-                        trackingUrl: `https://unimart.com/order/${sessionId}`,
+                        trackingUrl: `https://${urlHead}/order/${sessionId}`,
                     }
                 )
+
+                //Notify shop owner
+                const createdShopIds = Object.keys(shopGrouped);
+                const sellerShops = await prisma.shops.findMany({
+                    where: {
+                        id: { in: createdShopIds }
+                    },
+                    select: {
+                        id: true,
+                        sellerId: true,
+                        name: true
+                    }
+                })
+
+                for (const shop of sellerShops) {
+                    const firstProduct = shopGrouped[shop.id][0];
+                    const productTitle = firstProduct?.title || "new item";
+
+                    await prisma.notifications.create({
+                        data: {
+                            title: `New Order Received`,
+                            message: `You have received a new order for ${productTitle}.`,
+                            creatorId: userId,
+                            receiverId: shop.sellerId,
+                            redirect_link: `https://${urlHead}/order/${sessionId}`,
+                        }
+                    })
+                }
+
+                //Create notification for admin
+                await prisma.notifications.create({
+                    data: {
+                        title: `New Order Placed`,
+                        message: `A new order has been placed by ${name}.`,
+                        creatorId: userId,
+                        receiverId: "admin", // Assuming admin ID is "admin"
+                        redirect_link: `https://${urlHead}/order/${sessionId}`,
+                    }
+                })
             }
         }
 
