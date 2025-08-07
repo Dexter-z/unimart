@@ -482,7 +482,7 @@ const CartItems: React.FC = () => {
             </div>
             <Button
               onClick={() => router.push('/profile?tab=address')}
-              className="bg-gradient-to-b from-[#232326] to-[#18181b] hover:bg-[#ff8800] hover:text-[#18181b] text-white border border-[#232326] hover:border-[#ff8800] px-4 sm:px-6 h-12 rounded-xl transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
+              className="bg-gradient-to-b from-[#232326] to-[#18181b] hover:bg-white hover:text-[#ff8800] text-white border border-[#232326] hover:border-[#ff8800] px-4 sm:px-6 h-12 rounded-xl transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
               title="Add new address"
             >
               <Plus className="w-4 h-4 mr-1" />
