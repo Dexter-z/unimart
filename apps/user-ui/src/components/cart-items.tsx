@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart } from "lucide-react";
+import { Heart, MapPin, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -114,11 +115,17 @@ const CartItems: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    console.log("Checkout clickedd", {
+    if (!selectedAddressId) {
+      alert("Please select a shipping address before proceeding to checkout");
+      return;
+    }
+
+    console.log("Checkout clicked", {
       cart,
       subtotal: calculateOriginalSubtotal(),
       total: calculateFinalTotal(),
       appliedDiscount,
+      selectedAddressId,
     });
   };
 
@@ -430,6 +437,85 @@ const CartItems: React.FC = () => {
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Shipping Address Section */}
+        <div className="mb-4">
+          <label className="block text-white font-medium mb-2 text-sm sm:text-base">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#ff8800]" />
+              <span>Shipping Address</span>
+            </div>
+          </label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex-1">
+              <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
+                <SelectTrigger className="w-full bg-[#18181b] border-[#232326] text-white focus:border-[#ff8800] focus:ring-[#ff8800]/20 rounded-xl h-12">
+                  <SelectValue placeholder="Select shipping address" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#18181b] border-[#232326]">
+                  {addresses.length > 0 ? (
+                    addresses.map((address: any) => (
+                      <SelectItem 
+                        key={address.id} 
+                        value={address.id}
+                        className="text-white hover:bg-[#232326] focus:bg-[#232326] cursor-pointer"
+                      >
+                        <div className="flex flex-col items-start">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{address.name}</span>
+                            {address.isDefault && (
+                              <span className="px-2 py-0.5 bg-[#ff8800]/20 text-[#ff8800] rounded-full text-xs">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-gray-400 text-sm">
+                            {address.address}, {address.city}, {address.state}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-address" disabled className="text-gray-500">
+                      No addresses found
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={() => router.push('/profile?tab=address')}
+              className="bg-gradient-to-b from-[#232326] to-[#18181b] hover:bg-[#ff8800] hover:text-[#18181b] text-white border border-[#232326] hover:border-[#ff8800] px-4 sm:px-6 h-12 rounded-xl transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
+              title="Add new address"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Address
+            </Button>
+          </div>
+          {selectedAddressId && addresses.length > 0 && (
+            <div className="mt-2 p-3 bg-[#ff8800]/5 border border-[#ff8800]/20 rounded-xl">
+              {(() => {
+                const selectedAddress = addresses.find((addr: any) => addr.id === selectedAddressId);
+                return selectedAddress ? (
+                  <div className="text-sm text-gray-300">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-white">{selectedAddress.name}</span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-400">{selectedAddress.phone}</span>
+                    </div>
+                    <div className="text-gray-400">
+                      {selectedAddress.address}
+                      {selectedAddress.landmark && `, ${selectedAddress.landmark}`}
+                    </div>
+                    <div className="text-gray-400">
+                      {selectedAddress.city}, {selectedAddress.state}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
         </div>
         
         {/* Checkout Button */}
