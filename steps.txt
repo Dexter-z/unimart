@@ -2,3 +2,7 @@ nx g @nx/express:app order-service --directory=apps/order-service --e2eTestRunne
 
 TO RUN THE CONSUMER
 node apps/kafka-service/dist/main.js
+
+To run stripe webhook service
+stripe login
+stripe listen --forward-to localhost:6004/api/create-order
