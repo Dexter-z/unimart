@@ -14,7 +14,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,
     }
 )
 
-const urlHead = process.env.NODE_ENV! === "production" ? "https://unimart.com" : "http://localhost:3000"
+const urlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localhost:3000"
 
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
@@ -327,21 +327,44 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     }
                 )
 
-                //Notify shop owner
+                //Notify shop owner via email
                 const createdShopIds = Object.keys(shopGrouped);
                 const sellerShops = await prisma.shops.findMany({
                     where: {
                         id: { in: createdShopIds }
                     },
-                    select: {
-                        id: true,
-                        sellerId: true,
-                        name: true
+                    include: {
+                        sellers: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true
+                            }
+                        }
                     }
                 })
 
                 for (const shop of sellerShops) {
-                    const firstProduct = shopGrouped[shop.id][0];
+                    const shopItems = shopGrouped[shop.id];
+                    const shopTotal = shopItems.reduce((sum: number, item: any) => sum + (item.salePrice * item.quantity), 0);
+                    
+                    // Send email to seller
+                    await sendEmail(
+                        shop.sellers.email,
+                        "New Order Received - UniMart",
+                        "seller-order-notification",
+                        {
+                            sellerName: shop.sellers.name,
+                            customerName: name,
+                            shopName: shop.name,
+                            orderItems: shopItems,
+                            totalAmount: shopTotal,
+                            manageOrderUrl: `https://${urlHead}/seller/orders/${sessionId}`,
+                            dashboardUrl: `https://${urlHead}/seller/dashboard`,
+                        }
+                    )
+
+                    const firstProduct = shopItems[0];
                     const productTitle = firstProduct?.title || "new item";
 
                     await prisma.notifications.create({
@@ -353,6 +376,35 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             redirect_link: `https://${urlHead}/order/${sessionId}`,
                         }
                     })
+                }
+
+                // Send email notifications to all active admins
+                const activeAdmins = await prisma.admins.findMany({
+                    where: {
+                        isActive: true
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                })
+
+                for (const admin of activeAdmins) {
+                    await sendEmail(
+                        admin.email,
+                        "New Order Alert - UniMart Admin",
+                        "admin-order-notification",
+                        {
+                            customerName: name,
+                            shopName: sellerShops[0]?.name || "Unknown Shop",
+                            sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
+                            orderItems: cart,
+                            totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
+                            adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
+                            adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
+                        }
+                    )
                 }
 
                 //Create notification for admin

@@ -178,13 +178,52 @@ model productAnalytics {
 }
 
 model orders {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String      @db.ObjectId
+  shopId            String      @db.ObjectId
+  total             Float
+  status            String      @default("pending")
+  shippingAddressId String?     @db.ObjectId
+  couponCode        String?
+  discountAmount    Float?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  items             orderItems[]
+}
+
+model orderItems {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String   @db.ObjectId
+  productId       String   @db.ObjectId
+  quantity        Int
+  price           Float
+  selectedOptions Json?
+  order           orders   @relation(fields: [orderId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model admins {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  shopId    String   @db.ObjectId
-  total     Float
-  status    String   @default("pending")
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin") // admin, super_admin
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model notifications {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  message       String
+  creatorId     String   @db.ObjectId
+  receiverId    String   @db.ObjectId
+  redirect_link String?
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model address {
