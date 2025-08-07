@@ -1,20 +1,33 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import express from 'express';
-import * as path from 'path';
+import cors from "cors"
+import { errorMiddleware } from '@packages/error-handler/error-middleware';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import router from './routes/order.route';
 
 const app = express();
 
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use(cors({
+    origin: [
+        "http://localhost:3000",
+        "http://192.168.250.215:3000"
+    ],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    credentials: true
+}))
 
-app.get('/api', (req, res) => {
+app.use(express.json())
+app.use(cookieParser())
+
+app.get('/', (req, res) => {
   res.send({ message: 'Welcome to order-service!' });
 });
 
-const port = process.env.PORT || 3333;
+app.use("/api", router)
+app.use(errorMiddleware)
+
+
+const port = process.env.PORT || 6004;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
