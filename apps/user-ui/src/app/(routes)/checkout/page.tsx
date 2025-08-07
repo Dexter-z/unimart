@@ -7,7 +7,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import axiosInstance from '@/utils/axiosInstance';
 import CheckoutForm from '@/components/CheckoutForm';
 
-const sripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+
+console.log("Stripe Public Key:", process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
+console.log("Stripe Promise:", stripePromise);
 
 const Page = () => {
     const [clientSecret, setClientSecret] = useState("")
@@ -152,7 +155,7 @@ const Page = () => {
     return (
         clientSecret && (
             <Elements 
-                stripe = {sripePromise}
+                stripe={stripePromise}
                 options={{ clientSecret, appearance }}>
 
                 <CheckoutForm 
