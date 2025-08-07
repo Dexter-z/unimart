@@ -85,7 +85,7 @@ const Page = () => {
                     return sum + price * item.quantity;
                 }, 0);
                 // Calculate platform fee (10% of discounted total)
-                let platformFee = Math.floor(discountedTotal * 0.1);
+                let platformFee = Math.floor(discountedTotal * 0);
                 // Calculate grand total
                 let grandTotal = discountedTotal + platformFee;
 

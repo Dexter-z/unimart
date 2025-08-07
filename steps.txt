@@ -7,4 +7,8 @@ To run stripe webhook service
 stripe login
 stripe listen --forward-to localhost:6004/api/create-order
 
+npx nx serve api-gateway
 npx nx serve order-service
+npx nx serve auth-service
+npx nx serve product-service
+npm run user-ui
