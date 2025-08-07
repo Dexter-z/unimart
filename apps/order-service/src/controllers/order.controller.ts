@@ -4,7 +4,6 @@ import redis from "@packages/libs/redis";
 import { NextFunction, Request, Response } from "express";
 import Stripe from 'stripe';
 import crypto from 'crypto';
-import { timeStamp } from "console";
 import { Prisma } from "@prisma/client";
 import { sendEmail } from "../utils/sendEmail";
 
@@ -293,14 +292,16 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         timestamp: Date.now()
                     }
 
-                    const currentActions = Array.isArray(existingAnalytics?.actions) ? (existingAnalytics.actions as Prisma.JsonArray) : [];
+                    const currentActions = Array.isArray(existingAnalytics?.actions) 
+                        ? (existingAnalytics.actions as Prisma.InputJsonValue[])
+                        : [];
 
                     if(existingAnalytics) {
                         await prisma.userAnalytics.update({
                             where: { userId },
                             data: {
                                 lastVisited: new Date(),
-                                actions: [...currentActions, newAction]
+                                actions: [...currentActions, newAction] as Prisma.InputJsonValue[]
                             }
                         })
                     } else {
@@ -308,7 +309,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             data: {
                                 userId,
                                 lastVisited: new Date(),
-                                actions: [newAction]
+                                actions: [newAction] as Prisma.InputJsonValue[]
                             }
                         })
                     }
@@ -348,21 +349,28 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     const shopItems = shopGrouped[shop.id];
                     const shopTotal = shopItems.reduce((sum: number, item: any) => sum + (item.salePrice * item.quantity), 0);
                     
-                    // Send email to seller
-                    await sendEmail(
-                        shop.sellers.email,
-                        "New Order Received - UniMart",
-                        "seller-order-notification",
-                        {
-                            sellerName: shop.sellers.name,
-                            customerName: name,
-                            shopName: shop.name,
-                            orderItems: shopItems,
-                            totalAmount: shopTotal,
-                            manageOrderUrl: `https://${urlHead}/seller/orders/${sessionId}`,
-                            dashboardUrl: `https://${urlHead}/seller/dashboard`,
+                    // Check if seller exists and has email
+                    if (shop.sellers && shop.sellers.email) {
+                        try {
+                            // Send email to seller
+                            await sendEmail(
+                                shop.sellers.email,
+                                "New Order Received - UniMart",
+                                "seller-order-notification",
+                                {
+                                    sellerName: shop.sellers.name,
+                                    customerName: name,
+                                    shopName: shop.name,
+                                    orderItems: shopItems,
+                                    totalAmount: shopTotal,
+                                    manageOrderUrl: `https://${urlHead}/seller/orders/${sessionId}`,
+                                    dashboardUrl: `https://${urlHead}/seller/dashboard`,
+                                }
+                            )
+                        } catch (emailError) {
+                            console.error(`Failed to send seller email to ${shop.sellers.email}:`, emailError);
                         }
-                    )
+                    }
 
                     const firstProduct = shopItems[0];
                     const productTitle = firstProduct?.title || "new item";
@@ -379,44 +387,56 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 }
 
                 // Send email notifications to all active admins
-                const activeAdmins = await prisma.admins.findMany({
-                    where: {
-                        isActive: true
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true
-                    }
-                })
-
-                for (const admin of activeAdmins) {
-                    await sendEmail(
-                        admin.email,
-                        "New Order Alert - UniMart Admin",
-                        "admin-order-notification",
-                        {
-                            customerName: name,
-                            shopName: sellerShops[0]?.name || "Unknown Shop",
-                            sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
-                            orderItems: cart,
-                            totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
-                            adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
-                            adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
+                try {
+                    const activeAdmins = await prisma.admins.findMany({
+                        where: {
+                            isActive: true
+                        },
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
                         }
-                    )
+                    })
+
+                    for (const admin of activeAdmins) {
+                        try {
+                            await sendEmail(
+                                admin.email,
+                                "New Order Alert - UniMart Admin",
+                                "admin-order-notification",
+                                {
+                                    customerName: name,
+                                    shopName: sellerShops[0]?.name || "Unknown Shop",
+                                    sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
+                                    orderItems: cart,
+                                    totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
+                                    adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
+                                    adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
+                                }
+                            )
+                        } catch (emailError) {
+                            console.error(`Failed to send admin email to ${admin.email}:`, emailError);
+                        }
+                    }
+                } catch (adminError) {
+                    console.error("Failed to fetch admins or send admin notifications:", adminError);
                 }
 
                 //Create notification for admin
-                await prisma.notifications.create({
-                    data: {
-                        title: `New Order Placed`,
-                        message: `A new order has been placed by ${name}.`,
-                        creatorId: userId,
-                        receiverId: "admin", // Assuming admin ID is "admin"
-                        redirect_link: `https://${urlHead}/order/${sessionId}`,
-                    }
-                })
+                try {
+                    await prisma.notifications.create({
+                        data: {
+                            title: `New Order Placed`,
+                            message: `A new order has been placed by ${name}.`,
+                            creatorId: userId,
+                            receiverId: "admin", // Assuming admin ID is "admin"
+                            redirect_link: `https://${urlHead}/order/${sessionId}`,
+                        }
+                    })
+                } catch (notificationError) {
+                    console.error("Failed to create admin notification:", notificationError);
+                }
 
                 //Delete session
                 await redis.del(sessionKey);
