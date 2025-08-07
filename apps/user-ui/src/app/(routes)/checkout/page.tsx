@@ -3,6 +3,7 @@ import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js'
 import { useSearchParams, useRouter } from 'next/navigation';
 import axiosInstance from '@/utils/axiosInstance';
+import CheckoutForm from '@/components/CheckoutForm';
 
 const sripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
@@ -149,7 +150,12 @@ const Page = () => {
                 stripe = {sripePromise}
                 options={{ clientSecret, appearance }}>
 
-                <CheckoutForm />
+                <CheckoutForm 
+                    clientSecret={clientSecret}
+                    cartItems={cartItems}
+                    coupon={coupon}
+                    sessionId={sessionId}
+                />
             </Elements>
         )
         
