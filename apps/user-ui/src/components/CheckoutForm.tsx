@@ -169,34 +169,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
             </div>
 
             {/* Price Breakdown */}
-            <div className="space-y-2 border-t border-[#232326] pt-4">
-              <div className="flex justify-between text-gray-300">
-                <span>Subtotal</span>
-                <span>₦{calculateSubtotal().toLocaleString()}</span>
-              </div>
-              {coupon && (
-                <div className="flex justify-between text-green-400">
-                  <span>Discount ({coupon.code})</span>
-                  <span>-₦{coupon.discountAmount?.toLocaleString()}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
-                <span>Total</span>
-                <span className="text-[#ff8800]">₦{calculateTotal().toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
-                <span>Discounted Total</span>
-                <span className="text-[#ff8800]">₦{discountedTotal.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
-                <span>Platform Fee</span>
-                <span className="text-[#ff8800]">₦{platformFee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
-                <span>Grand Total</span>
-                <span className="text-[#ff8800]">₦{grandTotal.toLocaleString()}</span>
-              </div>
-            </div>
+             <div className="space-y-2 border-t border-[#232326] pt-4">
+               <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
+                 <span>Total</span>
+                 <span className="text-[#ff8800]">₦{grandTotal.toLocaleString()}</span>
+               </div>
+             </div>
           </div>
 
           {/* Payment Form */}
