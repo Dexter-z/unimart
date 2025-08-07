@@ -15,13 +15,19 @@ interface CheckoutFormProps {
   cartItems: any[];
   coupon: any;
   sessionId: string | null;
+  discountedTotal: number;
+  platformFee: number;
+  grandTotal: number;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ 
   clientSecret, 
   cartItems, 
   coupon, 
-  sessionId 
+  sessionId,
+  discountedTotal,
+  platformFee,
+  grandTotal
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -177,6 +183,18 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
               <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
                 <span>Total</span>
                 <span className="text-[#ff8800]">₦{calculateTotal().toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
+                <span>Discounted Total</span>
+                <span className="text-[#ff8800]">₦{discountedTotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
+                <span>Platform Fee</span>
+                <span className="text-[#ff8800]">₦{platformFee.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-white font-bold text-lg border-t border-[#232326] pt-2">
+                <span>Grand Total</span>
+                <span className="text-[#ff8800]">₦{grandTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>

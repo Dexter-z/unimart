@@ -23,6 +23,9 @@ const Page = () => {
     const [clientSecret, setClientSecret] = useState("")
     const [cartItems, setCartItems] = useState<any[]>([])
     const [coupon, setCoupon] = useState()
+    const [discountedTotal, setDiscountedTotal] = useState(0)
+    const [platformFee, setPlatformFee] = useState(0)
+    const [grandTotal, setGrandTotal] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [countdown, setCountdown] = useState(5)
@@ -53,44 +56,63 @@ const Page = () => {
     useEffect(() => {
         const fetchSessionAndClientSecret = async () => {
             if (!sessionId) {
-                setError("Invalid sessiion, please try again.")
-                setLoading(false)
-                return
+                setError("Invalid session, please try again.");
+                setLoading(false);
+                return;
             }
 
             try {
                 const verifyRes = await axiosInstance.get(`/order/api/verifying-payment-session?sessionId=${sessionId}`);
+                const { sellers, cart, coupon } = verifyRes.data.session;
 
-                const {totalAmount, sellers, cart, coupon} = verifyRes.data.session;
-
-                if(!sellers || sellers.length === 0 || totalAmount === undefined || totalAmount === null) {
+                if (!sellers || sellers.length === 0 || !cart || cart.length === 0) {
                     throw new Error("Invalid Payment session data");
                 }
 
                 setCartItems(cart);
                 setCoupon(coupon);
 
-                console.log("first seller", sellers[0])
-                const sellerStripeAccountId = sellers[0].stripeAccountId;
+                // Calculate discounted total
+                let discountedTotal = cart.reduce((sum: number, item: any) => {
+                    let price = item.salePrice;
+                    if (coupon && coupon.discountType && item.discountCodes && item.discountCodes.includes(coupon.id)) {
+                        if (coupon.discountType === "percentage") {
+                            price *= (1 - coupon.discountValue / 100);
+                        } else if (coupon.discountType === "amount") {
+                            price -= coupon.discountValue;
+                        }
+                    }
+                    return sum + price * item.quantity;
+                }, 0);
+                // Calculate platform fee (10% of discounted total)
+                let platformFee = Math.floor(discountedTotal * 0.1);
+                // Calculate grand total
+                let grandTotal = discountedTotal + platformFee;
 
+                setDiscountedTotal(discountedTotal);
+                setPlatformFee(platformFee);
+                setGrandTotal(grandTotal);
+
+                // Send discounted total to backend for payment intent
+                const sellerStripeAccountId = sellers[0].stripeAccountId;
+                console.log("Sending payment intent payload:", { total: discountedTotal, sellerStripeAccountId, sessionId });
                 const intentRes = await axiosInstance.post("/order/api/create-payment-intent", {
-                    amount: coupon?.discountAmount ? totalAmount - coupon?.discountAmount : totalAmount,
+                    total: discountedTotal,
                     sellerStripeAccountId,
                     sessionId,
-                })
+                });
 
                 setClientSecret(intentRes.data.clientSecret);
 
             } catch (error: any) {
                 console.error(error);
                 setError("Something went wrong while processing your payment");
-            } finally{
+            } finally {
                 setLoading(false);
             }
-        }
-
-        fetchSessionAndClientSecret()
-    }, [sessionId, router])
+        };
+        fetchSessionAndClientSecret();
+    }, [sessionId, router]);
 
     // You can customize the Stripe appearance here if needed
     const appearance: Appearance = {
@@ -190,16 +212,17 @@ const Page = () => {
             <Elements 
                 stripe={stripePromise}
                 options={{ clientSecret, appearance }}>
-
                 <CheckoutForm 
                     clientSecret={clientSecret}
                     cartItems={cartItems}
                     coupon={coupon}
                     sessionId={sessionId}
+                    discountedTotal={discountedTotal}
+                    platformFee={platformFee}
+                    grandTotal={grandTotal}
                 />
             </Elements>
         )
-        
     )
 }
 

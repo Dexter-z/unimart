@@ -18,30 +18,28 @@ const urlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localho
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const { amount, sellerStripeAccountId, sessionId } = req.body;
-        
-        console.log("createPaymentIntent - Request body:", {
-            amount,
+        const { total, sellerStripeAccountId, sessionId } = req.body;
+        console.log("[OrderService] Received payment intent payload:", {
+            total,
             sellerStripeAccountId,
-            sessionId,
-            userId: req.user?.id
+            sessionId
         });
 
         // Validate required fields
-        if (!amount || !sellerStripeAccountId || !sessionId) {
-            throw new ValidationError("Missing required fields: amount, sellerStripeAccountId, or sessionId");
+        if (!total || !sellerStripeAccountId || !sessionId) {
+            throw new ValidationError("Missing required fields: total, sellerStripeAccountId, or sessionId");
         }
 
         if (!req.user?.id) {
             throw new ValidationError("User not authenticated");
         }
 
-        const customerAmount = Math.round(amount * 100); // Convert to cents
-        const platformFee = Math.floor(customerAmount * 0.1); // 10% platform fee
+        const customerAmount = Math.round(total * 100); // Convert to cents
+        const platformFeeCents = Math.floor(customerAmount * 0.1); // 10% platform fee
 
         console.log("createPaymentIntent - Creating payment intent with:", {
             customerAmount,
-            platformFee,
+            platformFeeCents,
             sellerStripeAccountId
         });
 
@@ -49,7 +47,7 @@ export const createPaymentIntent = async (req: any, res: Response, next: NextFun
             amount: customerAmount,
             currency: 'usd',
             payment_method_types: ['card'],
-            application_fee_amount: platformFee,
+            application_fee_amount: platformFeeCents,
             transfer_data: {
                 destination: sellerStripeAccountId, // Seller's Stripe account ID
             },
@@ -207,7 +205,7 @@ export const verifyingPaymentSession = async (req: Request, res: Response, next:
         }
 
         const session = JSON.parse(sessionData);
-
+        console.log("[OrderService] Sending session to checkout page:", session);
         return res.status(200).json({
             success: true,
             session
