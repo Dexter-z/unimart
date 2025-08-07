@@ -57,7 +57,7 @@ const Page = () => {
                 setCoupon(coupon);
 
                 console.log("first seller", sellers[0])
-                const sellerStripeAccountId = sellers[0].stripeId;
+                const sellerStripeAccountId = sellers[0].stripeAccountId;
 
                 const intentRes = await axiosInstance.post("/order/api/create-payment-intent", {
                     amount: coupon?.discountAmount ? totalAmount - coupon?.discountAmount : totalAmount,
