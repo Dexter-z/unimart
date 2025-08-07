@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { loadStripe, Appearance } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js'
 import { useSearchParams, useRouter } from 'next/navigation';
 import axiosInstance from '@/utils/axiosInstance';
 
@@ -140,10 +141,18 @@ const Page = () => {
                 </div>
             </div>
         )
-    }    return (
-        <div>
+    }    
+    
+    return (
+        clientSecret && (
+            <Elements 
+                stripe = {sripePromise}
+                options={{ clientSecret, appearance }}>
 
-        </div>
+                <CheckoutForm />
+            </Elements>
+        )
+        
     )
 }
 
