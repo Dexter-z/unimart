@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, MapPin, Plus } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -449,40 +448,37 @@ const CartItems: React.FC = () => {
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex-1">
-              <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
-                <SelectTrigger className="w-full bg-[#18181b] border-[#232326] text-white focus:border-[#ff8800] focus:ring-[#ff8800]/20 rounded-xl h-12">
-                  <SelectValue placeholder="Select shipping address" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#18181b] border-[#232326]">
-                  {addresses.length > 0 ? (
-                    addresses.map((address: any) => (
-                      <SelectItem 
-                        key={address.id} 
-                        value={address.id}
-                        className="text-white hover:bg-[#232326] focus:bg-[#232326] cursor-pointer"
-                      >
-                        <div className="flex flex-col items-start">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{address.name}</span>
-                            {address.isDefault && (
-                              <span className="px-2 py-0.5 bg-[#ff8800]/20 text-[#ff8800] rounded-full text-xs">
-                                Default
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-gray-400 text-sm">
-                            {address.address}, {address.city}, {address.state}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="no-address" disabled className="text-gray-500">
-                      No addresses found
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <select
+                value={selectedAddressId}
+                onChange={(e) => setSelectedAddressId(e.target.value)}
+                className="w-full bg-[#18181b] border border-[#232326] text-white focus:border-[#ff8800] focus:ring-1 focus:ring-[#ff8800]/20 rounded-xl h-12 px-3 text-sm sm:text-base appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 12px center',
+                  backgroundSize: '16px'
+                }}
+              >
+                <option value="" disabled className="text-gray-400">
+                  Select shipping address
+                </option>
+                {addresses.length > 0 ? (
+                  addresses.map((address: any) => (
+                    <option 
+                      key={address.id} 
+                      value={address.id}
+                      className="bg-[#18181b] text-white"
+                    >
+                      {address.name} • {address.address}, {address.city}
+                      {address.isDefault ? " (Default)" : ""}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled className="text-gray-500">
+                    No addresses found
+                  </option>
+                )}
+              </select>
             </div>
             <Button
               onClick={() => router.push('/profile?tab=address')}

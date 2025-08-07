@@ -81,25 +81,18 @@ const SelectValue: React.FC<SelectValueProps> = ({ placeholder }) => {
   const [selectedLabel, setSelectedLabel] = React.useState<string>("")
   
   React.useEffect(() => {
-    // This will be set by SelectItem when it renders
-    if (value) {
-      const event = new CustomEvent('selectValueUpdate', { detail: { value } })
-      window.dispatchEvent(event)
-    }
-  }, [value])
-  
-  React.useEffect(() => {
-    const handleValueUpdate = (event: any) => {
+    // Listen for label updates from SelectItem
+    const handleLabelUpdate = (event: any) => {
       if (event.detail.value === value) {
         setSelectedLabel(event.detail.label)
       }
     }
     
-    window.addEventListener('selectValueUpdate', handleValueUpdate)
-    return () => window.removeEventListener('selectValueUpdate', handleValueUpdate)
+    window.addEventListener('selectItemLabel', handleLabelUpdate)
+    return () => window.removeEventListener('selectItemLabel', handleLabelUpdate)
   }, [value])
   
-  return <span>{selectedLabel || placeholder}</span>
+  return <span className="truncate">{selectedLabel || placeholder}</span>
 }
 
 const SelectContent: React.FC<SelectContentProps> = ({ className, children }) => {
@@ -143,8 +136,10 @@ const SelectItem: React.FC<SelectItemProps> = ({ value, className, children, dis
   
   React.useEffect(() => {
     if (isSelected) {
-      const event = new CustomEvent('selectValueUpdate', { 
-        detail: { value, label: typeof children === 'string' ? children : value }
+      // Send the label to SelectValue when this item is selected
+      const label = typeof children === 'string' ? children : value
+      const event = new CustomEvent('selectItemLabel', { 
+        detail: { value, label }
       })
       window.dispatchEvent(event)
     }
@@ -174,7 +169,7 @@ const SelectItem: React.FC<SelectItemProps> = ({ value, className, children, dis
           </svg>
         </span>
       )}
-      {children}
+      <span className="truncate">{children}</span>
     </div>
   )
 }
