@@ -73,7 +73,7 @@ const CartItems: React.FC = () => {
         discountCodes: item.discountCodes || []
       }));
 
-      console.log("Processed cart data:", cartData);
+      console.log("Processed cart data:", cartData, "selectedAddressId:", selectedAddressId, "appliedDiscount:", appliedDiscount);
 
       const res = await axiosInstance.post("/order/api/create-payment-session", {
         cart: cartData,
