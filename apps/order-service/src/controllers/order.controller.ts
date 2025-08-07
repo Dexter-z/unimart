@@ -35,7 +35,7 @@ export const createPaymentIntent = async (req: any, res: Response, next: NextFun
         }
 
         const customerAmount = Math.round(total * 100); // Convert to cents
-        const platformFeeCents = Math.floor(customerAmount * 0.1); // 10% platform fee
+        const platformFeeCents = Math.floor(customerAmount * 0); // 10% platform fee
 
         console.log("createPaymentIntent - Creating payment intent with:", {
             customerAmount,
