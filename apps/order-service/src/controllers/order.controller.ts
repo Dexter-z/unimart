@@ -94,9 +94,19 @@ export const createPaymentSession = async (req: any, res: Response, next: NextFu
         // Fetch Sellers and their stripe accounts
         const uniqueShopsIds = [...new Set(cart.map((item: any) => item.shopId))]
 
+        if (uniqueShopsIds.length === 0) {
+            return next(new ValidationError("No shops found in cart items"));
+        }
+
+        // Filter out undefined/null shopIds
+        const validShopIds = uniqueShopsIds.filter(id => id);
+        if (validShopIds.length === 0) {
+            return next(new ValidationError("Cart contains items with invalid shop IDs"));
+        }
+
         const shops = await prisma.shops.findMany({
             where: {
-                id: { in: uniqueShopsIds }
+                id: { in: validShopIds }
             },
             select: {
                 id: true,
@@ -108,6 +118,17 @@ export const createPaymentSession = async (req: any, res: Response, next: NextFu
                 }
             }
         })
+
+        if (shops.length === 0) {
+            return next(new ValidationError("No shops found for cart items"));
+        }
+
+        // Check if all shopIds have corresponding shops
+        const foundShopIds = shops.map(shop => shop.id);
+        const missingShopIds = validShopIds.filter(id => !foundShopIds.includes(id));
+        if (missingShopIds.length > 0) {
+            return next(new ValidationError(`Shops not found: ${missingShopIds.join(', ')}`));
+        }
 
         const sellerData = shops.map((shop) => ({
             shopId: shop.id,

@@ -39,20 +39,62 @@ const CartItems: React.FC = () => {
   const [loading, setLoading] = useState(false)
 
   const createPaymentSession = async () => {
+    if (!selectedAddressId) {
+      alert("Please select a shipping address before proceeding to checkout");
+      return;
+    }
+
     setLoading(true)
 
     try{
+      // Validate cart data first
+      console.log("Cart items before processing:", cart);
+      
+      // Check for missing shopId
+      const itemsWithoutShopId = cart.filter(item => !item.shopId);
+      if (itemsWithoutShopId.length > 0) {
+        console.error("Items missing shopId:", itemsWithoutShopId);
+        alert("Some items in your cart are missing store information. Please remove and re-add these items.");
+        return;
+      }
+
+      // Prepare cart data with proper structure
+      const cartData = cart.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        salePrice: item.salePrice,
+        shopId: item.shopId,
+        selectedOptions: {
+          color: item.color || '',
+          size: item.size || ''
+        },
+        title: item.title,
+        images: item.images,
+        discountCodes: item.discountCodes || []
+      }));
+
+      console.log("Processed cart data:", cartData);
+
       const res = await axiosInstance.post("/order/api/create-payment-session", {
-        cart,
+        cart: cartData,
         selectedAddressId,
-        coupon: {}
+        coupon: appliedDiscount || {}
       })
       const sessionId = res.data.sessionId
 
       router.push(`/checkout?sessionId=${sessionId}`)
-    }catch(error) {
+    }catch(error: any) {
       console.error("Error creating payment session:", error);
-      //toast.error("Something went wrong. Please try again.");
+      console.error("Full error response:", error.response);
+      
+      // Better error handling
+      if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
+      } else if (error.response?.status === 500) {
+        alert("Server error. Please check if all required services are running.");
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
     }finally {
       setLoading(false);
     }
@@ -538,18 +580,29 @@ const CartItems: React.FC = () => {
         {/* Checkout Button */}
         <Button 
           size="lg" 
-          onClick={createPaymentSession} 
-          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] font-bold py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-base sm:text-lg"
+          onClick={createPaymentSession}
+          disabled={loading || !selectedAddressId}
+          className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] font-bold py-3 sm:py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span className="flex items-center justify-center gap-2 sm:gap-3">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span className="whitespace-nowrap">Proceed to Checkout</span>
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </span>
+          {loading ? (
+            <span className="flex items-center justify-center gap-2 sm:gap-3">
+              <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="whitespace-nowrap">Creating Session...</span>
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-2 sm:gap-3">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span className="whitespace-nowrap">Proceed to Checkout</span>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
+          )}
         </Button>
       </div>
 

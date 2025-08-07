@@ -56,7 +56,8 @@ const Page = () => {
                 setCartItems(cart);
                 setCoupon(coupon);
 
-                const sellerStripeAccountId = sellers[0].stripeAccountId;
+                console.log(sellers[0])
+                const sellerStripeAccountId = sellers[0].stripeId;
 
                 const intentRes = await axiosInstance.post("/order/api/create-payment-intent", {
                     amount: coupon?.discountAmount ? totalAmount - coupon?.discountAmount : totalAmount,
