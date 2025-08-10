@@ -9,7 +9,7 @@ router.post("/create-payment-intent", isAuthenticated, createPaymentIntent)
 router.post("/create-payment-session", isAuthenticated, createPaymentSession)
 router.get("/verifying-payment-session", isAuthenticated, verifyingPaymentSession)
 router.get("/get-seller-orders", isAuthenticated,isSeller, getSellerOrders)
-router.get("/get-order-details/:id", isAuthenticated, isSeller, getOrderDetails) 
+router.get("/get-order-details/:id", isAuthenticated, getOrderDetails) 
 
 
 export default router;
