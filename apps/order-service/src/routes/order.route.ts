@@ -10,7 +10,7 @@ router.post("/create-payment-session", isAuthenticated, createPaymentSession)
 router.get("/verifying-payment-session", isAuthenticated, verifyingPaymentSession)
 router.get("/get-seller-orders", isAuthenticated,isSeller, getSellerOrders)
 router.get("/get-order-details/:id", isAuthenticated, getOrderDetails) 
-router.put("/update-status", isAuthenticated, isSeller, updateOrderStatus)
+router.put("/update-status/:orderId", isAuthenticated, isSeller, updateOrderStatus)
 
 
 export default router;
