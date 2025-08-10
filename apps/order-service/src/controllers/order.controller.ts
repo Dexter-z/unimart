@@ -1,4 +1,4 @@
-import { ValidationError } from "@packages/error-handler";
+import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
 import { NextFunction, Request, Response } from "express";
@@ -543,5 +543,71 @@ export const getSellerOrders = async (req: any, res: Response, next: NextFunctio
 
     } catch (error) {
         next(error);
+    }
+}
+
+//Get order details
+export const getOrderDetails = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const orderId = req.params.id
+        const order = await prisma.orders.findUnique({
+            where: {
+                id: orderId
+            },
+            include: {
+                items: true
+            },
+        })
+
+        if(!order){
+            return next(new NotFoundError("Order not found with this id"))
+        }
+
+        const shippingAdress = order.shippingAddressId ? await prisma.address.findUnique({
+            where: {
+                id: order?.shippingAddressId
+            },
+        }) : null
+
+        const coupon = order.couponCode ? await prisma.discount_codes.findUnique({
+            where: {
+                discountCode: order.couponCode
+            }
+        }) : null;
+
+        //Fetch All products details in one go
+        const productIds = order.items.map((item) => item.productId)
+
+        const products = await prisma.products.findMany({
+            where: {
+                id: {in: productIds}
+            },
+            select: {
+                id: true,
+                title: true,
+                images: true,
+            }
+        })
+
+        const productMap = new Map(products.map((p) => [p.id, p]));
+
+        const items = order.items.map((item) => ({
+            ...item,
+            selectedOptions: item.selectedOptions,
+            product: productMap.get(item.productId) || null,
+        }))
+
+        res.status(200).json({
+            success: true,
+            order: {
+                ...order,
+                items,
+                shippingAdress,
+                coupCode: coupon
+            }
+        })
+
+    } catch (error) {
+        next(error)
     }
 }
