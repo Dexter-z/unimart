@@ -318,7 +318,7 @@ const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
     setUploading(true);
     try {
       const fileBase64 = await convertFileToBase64(file);
-      const response = await axiosInstance.post("/auth/api/upload-shop-image", { 
+      const response = await axiosInstance.post("/api/upload-shop-image", { 
         fileName: fileBase64 
       });
       
