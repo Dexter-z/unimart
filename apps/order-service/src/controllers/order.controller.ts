@@ -268,6 +268,17 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
             for (const shopId in shopGrouped) {
                 const orderItems = shopGrouped[shopId];
 
+                // Get the shop to find the sellerId
+                const shop = await prisma.shops.findUnique({
+                    where: { id: shopId },
+                    select: { sellerId: true }
+                });
+
+                if (!shop) {
+                    console.warn(`Shop not found for shopId: ${shopId}`);
+                    continue;
+                }
+
                 let orderTotal = orderItems.reduce((sum: number, p: any) => sum + (p.salePrice * p.quantity), 0)
                 if (coupon && coupon.discountedProductId && orderItems.some((item: any) => item.id === coupon.discountedProductId)) {
                     const discountedItem = orderItems.find((item: any) => item.id === coupon.discountedProductId);
@@ -284,6 +295,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 await prisma.orders.create({
                     data: {
                         userId,
+                        sellerId: shop.sellerId,
                         shopId,
                         total: orderTotal,
                         status: "paid",
@@ -497,18 +509,18 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 }
 
 //Get sellers orders
-export const getSellerOrders = async (req: Request, res: Response, next: NextFunction) => {
+export const getSellerOrders = async (req: any, res: Response, next: NextFunction) => {
     try {
         const shop = await prisma.shops.findUnique({
             where: {
                 sellerId: req.seller.id
-            },
-        })
+            }
+        });
 
-        //Fetch oders for shop
+        //Fetch orders for shop
         const orders = await prisma.orders.findMany({
             where: {
-                shopId: shop?.id
+                shopId: shop?.id,
             },
             include: {
                 user: {
@@ -516,14 +528,13 @@ export const getSellerOrders = async (req: Request, res: Response, next: NextFun
                         id: true,
                         name: true,
                         email: true,
-                        avatar: true,
                     }
                 }
             },
             orderBy: {
                 createdAt: "desc"
             }
-        })
+        });
 
         res.status(201).json({
             success: true,

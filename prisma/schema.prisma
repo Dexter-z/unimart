@@ -30,6 +30,7 @@ model users {
   following     String[]
   images        images[]
   addresses     address[]
+  orders        orders[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   shopReviews   shopReviews[]
@@ -77,9 +78,10 @@ model shops {
   followers    shopFollowers[]
   sellerId     String          @unique @db.ObjectId
   sellers      sellers         @relation(fields: [sellerId], references: [id])
+  products     products[]
+  orders       orders[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
-  products     products[]
 }
 
 model sellers {
@@ -91,6 +93,7 @@ model sellers {
   password     String
   stripeId     String?
   shop         shops?
+  orders       orders[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -180,6 +183,7 @@ model productAnalytics {
 model orders {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   userId            String      @db.ObjectId
+  sellerId          String      @db.ObjectId
   shopId            String      @db.ObjectId
   total             Float
   status            String      @default("pending")
@@ -189,6 +193,9 @@ model orders {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   items             orderItems[]
+  user              users       @relation(fields: [userId], references: [id])
+  seller            sellers     @relation(fields: [sellerId], references: [id])
+  shop              shops       @relation(fields: [shopId], references: [id])
 }
 
 model orderItems {

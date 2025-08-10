@@ -1,5 +1,8 @@
 nx g @nx/express:app order-service --directory=apps/order-service --e2eTestRunner=none
 
+To generate prisma
+npx prisma db push
+
 TO RUN THE CONSUMER
 node apps/kafka-service/dist/main.js
 
