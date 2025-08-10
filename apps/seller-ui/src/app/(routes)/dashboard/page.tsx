@@ -1,7 +1,7 @@
 "use client"
 
-import React from 'react'
-import { useQuery } from '@tanstack/react-query'
+import React, { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
 import { 
   ShoppingCart, 
@@ -11,9 +11,14 @@ import {
   Eye, 
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Upload,
+  X
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import toast from 'react-hot-toast'
 
 interface DashboardStats {
   totalOrders: number;
@@ -34,15 +39,40 @@ interface Order {
   };
 }
 
+interface Shop {
+  id: string;
+  name: string;
+  bio?: string;
+  category: string;
+  avatar?: string;
+  address: string;
+  openingHours?: string;
+  website?: string;
+  coverBanner?: string;
+}
+
+interface ShopFormData {
+  name: string;
+  bio: string;
+  category: string;
+  address: string;
+  openingHours: string;
+  website: string;
+  avatar: string;
+  coverBanner: string;
+}
+
 const fetchDashboardData = async () => {
-  const [ordersRes, paymentsRes] = await Promise.all([
+  const [ordersRes, paymentsRes, sellerRes] = await Promise.all([
     axiosInstance.get("/order/api/get-seller-orders"),
-    axiosInstance.get("/order/api/get-seller-payments")
+    axiosInstance.get("/order/api/get-seller-payments"),
+    axiosInstance.get("/api/logged-in-seller")
   ]);
   
   return {
     orders: ordersRes.data.orders,
-    payments: paymentsRes.data.payments
+    payments: paymentsRes.data.payments,
+    shop: sellerRes.data.seller.shop
   };
 }
 
@@ -200,6 +230,7 @@ const PaymentStatusCard = ({ payments }: { payments: Order[] }) => {
 
 const Page = () => {
   const router = useRouter();
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["dashboard-data"],
@@ -231,10 +262,240 @@ const Page = () => {
       totalRevenue,
       pendingOrders,
       completedOrders
-    };
+  };
+};
+
+// Helper function to convert file to base64
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+// Edit Shop Modal Component
+const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
+  isOpen: boolean;
+  onClose: () => void;
+  shop: Shop;
+  onUpdate: () => void;
+}) => {
+  const [formData, setFormData] = useState<ShopFormData>({
+    name: shop?.name || '',
+    bio: shop?.bio || '',
+    category: shop?.category || '',
+    address: shop?.address || '',
+    openingHours: shop?.openingHours || '',
+    website: shop?.website || '',
+    avatar: shop?.avatar || '',
+    coverBanner: shop?.coverBanner || ''
+  });
+  
+  const [uploading, setUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const updateShopMutation = useMutation({
+    mutationFn: async (data: ShopFormData) => {
+      const response = await axiosInstance.put('/auth/api/update-shop', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Shop updated successfully');
+      queryClient.invalidateQueries({ queryKey: ["dashboard-data"] });
+      onUpdate();
+      onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update shop');
+    }
+  });
+
+  const handleImageUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const fileBase64 = await convertFileToBase64(file);
+      const response = await axiosInstance.post("/auth/api/upload-shop-image", { 
+        fileName: fileBase64 
+      });
+      
+      setFormData(prev => ({ ...prev, avatar: response.data.file_url }));
+      setPreviewImage(response.data.file_url);
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const formatCurrency = (amount: number) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateShopMutation.mutate(formData);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white">Edit Shop Details</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Shop Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Shop Image
+            </label>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                {previewImage || formData.avatar ? (
+                  <Image
+                    src={previewImage || formData.avatar}
+                    alt="Shop"
+                    width={80}
+                    height={80}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center">
+                    <Package className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                <Upload className="h-4 w-4 mr-2" />
+                {uploading ? 'Uploading...' : 'Upload Image'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Shop Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Shop Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Category *
+            </label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Bio
+            </label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              rows={3}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Address *
+            </label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Opening Hours */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Opening Hours
+            </label>
+            <input
+              type="text"
+              value={formData.openingHours}
+              onChange={(e) => setFormData(prev => ({ ...prev, openingHours: e.target.value }))}
+              placeholder="e.g., Mon-Fri 9AM-6PM"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Website */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Website
+            </label>
+            <input
+              type="url"
+              value={formData.website}
+              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+              placeholder="https://example.com"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={updateShopMutation.isPending}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {updateShopMutation.isPending ? 'Updating...' : 'Update Shop'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
@@ -258,12 +519,50 @@ const Page = () => {
   }
 
   const stats = calculateStats();
+  const shop = data?.shop;
 
   return (
     <div className="min-h-screen bg-black p-4 sm:p-6">
-      {/* Header */}
+      {/* Shop Header */}
+      {shop && (
+        <div className="mb-6 sm:mb-8 bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+              {shop.avatar ? (
+                <Image
+                  src={shop.avatar}
+                  alt={shop.name}
+                  width={80}
+                  height={80}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center">
+                  <Package className="h-10 w-10 text-gray-400" />
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">{shop.name}</h1>
+                <p className="text-gray-400">{shop.category}</p>
+                {shop.bio && (
+                  <p className="text-gray-300 text-sm mt-1">{shop.bio}</p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setEditModalOpen(true)}
+              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Shop Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Dashboard</h1>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Dashboard</h2>
         <p className="text-gray-400">Welcome back! Here's what's happening with your store.</p>
       </div>
 
@@ -344,6 +643,16 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Shop Modal */}
+      {shop && (
+        <EditShopModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          shop={shop}
+          onUpdate={() => {}}
+        />
+      )}
     </div>
   );
 };

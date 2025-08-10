@@ -5,6 +5,7 @@ import { AuthError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookie";
+import { imagekit } from "@packages/libs/imagekit";
 import Stripe from "stripe"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -796,5 +797,80 @@ export const logoutSeller = async (req: Request, res: Response, next: NextFuncti
         });
     } catch (error) {
         return next(error);
+    }
+}
+
+//Update Shop Details
+export const updateShop = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const sellerId = req.seller?.id;
+        const { name, bio, address, openingHours, website, category, avatar, coverBanner } = req.body;
+
+        if (!sellerId) {
+            return next(new AuthError("Seller authentication required"));
+        }
+
+        // Find the shop by sellerId
+        const existingShop = await prisma.shops.findUnique({
+            where: { sellerId }
+        });
+
+        if (!existingShop) {
+            return next(new ValidationError("Shop not found"));
+        }
+
+        // Prepare update data - only include fields that are provided
+        const updateData: any = {};
+        
+        if (name !== undefined) updateData.name = name;
+        if (bio !== undefined) updateData.bio = bio;
+        if (address !== undefined) updateData.address = address;
+        if (openingHours !== undefined) updateData.openingHours = openingHours;
+        if (website !== undefined) updateData.website = website;
+        if (category !== undefined) updateData.category = category;
+        if (avatar !== undefined) updateData.avatar = avatar;
+        if (coverBanner !== undefined) updateData.coverBanner = coverBanner;
+
+        const updatedShop = await prisma.shops.update({
+            where: { sellerId },
+            data: updateData,
+            include: {
+                images: true
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Shop updated successfully",
+            shop: updatedShop
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+}
+
+//Upload Shop Image
+export const uploadShopImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { fileName } = req.body;
+        // Extract mime type from base64 string
+        const matches = fileName.match(/^data:(image\/[a-zA-Z0-9+]+);base64,/);
+        const mimeType = matches ? matches[1] : "image/jpeg";
+        const extension = mimeType.split("/")[1];
+        
+        const response = await imagekit.upload({
+            file: fileName,
+            fileName: `shop-${Date.now()}.${extension}`,
+            folder: "/shops",
+        });
+        
+        res.status(201).json({
+            file_url: response.url,
+            file_name: response.fileId,
+        });
+    } catch (error) {
+        console.error('uploadShopImage error:', error);
+        next(error);
     }
 }
