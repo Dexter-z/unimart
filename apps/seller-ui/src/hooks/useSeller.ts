@@ -9,8 +9,8 @@ const fetchSeller = async () => {
         return response.data.seller;
     } catch (error: any) {
         if (error.response && error.response.status === 401) {
-            // Not logged in, treat as error
-            throw new Error("Not authenticated");
+            // Not logged in, return null instead of throwing
+            return null;
         }
         throw error;
     }
@@ -26,7 +26,14 @@ const useSeller = () => {
         queryKey: ["seller"],
         queryFn: fetchSeller,
         staleTime: 1000 * 60 * 5,
-        retry: false,
+        retry: (failureCount, error: any) => {
+            // Don't retry if it's a 401 (unauthorized) error
+            if (error?.response?.status === 401) {
+                return false;
+            }
+            return failureCount < 1;
+        },
+        throwOnError: false,
     })
 
 
