@@ -4,6 +4,7 @@ import axiosInstance from '@/utils/axiosInstance'
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react'
 import { Eye, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Order {
     id: string;
@@ -24,6 +25,7 @@ const fetchOrders = async (): Promise<Order[]> => {
 
 const OrdersTable = () => {
     const [globalFilter, setGlobalFilter] = useState("")
+    const router = useRouter()
 
     const { data: orders = [], isLoading, error } = useQuery({
         queryKey: ["seller-orders"],
@@ -32,7 +34,7 @@ const OrdersTable = () => {
     })
 
     const handleViewOrder = (orderId: string) => {
-        console.log("Order details button clicked for order:", orderId);
+        router.push(`/order/${orderId}`);
     }
 
     const truncateOrderId = (id: string) => {
@@ -75,7 +77,7 @@ const OrdersTable = () => {
 
     const filteredOrders = orders.filter(order =>
         order.id.toLowerCase().includes(globalFilter.toLowerCase()) ||
-        order.user.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
+        (order.user?.name && order.user.name.toLowerCase().includes(globalFilter.toLowerCase())) ||
         order.status.toLowerCase().includes(globalFilter.toLowerCase())
     );
 
@@ -130,10 +132,10 @@ const OrdersTable = () => {
                                             Order #{truncateOrderId(order.id)}
                                         </div>
                                         <div className="text-sm text-gray-400 mt-1">
-                                            {order.user.name}
+                                            {order.user?.name || 'Unknown Customer'}
                                         </div>
                                         <div className="text-xs text-gray-500">
-                                            {order.user.email}
+                                            {order.user?.email || 'No email provided'}
                                         </div>
                                     </div>
                                     <button
@@ -201,10 +203,10 @@ const OrdersTable = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-white">
-                                            {order.user.name}
+                                            {order.user?.name || 'Unknown Customer'}
                                         </div>
                                         <div className="text-sm text-gray-400">
-                                            {order.user.email}
+                                            {order.user?.email || 'No email provided'}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">

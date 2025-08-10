@@ -555,7 +555,14 @@ export const getOrderDetails = async (req: any, res: Response, next: NextFunctio
                 id: orderId
             },
             include: {
-                items: true
+                items: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    }
+                }
             },
         })
 
