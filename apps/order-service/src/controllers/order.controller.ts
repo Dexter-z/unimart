@@ -299,6 +299,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         shopId,
                         total: orderTotal,
                         status: "paid",
+                        paymentStatus: "pending receipt",
                         shippingAddressId: shippingAddressId || null,
                         couponCode: coupon?.code || null,
                         discountAmount: coupon?.discountAmount || null,
@@ -665,5 +666,44 @@ export const updateOrderStatus = async (req: any, res: Response, next: NextFunct
 
     } catch (error) {
         next(error)
+    }
+}
+
+//Get seller payments
+export const getSellerPayments = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const shop = await prisma.shops.findUnique({
+            where: {
+                sellerId: req.seller.id
+            }
+        });
+
+        //Fetch orders for shop with payment information
+        const orders = await prisma.orders.findMany({
+            where: {
+                shopId: shop?.id,
+                // Include all orders regardless of status to show pending payments too
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            payments: orders,
+        })
+
+    } catch (error) {
+        next(error);
     }
 }

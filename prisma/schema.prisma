@@ -187,6 +187,7 @@ model orders {
   shopId            String      @db.ObjectId
   total             Float
   status            String      @default("pending")
+  paymentStatus     String      @default("pending receipt") // pending receipt, transferring, paid out, cancelled
   shippingAddressId String?     @db.ObjectId
   couponCode        String?
   discountAmount    Float?
