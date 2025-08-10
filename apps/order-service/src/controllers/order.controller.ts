@@ -618,3 +618,52 @@ export const getOrderDetails = async (req: any, res: Response, next: NextFunctio
         next(error)
     }
 }
+
+//Update order status
+export const updateOrderStatus = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const {orderId} = req.params
+        const { status } = req.body
+
+        if(!orderId || !status) {
+            return res.status(400).json({
+                error: "Missing order ID or Status"
+            })
+        }
+
+        const allowedStatuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"]
+
+        if (!allowedStatuses.includes(status)) {
+            return next(new ValidationError(`Invalid status`));
+        }
+
+        const order = await prisma.orders.findUnique({
+            where: {
+                id: orderId
+            }
+        })
+
+        if (!order) {
+            return next(new NotFoundError("Order not found with this id"))
+        }
+
+        const updatedOrder = await prisma.orders.update({
+            where: {
+                id: orderId
+            },
+            data: {
+                status,
+                updatedAt: new Date()
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "Order status updated successfully",
+            order: updatedOrder
+        })
+
+    } catch (error) {
+        next(error)
+    }
+}
