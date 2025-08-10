@@ -12,3 +12,4 @@ npx nx serve order-service
 npx nx serve auth-service
 npx nx serve product-service
 npm run user-ui
+npm run seller-ui

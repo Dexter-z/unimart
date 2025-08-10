@@ -495,3 +495,42 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
         return next(error);
     }
 }
+
+//Get sellers orders
+export const getSellerOrders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const shop = await prisma.shops.findUnique({
+            where: {
+                sellerId: req.seller.id
+            },
+        })
+
+        //Fetch oders for shop
+        const orders = await prisma.orders.findMany({
+            where: {
+                shopId: shop?.id
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        avatar: true,
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            orders,
+        })
+
+    } catch (error) {
+        next(error);
+    }
+}
