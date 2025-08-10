@@ -854,15 +854,31 @@ export const updateShop = async (req: any, res: Response, next: NextFunction) =>
 export const uploadShopImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { fileName } = req.body;
+        
+        if (!fileName) {
+            return next(new ValidationError("Image file is required"));
+        }
+
         // Extract mime type from base64 string
         const matches = fileName.match(/^data:(image\/[a-zA-Z0-9+]+);base64,/);
         const mimeType = matches ? matches[1] : "image/jpeg";
         const extension = mimeType.split("/")[1];
         
+        // Validate image format
+        const allowedFormats = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
+        if (!allowedFormats.includes(extension.toLowerCase())) {
+            return next(new ValidationError("Invalid image format. Allowed formats: JPEG, PNG, WebP, GIF"));
+        }
+
+        console.log('uploadShopImage:', { mimeType, extension, fileName: fileName.slice(0, 30) });
+        
         const response = await imagekit.upload({
             file: fileName,
             fileName: `shop-${Date.now()}.${extension}`,
             folder: "/shops",
+            transformation: {
+                pre: 'w-500,h-500,c-maintain_ratio'
+            }
         });
         
         res.status(201).json({
@@ -871,6 +887,28 @@ export const uploadShopImage = async (req: Request, res: Response, next: NextFun
         });
     } catch (error) {
         console.error('uploadShopImage error:', error);
+        next(error);
+    }
+}
+
+//Delete Shop Image
+export const deleteShopImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { fileId } = req.body;
+        
+        if (!fileId) {
+            return next(new ValidationError("File ID is required"));
+        }
+
+        const response = await imagekit.deleteFile(fileId);
+
+        res.status(200).json({
+            success: true,
+            message: "Image deleted successfully",
+            response
+        });
+    } catch (error) {
+        console.error('deleteShopImage error:', error);
         next(error);
     }
 }

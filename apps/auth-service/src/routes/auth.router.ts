@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { addUserAddress, createShop, createStripeConnectLink, deleteUserAddress, getSeller, getUser, getUserAddresses, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp } from "../controller/auth.controller";
+import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp } from "../controller/auth.controller";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 import { isSeller } from "@packages/middleware/authorizeRoles";
 
@@ -20,6 +20,7 @@ router.post("/verify-seller", verifySeller);
 router.post("/create-shop", createShop);
 router.put("/update-shop", isAuthenticated, isSeller, updateShop);
 router.post("/upload-shop-image", isAuthenticated, isSeller, uploadShopImage);
+router.delete("/delete-shop-image", isAuthenticated, isSeller, deleteShopImage);
 router.post("/create-stripe-link", createStripeConnectLink);
 router.post("/login-seller", loginSeller);
 router.get("/logout-seller", logoutSeller);

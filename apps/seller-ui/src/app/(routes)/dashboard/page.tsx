@@ -300,7 +300,7 @@ const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
 
   const updateShopMutation = useMutation({
     mutationFn: async (data: ShopFormData) => {
-      const response = await axiosInstance.put('/auth/api/update-shop', data);
+      const response = await axiosInstance.put('/api/update-shop', data);
       return response.data;
     },
     onSuccess: () => {
@@ -317,6 +317,24 @@ const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
   const handleImageUpload = async (file: File) => {
     setUploading(true);
     try {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Invalid file format. Please use JPEG, PNG, WebP, or GIF');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('File size too large. Maximum size is 5MB');
+        return;
+      }
+
+      // Create preview URL immediately
+      const previewUrl = URL.createObjectURL(file);
+      setPreviewImage(previewUrl);
+      
       const fileBase64 = await convertFileToBase64(file);
       const response = await axiosInstance.post("/api/upload-shop-image", { 
         fileName: fileBase64 
@@ -325,8 +343,14 @@ const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
       setFormData(prev => ({ ...prev, avatar: response.data.file_url }));
       setPreviewImage(response.data.file_url);
       toast.success('Image uploaded successfully');
-    } catch (error) {
-      toast.error('Failed to upload image');
+      
+      // Clean up the temporary preview URL
+      URL.revokeObjectURL(previewUrl);
+    } catch (error: any) {
+      console.error('Image upload error:', error);
+      const errorMessage = error?.response?.data?.message || 'Failed to upload image';
+      toast.error(errorMessage);
+      setPreviewImage(null);
     } finally {
       setUploading(false);
     }
@@ -373,21 +397,31 @@ const EditShopModal = ({ isOpen, onClose, shop, onUpdate }: {
                     <Package className="h-8 w-8 text-gray-400" />
                   </div>
                 )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </div>
-              <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                <Upload className="h-4 w-4 mr-2" />
-                {uploading ? 'Uploading...' : 'Upload Image'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file);
-                  }}
-                  disabled={uploading}
-                />
-              </label>
+              <div className="flex-1">
+                <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center w-fit">
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploading ? 'Uploading...' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                    disabled={uploading}
+                  />
+                </label>
+                <p className="text-xs text-gray-400 mt-1">
+                  Supports JPEG, PNG, WebP, GIF • Max 5MB
+                </p>
+              </div>
             </div>
           </div>
 
