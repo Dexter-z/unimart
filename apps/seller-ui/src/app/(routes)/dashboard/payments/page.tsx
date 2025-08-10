@@ -144,7 +144,10 @@ const PaymentsTable = () => {
                                         <div className="text-xs text-gray-500">
                                             Total: {formatCurrency(payment.total)}
                                         </div>
-                                        <div className="text-xs text-gray-500">
+                                        <div className="text-xs text-red-400">
+                                            Platform Fee: -{formatCurrency(calculatePlatformFee(payment.total))}
+                                        </div>
+                                        <div className="text-xs text-green-400">
                                             Your Cut: {formatCurrency(calculateSellerCut(payment.total))}
                                         </div>
                                     </div>
