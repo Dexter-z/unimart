@@ -40,6 +40,16 @@ interface Order {
     createdAt: string;
     updatedAt: string;
     items: OrderItem[];
+    shippingAdress?: {
+        id: string;
+        name: string;
+        phone: string;
+        address: string;
+        city: string;
+        state: string;
+        landmark: string;
+        addressType: string;
+    };
     user: {
         id: string;
         name: string;
@@ -305,6 +315,47 @@ const Page = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Shipping Address */}
+                    {order.shippingAdress && (
+                        <div className="bg-black border border-gray-800 rounded-lg shadow">
+                            <div className="px-6 py-4 border-b border-gray-800">
+                                <h2 className="text-xl font-semibold text-white flex items-center">
+                                    <MapPin className="h-5 w-5 mr-2" />
+                                    Shipping Address
+                                </h2>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Name</p>
+                                        <p className="text-white font-medium">{order.shippingAdress.name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Phone</p>
+                                        <p className="text-white">{order.shippingAdress.phone}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Address</p>
+                                        <p className="text-white">{order.shippingAdress.address}</p>
+                                        {order.shippingAdress.landmark && (
+                                            <p className="text-gray-400 text-sm">Near {order.shippingAdress.landmark}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 text-sm">City & State</p>
+                                        <p className="text-white">{order.shippingAdress.city}, {order.shippingAdress.state}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Address Type</p>
+                                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white">
+                                            {order.shippingAdress.addressType.charAt(0).toUpperCase() + order.shippingAdress.addressType.slice(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Order Timeline */}
                     <div className="bg-black border border-gray-800 rounded-lg shadow">
