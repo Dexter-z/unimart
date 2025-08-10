@@ -20,6 +20,11 @@ interface OrderItem {
     quantity: number;
     price: number;
     selectedOptions?: any;
+    product?: {
+        id: string;
+        title: string;
+        images: any[];
+    };
 }
 
 interface Order {
@@ -191,7 +196,9 @@ const Page = () => {
                                                 <Package className="h-8 w-8 text-gray-400" />
                                             </div>
                                             <div>
-                                                <h3 className="text-white font-medium">Product #{item.productId.slice(-6)}</h3>
+                                                <h3 className="text-white font-medium">
+                                                    {item.product?.title || `Product #${item.productId.slice(-6)}`}
+                                                </h3>
                                                 <p className="text-gray-400 text-sm">Quantity: {item.quantity}</p>
                                                 {item.selectedOptions && (
                                                     <p className="text-gray-500 text-xs mt-1">
