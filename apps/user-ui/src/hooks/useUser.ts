@@ -1,11 +1,14 @@
+import { useAuthStore } from "@/store/authStore";
 import axiosInstance from "@/utils/axiosInstance"
+import { isProtected } from "@/utils/protected";
 import {useQuery} from "@tanstack/react-query"
 
 
 //Fetch user data from API
-const fetchUser = async () => {
+const fetchUser = async (isLoggedIn: boolean) => {
     try {
-        const response = await axiosInstance.get("/api/logged-in-user")
+        const config = isLoggedIn ? isProtected : {}
+        const response = await axiosInstance.get("/api/logged-in-user", config)
         return response.data.user;
     } catch (error: any) {
         // If user is not authenticated (401), return null instead of throwing
@@ -17,29 +20,26 @@ const fetchUser = async () => {
 }
 
 const useUser = () => {
+    const {setLoggedIn, isLoggedIn} = useAuthStore()
     const {
         data: user,
-        isLoading,
+        isPending,
         isError,
-        refetch,
     } = useQuery({
         queryKey: ["user"],
-        queryFn: fetchUser,
+        queryFn: () => fetchUser(isLoggedIn),
         staleTime: 1000 * 60, // 1 minute
-        retry: (failureCount, error: any) => {
-            // Don't retry if it's a 401 (unauthorized) error
-            if (error?.response?.status === 401) {
-                return false;
-            }
-            return failureCount < 1;
+        retry: false,
+        // @ts-ignore
+        onSuccess: () => {
+            setLoggedIn(true);
         },
-        refetchInterval: 1000 * 60, // Refetch every minute
-        refetchOnWindowFocus: true,
-        // Don't throw on error, just return the error state
-        throwOnError: false,
+        onError: () => {
+            setLoggedIn(false);
+        }
     })
 
-    return {user, isLoading, isError, refetch}
+    return {user: user as any, isLoading: isPending, isError}
 }
 
 export default useUser;
