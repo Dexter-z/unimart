@@ -91,8 +91,19 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             return next(new AuthError("Invalid email or password"));
         }
 
-        res.clearCookie("user_access_token")
-        res.clearCookie("user_refresh_token")
+        const isProduction = process.env.NODE_ENV === "production";
+        
+        // Clear only user cookies before setting new ones
+        res.clearCookie("user_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+        res.clearCookie("user_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
 
         //Generate access and refresh tokens
         const accessToken = jwt.sign(
@@ -319,8 +330,19 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
             return next(new AuthError("Invalid email or password"));
         }
 
-        res.clearCookie("user_access_token")
-        res.clearCookie("user_refresh_token")
+        const isProduction = process.env.NODE_ENV === "production";
+        
+        // Clear only seller cookies before setting new ones
+        res.clearCookie("seller_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+        res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
 
         //Generate access and refresh tokens
         const accessToken = jwt.sign(
@@ -753,17 +775,19 @@ export const updateUserAddress = async (req: any, res: Response, next: NextFunct
 //Logout User
 export const logoutUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Clear the cookies
+        const isProduction = process.env.NODE_ENV === "production";
+        
+        // Clear the cookies with consistent settings
         res.clearCookie("user_access_token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
         });
         
         res.clearCookie("user_refresh_token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
         });
 
         res.status(200).json({
@@ -778,17 +802,19 @@ export const logoutUser = async (req: Request, res: Response, next: NextFunction
 //Logout Seller
 export const logoutSeller = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Clear the cookies
+        const isProduction = process.env.NODE_ENV === "production";
+        
+        // Clear the cookies with consistent settings
         res.clearCookie("seller_access_token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
         });
         
         res.clearCookie("seller_refresh_token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
         });
 
         res.status(200).json({
