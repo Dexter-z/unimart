@@ -49,10 +49,93 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
         return next();
 
     } catch (error) {
-        return res
-            .status(401)
-            .json({ message: "Unauthorized! Token expired or invalid" })
+        console.log("Error in isAuthenticated: ", error);
+        return res.status(401).json({
+            message: "Unauthorized! Invalid token"
+        })
+    }
+}
+
+// User-specific authentication middleware
+const isUserAuthenticated = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const token = req.cookies["user_access_token"] || req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized! User token missing" });
+        }
+
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+            id: string;
+            role: "user" | "seller";
+        }
+
+        if (!decoded || decoded.role !== "user") {
+            return res.status(401).json({
+                message: "Unauthorised! Invalid user token"
+            })
+        }
+
+        const user = await prisma.users.findUnique({ where: { id: decoded.id } })
+        
+        if (!user) {
+            return res.status(401).json({ message: "Unauthorized! User not found" });
+        }
+
+        req.user = user;
+        req.role = decoded.role;
+
+        return next();
+
+    } catch (error) {
+        console.log("Error in isUserAuthenticated: ", error);
+        return res.status(401).json({
+            message: "Unauthorized! Invalid user token"
+        })
+    }
+}
+
+// Seller-specific authentication middleware
+const isSellerAuthenticated = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const token = req.cookies["seller_access_token"] || req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized! Seller token missing" });
+        }
+
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+            id: string;
+            role: "user" | "seller";
+        }
+
+        if (!decoded || decoded.role !== "seller") {
+            return res.status(401).json({
+                message: "Unauthorised! Invalid seller token"
+            })
+        }
+
+        const seller = await prisma.sellers.findUnique({ 
+            where: { id: decoded.id },
+            include: {shop:true} 
+        });
+        
+        if (!seller) {
+            return res.status(401).json({ message: "Unauthorized! Seller not found" });
+        }
+
+        req.seller = seller;
+        req.role = decoded.role;
+
+        return next();
+
+    } catch (error) {
+        console.log("Error in isSellerAuthenticated: ", error);
+        return res.status(401).json({
+            message: "Unauthorized! Invalid seller token"
+        })
     }
 }
 
 export default isAuthenticated;
+export { isUserAuthenticated, isSellerAuthenticated };

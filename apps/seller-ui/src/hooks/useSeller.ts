@@ -25,7 +25,7 @@ const useSeller = () => {
     } = useQuery({
         queryKey: ["seller"],
         queryFn: fetchSeller,
-        staleTime: 1000 * 60 * 5,
+        staleTime: 1000 * 60 * 5, // 5 minutes
         retry: (failureCount, error: any) => {
             // Don't retry if it's a 401 (unauthorized) error
             if (error?.response?.status === 401) {
@@ -33,6 +33,8 @@ const useSeller = () => {
             }
             return failureCount < 1;
         },
+        refetchInterval: 1000 * 60 * 2, // Refetch every 2 minutes
+        refetchOnWindowFocus: true,
         throwOnError: false,
     })
 

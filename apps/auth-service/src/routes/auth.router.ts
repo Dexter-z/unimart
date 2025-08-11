@@ -1,7 +1,6 @@
 import express, { Router } from "express";
 import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp } from "../controller/auth.controller";
-import isAuthenticated from "@packages/middleware/isAuthenticated";
-import { isSeller } from "@packages/middleware/authorizeRoles";
+import { isUserAuthenticated, isSellerAuthenticated } from "@packages/middleware/isAuthenticated";
 
 const router:Router = express.Router();
 
@@ -10,7 +9,7 @@ router.post("/verify-user", verifyUser);
 router.post("/login-user", loginUser);
 router.get("/logout-user", logoutUser);
 router.post("/refresh-token-user", refreshUserToken)
-router.get("/logged-in-user", isAuthenticated, getUser)
+router.get("/logged-in-user", isUserAuthenticated, getUser)
 router.post("/forgot-password-user", userForgotPassword);
 router.post("/reset-forgot-password-user", resetUserPassword);
 router.post("/verify-forgot-password-user", verifyUserForgotPasswordOtp);
@@ -18,21 +17,20 @@ router.post("/verify-forgot-password-user", verifyUserForgotPasswordOtp);
 router.post("/seller-registration", registerSeller)
 router.post("/verify-seller", verifySeller);
 router.post("/create-shop", createShop);
-router.put("/update-shop", isAuthenticated, isSeller, updateShop);
-router.post("/upload-shop-image", isAuthenticated, isSeller, uploadShopImage);
-router.delete("/delete-shop-image", isAuthenticated, isSeller, deleteShopImage);
+router.put("/update-shop", isSellerAuthenticated, updateShop);
+router.post("/upload-shop-image", isSellerAuthenticated, uploadShopImage);
+router.delete("/delete-shop-image", isSellerAuthenticated, deleteShopImage);
 router.post("/create-stripe-link", createStripeConnectLink);
 router.post("/login-seller", loginSeller);
 router.get("/logout-seller", logoutSeller);
 router.post("/refresh-token-seller", refreshSellerToken)
-// router.get("/logged-in-seller", isAuthenticated, isSeller, getSeller)
-router.get("/logged-in-seller", isAuthenticated, isSeller, getSeller)
+router.get("/logged-in-seller", isSellerAuthenticated, getSeller)
 
 // Address routes
-router.get("/shipping-addresses", isAuthenticated, getUserAddresses);
-router.post("/add-address", isAuthenticated, addUserAddress);
-router.put("/update-address/:addressId", isAuthenticated, updateUserAddress);
-router.delete("/delete-address/:addressId", isAuthenticated, deleteUserAddress);
+router.get("/shipping-addresses", isUserAuthenticated, getUserAddresses);
+router.post("/add-address", isUserAuthenticated, addUserAddress);
+router.put("/update-address/:addressId", isUserAuthenticated, updateUserAddress);
+router.delete("/delete-address/:addressId", isUserAuthenticated, deleteUserAddress);
 
 
 
