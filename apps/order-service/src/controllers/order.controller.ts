@@ -255,6 +255,11 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
 
             const { cart, totalAmount, shippingAddressId, coupon } = JSON.parse(sessionData);
+            console.log("=== COUPON DEBUG INFO ===");
+            console.log("Raw coupon from session:", coupon);
+            console.log("Coupon type:", typeof coupon);
+            console.log("Coupon keys:", coupon ? Object.keys(coupon) : "null");
+            console.log("========================");
             const user = await prisma.users.findUnique({ where: { id: userId } })
             const name = user?.name!
             const email = user?.email!
@@ -264,6 +269,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 acc[item.shopId].push(item);
                 return acc;
             }, {})
+
+            let totalDiscountAmount = 0; // Track total discount across all shops
 
             for (const shopId in shopGrouped) {
                 const orderItems = shopGrouped[shopId];
@@ -280,18 +287,47 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 }
 
                 let orderTotal = orderItems.reduce((sum: number, p: any) => sum + (p.salePrice * p.quantity), 0)
-                if (coupon && coupon.discountedProductId && orderItems.some((item: any) => item.id === coupon.discountedProductId)) {
-                    const discountedItem = orderItems.find((item: any) => item.id === coupon.discountedProductId);
-
-                    if (discountedItem) {
-                        const discount = coupon.discountPercent > 0 ? (
-                            discountedItem.salePrice * discountedItem.quantity * (coupon.discountPercent / 100)
-                        ) : coupon.discountAmount
-                        orderTotal -= discount;
+                let appliedDiscountAmount = 0;
+                
+                // Calculate discount if coupon exists and applies to items in this order
+                if (coupon && coupon.id) {
+                    console.log("Processing coupon:", coupon);
+                    console.log("Order items:", orderItems);
+                    
+                    // Check if any items in this order are eligible for the discount
+                    const eligibleItems = orderItems.filter((item: any) => {
+                        return item.discountCodes && item.discountCodes.includes(coupon.id);
+                    });
+                    
+                    console.log("Eligible items for discount:", eligibleItems);
+                    
+                    if (eligibleItems.length > 0) {
+                        // Calculate discount for each eligible item
+                        for (const item of eligibleItems) {
+                            const itemTotal = item.salePrice * item.quantity;
+                            let itemDiscount = 0;
+                            
+                            if (coupon.discountType === "percentage") {
+                                itemDiscount = itemTotal * (coupon.discountValue / 100);
+                            } else if (coupon.discountType === "amount") {
+                                itemDiscount = Math.min(coupon.discountValue, itemTotal); // Don't discount more than item cost
+                            }
+                            
+                            appliedDiscountAmount += itemDiscount;
+                        }
+                        
+                        orderTotal -= appliedDiscountAmount;
+                        totalDiscountAmount += appliedDiscountAmount; // Track total discount
+                        console.log(`Applied discount: ${appliedDiscountAmount}, New total: ${orderTotal}`);
                     }
                 }
                 
                 //Create Order
+                console.log("=== ORDER CREATION DEBUG ===");
+                console.log("Coupon code to save:", coupon?.code || coupon?.public_name || null);
+                console.log("Discount amount to save:", appliedDiscountAmount > 0 ? appliedDiscountAmount : null);
+                console.log("===========================");
+                
                 await prisma.orders.create({
                     data: {
                         userId,
@@ -301,8 +337,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         status: "paid",
                         paymentStatus: "pending receipt",
                         shippingAddressId: shippingAddressId || null,
-                        couponCode: coupon?.code || null,
-                        discountAmount: coupon?.discountAmount || null,
+                        couponCode: coupon?.code || coupon?.public_name || null,
+                        discountAmount: appliedDiscountAmount > 0 ? appliedDiscountAmount : null,
                         items: {
                             create: orderItems.map((item: any) => ({
                                 productId: item.id,
@@ -373,19 +409,6 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     }
                 }
 
-                //Send email notification to user
-                await sendEmail(
-                    email,
-                    "Your Order has been placed",
-                    "order-confirmation",
-                    {
-                        name,
-                        cart,
-                        totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
-                        trackingUrl: `https://${urlHead}/order/${sessionId}`,
-                    }
-                )
-
                 //Notify shop owner via email
                 const createdShopIds = Object.keys(shopGrouped);
                 const sellerShops = await prisma.shops.findMany({
@@ -443,62 +466,92 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         }
                     })
                 }
+            } // End of shop loop
 
-                // Send email notifications to all active admins
-                try {
-                    const activeAdmins = await prisma.admins.findMany({
-                        where: {
-                            isActive: true
-                        },
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true
-                        }
-                    })
+            // Send email notification to user (once per payment)
+            const finalTotalAmount = totalAmount - totalDiscountAmount;
+            await sendEmail(
+                email,
+                "Your Order has been placed",
+                "order-confirmation",
+                {
+                    name,
+                    cart,
+                    totalAmount: finalTotalAmount,
+                    trackingUrl: `https://${urlHead}/order/${sessionId}`,
+                }
+            )
 
-                    for (const admin of activeAdmins) {
-                        try {
-                            await sendEmail(
-                                admin.email,
-                                "New Order Alert - UniMart Admin",
-                                "admin-order-notification",
-                                {
-                                    customerName: name,
-                                    shopName: sellerShops[0]?.name || "Unknown Shop",
-                                    sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
-                                    orderItems: cart,
-                                    totalAmount: coupon?.discountAmount ? totalAmount - coupon.discountAmount : totalAmount,
-                                    adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
-                                    adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
-                                }
-                            )
-                        } catch (emailError) {
-                            console.error(`Failed to send admin email to ${admin.email}:`, emailError);
+            // Send email notifications to all active admins (once per payment)
+            try {
+                const activeAdmins = await prisma.admins.findMany({
+                    where: {
+                        isActive: true
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                })
+
+                // Get shop data for admin email
+                const createdShopIds = Object.keys(shopGrouped);
+                const sellerShops = await prisma.shops.findMany({
+                    where: {
+                        id: { in: createdShopIds }
+                    },
+                    include: {
+                        sellers: {
+                            select: {
+                                name: true,
+                                email: true
+                            }
                         }
                     }
-                } catch (adminError) {
-                    console.error("Failed to fetch admins or send admin notifications:", adminError);
-                }
+                })
 
-                //Create notification for admin
-                try {
-                    await prisma.notifications.create({
-                        data: {
-                            title: `New Order Placed`,
-                            message: `A new order has been placed by ${name}.`,
-                            creatorId: userId,
-                            receiverId: "admin", // Assuming admin ID is "admin"
-                            redirect_link: `https://${urlHead}/order/${sessionId}`,
-                        }
-                    })
-                } catch (notificationError) {
-                    console.error("Failed to create admin notification:", notificationError);
+                for (const admin of activeAdmins) {
+                    try {
+                        await sendEmail(
+                            admin.email,
+                            "New Order Alert - UniMart Admin",
+                            "admin-order-notification",
+                            {
+                                customerName: name,
+                                shopName: sellerShops[0]?.name || "Unknown Shop",
+                                sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
+                                orderItems: cart,
+                                totalAmount: finalTotalAmount,
+                                adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
+                                adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
+                            }
+                        )
+                    } catch (emailError) {
+                        console.error(`Failed to send admin email to ${admin.email}:`, emailError);
+                    }
                 }
-
-                //Delete session
-                await redis.del(sessionKey);
+            } catch (adminError) {
+                console.error("Failed to fetch admins or send admin notifications:", adminError);
             }
+
+            //Create notification for admin (once per payment)
+            try {
+                await prisma.notifications.create({
+                    data: {
+                        title: `New Order Placed`,
+                        message: `A new order has been placed by ${name}.`,
+                        creatorId: userId,
+                        receiverId: "admin", // Assuming admin ID is "admin"
+                        redirect_link: `https://${urlHead}/order/${sessionId}`,
+                    }
+                })
+            } catch (notificationError) {
+                console.error("Failed to create admin notification:", notificationError);
+            }
+
+            //Delete session
+            await redis.del(sessionKey);
         }
 
         res.status(200).json({received: true})

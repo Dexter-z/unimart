@@ -78,7 +78,7 @@ const CartItems: React.FC = () => {
       const res = await axiosInstance.post("/order/api/create-payment-session", {
         cart: cartData,
         selectedAddressId,
-        coupon: appliedDiscount || {}
+        coupon: appliedDiscount // Send null if no discount applied, not empty object
       })
       const sessionId = res.data.sessionId
 
