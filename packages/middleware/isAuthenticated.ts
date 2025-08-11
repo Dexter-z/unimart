@@ -5,9 +5,22 @@ import jwt from "jsonwebtoken";
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     try {
         console.log("In isAuthenticated function")
-        const token = req.cookies["user_access_token"] || req.cookies["seller_access_token"] || req.headers.authorization?.split(" ")[1];
+        
+        // First try to get user token, then seller token
+        const userToken = req.cookies["user_access_token"];
+        const sellerToken = req.cookies["seller_access_token"];
+        const headerToken = req.headers.authorization?.split(" ")[1];
+        
+        console.log("Available tokens:", {
+            userToken: userToken ? "present" : "missing",
+            sellerToken: sellerToken ? "present" : "missing",
+            headerToken: headerToken ? "present" : "missing"
+        });
+        
+        const token = userToken || sellerToken || headerToken;
 
         if (!token) {
+            console.log("No token found in request");
             return res.status(401).json({ message: "Unauthorized! Token Missing" });
         }
 
@@ -16,6 +29,8 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
             id: string;
             role: "user" | "seller";
         }
+
+        console.log("Decoded token:", { id: decoded.id, role: decoded.role });
 
         if (!decoded) {
             return res.status(401).json({
@@ -41,15 +56,26 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
         
 
         if (!account) {
+            console.log("Account not found for:", { id: decoded.id, role: decoded.role });
             return res.status(401).json({ message: "Unauthorized! Account not found" });
         }
 
         req.role = decoded.role;
+        console.log("Authentication successful for:", decoded.role);
 
         return next();
 
-    } catch (error) {
+    } catch (error: any) {
         console.log("Error in isAuthenticated: ", error);
+        
+        // Check if it's a token expiration error
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                message: "Token expired",
+                code: "TOKEN_EXPIRED"
+            });
+        }
+        
         return res.status(401).json({
             message: "Unauthorized! Invalid token"
         })
@@ -87,8 +113,17 @@ const isUserAuthenticated = async (req: any, res: Response, next: NextFunction) 
 
         return next();
 
-    } catch (error) {
+    } catch (error: any) {
         console.log("Error in isUserAuthenticated: ", error);
+        
+        // Check if it's a token expiration error
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                message: "User token expired",
+                code: "TOKEN_EXPIRED"
+            });
+        }
+        
         return res.status(401).json({
             message: "Unauthorized! Invalid user token"
         })
@@ -129,8 +164,17 @@ const isSellerAuthenticated = async (req: any, res: Response, next: NextFunction
 
         return next();
 
-    } catch (error) {
+    } catch (error: any) {
         console.log("Error in isSellerAuthenticated: ", error);
+        
+        // Check if it's a token expiration error
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                message: "Seller token expired",
+                code: "TOKEN_EXPIRED"
+            });
+        }
+        
         return res.status(401).json({
             message: "Unauthorized! Invalid seller token"
         })
