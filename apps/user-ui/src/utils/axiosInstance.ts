@@ -1,4 +1,5 @@
 import axios from "axios";
+import { runRedirectToLogin } from "./redirect";
 
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_SERVER_URI,
@@ -9,8 +10,10 @@ let isRefreshing = false;
 let refreshSubscribers: (() => void)[] = []
 
 const handleLogout = () => {
-    if(window.location.pathname != "/login") {
-        window.location.href = "/login"
+    const publicPaths = ["/login", "/sign-up", "/forgot-password"];
+    const currentPath = window.location.pathname;
+    if(!publicPaths.includes(currentPath)) {
+        runRedirectToLogin()
     }
 }
 
@@ -37,15 +40,19 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Only handle 401 errors for protected endpoints, and prevent infinite retry
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve) => {
+        const is401 = error?.response?.status === 401;
+        const isRetry = originalRequest?._retry
+        const isAuthRequired = originalRequest?.requireAuth === true
+
+        if(is401 && !isRetry && isAuthRequired){
+            if(isRefreshing){
+                return new Promise ((resolve) => {
                     subscribeTokenRefresh(() => resolve(axiosInstance(originalRequest)))
                 })
             }
-            originalRequest._retry = true;
-            isRefreshing = true;
+
+            originalRequest._retry = true
+            isRefreshing = true
 
             try {
                 await axios.post(
@@ -65,6 +72,9 @@ axiosInstance.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
+
+        // Only handle 401 errors for protected endpoints, and prevent infinite retry
+        
         return Promise.reject(error);
     }
 )
