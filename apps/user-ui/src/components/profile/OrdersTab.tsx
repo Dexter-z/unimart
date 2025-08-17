@@ -74,16 +74,18 @@ const OrdersTab = () => {
   // Calculate statistics from real data
   const orderStats = {
     total: orders.length,
-    processing: orders.filter(order => order.status.toLowerCase() === 'processing').length,
-    shipped: orders.filter(order => order.status.toLowerCase() === 'shipped').length,
-    delivered: orders.filter(order => order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'paid').length,
+    paid: orders.filter(order => order.status.toLowerCase() === 'paid').length, // Payment confirmed, ready for processing
+    processing: orders.filter(order => order.status.toLowerCase() === 'processing').length, // Being prepared/packaged
+    shipped: orders.filter(order => order.status.toLowerCase() === 'shipped').length, // In transit to customer
+    delivered: orders.filter(order => order.status.toLowerCase() === 'delivered').length, // Successfully delivered
   }
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
-      case 'paid':
         return <CheckCircle className="w-5 h-5 text-green-400" />
+      case 'paid':
+        return <CheckCircle className="w-5 h-5 text-blue-400" />
       case 'shipped':
         return <Truck className="w-5 h-5 text-blue-400" />
       case 'processing':
@@ -96,10 +98,11 @@ const OrdersTab = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
-      case 'paid':
         return 'text-green-400 bg-green-400/20'
-      case 'shipped':
+      case 'paid':
         return 'text-blue-400 bg-blue-400/20'
+      case 'shipped':
+        return 'text-purple-400 bg-purple-400/20'
       case 'processing':
         return 'text-yellow-400 bg-yellow-400/20'
       default:
@@ -169,7 +172,7 @@ const OrdersTab = () => {
       </div>
 
       {/* Order Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-6">
         <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
@@ -178,6 +181,18 @@ const OrdersTab = () => {
             <div>
               <p className="text-2xl font-bold text-white">{orderStats.total}</p>
               <p className="text-gray-400 text-sm">Total Orders</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{orderStats.paid}</p>
+              <p className="text-gray-400 text-sm">Paid</p>
             </div>
           </div>
         </div>
@@ -196,8 +211,8 @@ const OrdersTab = () => {
 
         <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-              <Truck className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center">
+              <Truck className="w-5 h-5 text-purple-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{orderStats.shipped}</p>
