@@ -23,6 +23,7 @@ import useLocationTracking from "@/hooks/useLocationTracking";
 import useDeviceTracking from "@/hooks/useDeviceTracking";
 import axiosInstance from "@/utils/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
+import {toast} from "sonner"
 
 const CartItems: React.FC = () => {
   const { cart, removeFromCart, updateCartQuantity, addToWishlist, removeFromWishlist, wishlist } = useStore();
@@ -40,7 +41,7 @@ const CartItems: React.FC = () => {
 
   const createPaymentSession = async () => {
     if (!selectedAddressId) {
-      alert("Please select a shipping address before proceeding to checkout");
+      toast("Please select a shipping address before proceeding to checkout");
       return;
     }
 
