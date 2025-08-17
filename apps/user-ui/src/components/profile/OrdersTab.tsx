@@ -46,7 +46,11 @@ interface OrderDetailsResponse {
       product?: {
         id: string;
         title: string;
-        images: string[];
+        images: Array<{
+          id: string;
+          url: string;
+          file_id: string;
+        }>;
       };
     }>;
   };
@@ -79,6 +83,15 @@ const OrdersTab = () => {
     mutationFn: fetchOrderDetails,
     onSuccess: (data) => {
       console.log("Order details:", data);
+      console.log("Order items with products:", data.order?.items);
+      // Log each item's product data
+      data.order?.items?.forEach((item, index) => {
+        console.log(`Item ${index + 1}:`, {
+          productId: item.productId,
+          product: item.product,
+          images: item.product?.images
+        });
+      });
       setOrderDetails(data);
       setShowDetailsModal(true);
     },
@@ -438,25 +451,25 @@ const OrdersTab = () => {
                         <div key={index} className="bg-[#1a1a1d] rounded-lg p-4 flex items-center space-x-4">
                           {/* Product Image */}
                           <div className="flex-shrink-0">
-                            {item.product?.images && item.product.images.length > 0 ? (
+                            {item.product?.images && item.product.images.length > 0 && item.product.images[0]?.url ? (
                               <img 
-                                src={item.product.images[0]} 
+                                src={item.product.images[0].url} 
                                 alt={item.product.title || 'Product'}
                                 className="w-16 h-16 object-cover rounded-lg border border-[#232326]"
                                 onError={(e) => {
+                                  console.log('Image failed to load:', item.product.images[0].url);
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
                                   const placeholder = target.nextElementSibling as HTMLElement;
                                   if (placeholder) placeholder.style.display = 'flex';
                                 }}
+                                onLoad={() => console.log('Image loaded successfully:', item.product.images[0].url)}
                               />
-                            ) : null}
-                            <div 
-                              className="w-16 h-16 bg-[#232326] rounded-lg flex items-center justify-center border border-[#232326]"
-                              style={{ display: item.product?.images && item.product.images.length > 0 ? 'none' : 'flex' }}
-                            >
-                              <Package className="w-6 h-6 text-gray-400" />
-                            </div>
+                            ) : (
+                              <div className="w-16 h-16 bg-[#232326] rounded-lg flex items-center justify-center border border-[#232326]">
+                                <Package className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
                           </div>
                           
                           {/* Product Details */}
