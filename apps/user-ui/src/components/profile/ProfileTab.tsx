@@ -58,8 +58,40 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ user, onLogout }) => {
     ).length // Successfully delivered orders
   }
 
-  // Calculate monthly growth (simplified - comparing current total to a baseline)
-  const monthlyGrowth = orders.length > 0 ? Math.floor(Math.random() * 20) + 5 : 0; // Placeholder calculation
+  // Calculate monthly growth dynamically
+  const calculateMonthlyGrowth = () => {
+    if (orders.length === 0) return 0;
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Get previous month/year
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    // Count orders for current month
+    const currentMonthOrders = orders.filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    }).length;
+
+    // Count orders for previous month
+    const prevMonthOrders = orders.filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate.getMonth() === prevMonth && orderDate.getFullYear() === prevYear;
+    }).length;
+
+    // Calculate growth percentage
+    if (prevMonthOrders === 0) {
+      return currentMonthOrders > 0 ? 100 : 0; // 100% growth if we had 0 last month and > 0 this month
+    }
+
+    const growth = ((currentMonthOrders - prevMonthOrders) / prevMonthOrders) * 100;
+    return Math.round(growth);
+  };
+
+  const monthlyGrowth = calculateMonthlyGrowth();
 
   // Format the user's join date
   const formatJoinDate = (dateString: string) => {
@@ -128,9 +160,24 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ user, onLogout }) => {
             </div>
           </div>
           <div className="flex items-center mt-4 text-sm">
-            <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
-            <span className="text-green-400">+{monthlyGrowth}%</span>
-            <span className="text-gray-400 ml-1">from last month</span>
+            {monthlyGrowth > 0 ? (
+              <>
+                <TrendingUp className="w-4 h-4 text-green-400 mr-1" />
+                <span className="text-green-400">+{monthlyGrowth}%</span>
+                <span className="text-gray-400 ml-1">from last month</span>
+              </>
+            ) : monthlyGrowth < 0 ? (
+              <>
+                <TrendingUp className="w-4 h-4 text-red-400 mr-1 rotate-180" />
+                <span className="text-red-400">{monthlyGrowth}%</span>
+                <span className="text-gray-400 ml-1">from last month</span>
+              </>
+            ) : (
+              <>
+                <div className="w-4 h-4 bg-gray-400 rounded-full mr-1" />
+                <span className="text-gray-400">No change from last month</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -200,10 +247,6 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ user, onLogout }) => {
             <div>
               <label className="text-gray-400 text-sm">Phone Number</label>
               <p className="text-white font-medium">+234 xxx xxx xxxx</p>
-            </div>
-            <div>
-              <label className="text-gray-400 text-sm">Date of Birth</label>
-              <p className="text-white font-medium">January 15, 1990</p>
             </div>
           </div>
         </div>
