@@ -21,9 +21,10 @@ import InboxTab from '@/components/profile/InboxTab'
 import NotificationsTab from '@/components/profile/NotificationsTab'
 import AddressTab from '@/components/profile/AddressTab'
 import PasswordTab from '@/components/profile/PasswordTab'
+import useRequiredAuth from '@/hooks/useRequiredAuth'
 
 const ProfileContent = () => {
-  const { user, isLoading } = useUser()
+  const { user, isLoading } = useRequiredAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
