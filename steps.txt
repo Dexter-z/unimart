@@ -9,6 +9,7 @@ node apps/kafka-service/dist/main.js
 To run stripe webhook service
 stripe login
 
+=== OPTION 1: Manual commands (run each in separate terminal) ===
 stripe listen --forward-to localhost:6004/api/create-order
 npx nx serve api-gateway
 npx nx serve auth-service
@@ -16,3 +17,19 @@ npx nx serve order-service
 npx nx serve product-service
 npm run user-ui
 npm run seller-ui
+
+=== OPTION 2: VS Code Tasks (Recommended for development) ===
+1. Open Command Palette (Ctrl+Shift+P)
+2. Type "Tasks: Run Task"
+3. Select "Start All Services" to run all services in separate terminals
+   OR select individual services like "Start API Gateway", "Start Auth Service", etc.
+
+=== OPTION 3: Automated scripts ===
+# PowerShell (Windows):
+./start-all-services.ps1
+
+# Command Prompt (Windows):
+start-all-services.bat
+
+# Git Bash (Windows):
+./start-all-services.sh

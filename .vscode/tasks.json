@@ -1,0 +1,150 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Stripe Webhook",
+			"type": "shell",
+			"command": "stripe",
+			"args": [
+				"listen",
+				"--forward-to",
+				"localhost:6004/api/create-order"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start API Gateway",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"nx",
+				"serve",
+				"api-gateway"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start Auth Service",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"nx",
+				"serve",
+				"auth-service"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start Order Service",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"nx",
+				"serve",
+				"order-service"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start Product Service",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"nx",
+				"serve",
+				"product-service"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start User UI",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"user-ui"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start Seller UI",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"seller-ui"
+			],
+			"group": "build",
+			"isBackground": true,
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"group": "services"
+			}
+		},
+		{
+			"label": "Start All Services",
+			"dependsOn": [
+				"Start Stripe Webhook",
+				"Start API Gateway", 
+				"Start Auth Service",
+				"Start Order Service",
+				"Start Product Service",
+				"Start User UI",
+				"Start Seller UI"
+			],
+			"dependsOrder": "parallel",
+			"group": "build"
+		}
+	]
+}
