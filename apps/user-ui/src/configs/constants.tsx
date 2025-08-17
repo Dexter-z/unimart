@@ -23,7 +23,7 @@ export const navItems: NavItemsTypes[] = [
     },
     {
         title: 'Become a Seller',
-        href: '/become-a-seller',
+        href: `${process.env.NEXT_PUBLIC_SELLER_SERVER_URI}/sign-up`,
         icon: 'UserPlus',
     }
 ]
