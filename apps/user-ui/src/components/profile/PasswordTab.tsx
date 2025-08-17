@@ -9,7 +9,8 @@ import {
   Shield, 
   Key,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react'
 import axiosInstance from '@/utils/axiosInstance';
 import { toast } from 'sonner';
@@ -24,6 +25,7 @@ const PasswordTab = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   
   const {
     register,
@@ -62,17 +64,37 @@ const PasswordTab = () => {
   }, [newPassword])
 
   const onSubmit = async (data: PasswordFormData) => {
-    console.log('Password change data:', data);
+    setIsLoading(true);
     try {
-      await axiosInstance.post("/api/change-password", data)
-      toast.success("Password changed successfully");
+      await axiosInstance.post("/api/change-password", data);
+      toast.success("Password changed successfully!");
       reset();
-    } catch (error) {
-      toast.error("Failed to change password");
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      
+      // Handle different error scenarios
+      if (error.response?.data?.message) {
+        // Backend returned a specific error message
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        // Bad request - could be same password, validation errors, etc.
+        toast.error("Invalid password data. Please check your inputs.");
+      } else if (error.response?.status === 401) {
+        // Unauthorized - current password is wrong
+        toast.error("Current password is incorrect.");
+      } else if (error.response?.status === 422) {
+        // Unprocessable entity - new password same as old
+        toast.error("New password must be different from your current password.");
+      } else if (error.response?.status >= 500) {
+        // Server error
+        toast.error("Server error occurred. Please try again later.");
+      } else {
+        // Generic error
+        toast.error("Failed to change password. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    // Here you would typically make an API call to update the password
-    // For now, just reset the form
-    
   }
 
   const handleCancel = () => {
@@ -196,13 +218,15 @@ const PasswordTab = () => {
               <input
                 type={showCurrentPassword ? 'text' : 'password'}
                 {...register('currentPassword', { required: 'Current password is required' })}
-                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
+                disabled={isLoading}
+                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter your current password"
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-4 top-3 text-gray-400 hover:text-white"
+                disabled={isLoading}
+                className="absolute right-4 top-3 text-gray-400 hover:text-white disabled:opacity-50"
               >
                 {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -219,13 +243,15 @@ const PasswordTab = () => {
               <input
                 type={showNewPassword ? 'text' : 'password'}
                 {...register('newPassword', passwordValidation)}
-                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
+                disabled={isLoading}
+                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Enter your new password"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-4 top-3 text-gray-400 hover:text-white"
+                disabled={isLoading}
+                className="absolute right-4 top-3 text-gray-400 hover:text-white disabled:opacity-50"
               >
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -263,13 +289,15 @@ const PasswordTab = () => {
                   required: 'Please confirm your password',
                   validate: (value) => value === newPassword || 'Passwords do not match'
                 })}
-                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
+                disabled={isLoading}
+                className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Confirm your new password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-3 text-gray-400 hover:text-white"
+                disabled={isLoading}
+                className="absolute right-4 top-3 text-gray-400 hover:text-white disabled:opacity-50"
               >
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -321,15 +349,23 @@ const PasswordTab = () => {
           <div className="flex space-x-4 pt-4">
             <button
               type="submit"
-              className="px-6 py-3 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isValid || passwordStrength < 3}
+              className="px-6 py-3 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              disabled={!isValid || passwordStrength < 3 || isLoading}
             >
-              Update Password
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Updating...</span>
+                </>
+              ) : (
+                <span>Update Password</span>
+              )}
             </button>
             <button
               type="button"
               onClick={handleCancel}
-              className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-gray-600 transition-colors"
+              disabled={isLoading}
+              className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
