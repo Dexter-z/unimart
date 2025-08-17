@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { 
   Lock, 
   Eye, 
@@ -9,16 +10,35 @@ import {
   AlertTriangle
 } from 'lucide-react'
 
+interface PasswordFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 const PasswordTab = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
-  const [formData, setFormData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid },
+    reset
+  } = useForm<PasswordFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    }
   })
+
+  // Watch the new password for strength calculation
+  const newPassword = watch('newPassword')
+  const confirmPassword = watch('confirmPassword')
 
   const [passwordStrength, setPasswordStrength] = useState(0)
 
@@ -32,9 +52,20 @@ const PasswordTab = () => {
     return strength
   }
 
-  const handlePasswordChange = (value: string) => {
-    setFormData({ ...formData, newPassword: value })
-    setPasswordStrength(checkPasswordStrength(value))
+  // Update password strength when new password changes
+  React.useEffect(() => {
+    setPasswordStrength(checkPasswordStrength(newPassword || ''))
+  }, [newPassword])
+
+  const onSubmit = (data: PasswordFormData) => {
+    console.log('Password change data:', data);
+    // Here you would typically make an API call to update the password
+    // For now, just reset the form
+    reset();
+  }
+
+  const handleCancel = () => {
+    reset();
   }
 
   const getStrengthColor = (strength: number) => {
@@ -73,12 +104,27 @@ const PasswordTab = () => {
   }
 
   const passwordRequirements = [
-    { text: 'At least 8 characters', met: formData.newPassword.length >= 8 },
-    { text: 'One lowercase letter', met: /[a-z]/.test(formData.newPassword) },
-    { text: 'One uppercase letter', met: /[A-Z]/.test(formData.newPassword) },
-    { text: 'One number', met: /[0-9]/.test(formData.newPassword) },
-    { text: 'One special character', met: /[^A-Za-z0-9]/.test(formData.newPassword) }
+    { text: 'At least 8 characters', met: (newPassword || '').length >= 8 },
+    { text: 'One lowercase letter', met: /[a-z]/.test(newPassword || '') },
+    { text: 'One uppercase letter', met: /[A-Z]/.test(newPassword || '') },
+    { text: 'One number', met: /[0-9]/.test(newPassword || '') },
+    { text: 'One special character', met: /[^A-Za-z0-9]/.test(newPassword || '') }
   ]
+
+  // Validation rules
+  const passwordValidation = {
+    required: 'Password is required',
+    minLength: {
+      value: 8,
+      message: 'Password must be at least 8 characters'
+    },
+    validate: {
+      hasLower: (value: string) => /[a-z]/.test(value) || 'Must contain lowercase letter',
+      hasUpper: (value: string) => /[A-Z]/.test(value) || 'Must contain uppercase letter',
+      hasNumber: (value: string) => /[0-9]/.test(value) || 'Must contain number',
+      hasSpecial: (value: string) => /[^A-Za-z0-9]/.test(value) || 'Must contain special character'
+    }
+  }
 
   return (
     <div className="min-h-[130vh]">
@@ -131,15 +177,14 @@ const PasswordTab = () => {
       <div className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6 mb-6">
         <h3 className="text-xl font-bold text-white mb-6">Update Password</h3>
         
-        <form className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Current Password */}
           <div>
             <label className="block text-gray-400 text-sm mb-2">Current Password</label>
             <div className="relative">
               <input
                 type={showCurrentPassword ? 'text' : 'password'}
-                value={formData.currentPassword}
-                onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                {...register('currentPassword', { required: 'Current password is required' })}
                 className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
                 placeholder="Enter your current password"
               />
@@ -151,6 +196,9 @@ const PasswordTab = () => {
                 {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {errors.currentPassword && (
+              <p className="mt-1 text-sm text-red-400">{errors.currentPassword.message}</p>
+            )}
           </div>
 
           {/* New Password */}
@@ -159,8 +207,7 @@ const PasswordTab = () => {
             <div className="relative">
               <input
                 type={showNewPassword ? 'text' : 'password'}
-                value={formData.newPassword}
-                onChange={(e) => handlePasswordChange(e.target.value)}
+                {...register('newPassword', passwordValidation)}
                 className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
                 placeholder="Enter your new password"
               />
@@ -172,9 +219,12 @@ const PasswordTab = () => {
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {errors.newPassword && (
+              <p className="mt-1 text-sm text-red-400">{errors.newPassword.message}</p>
+            )}
             
             {/* Password Strength Indicator */}
-            {formData.newPassword && (
+            {newPassword && (
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-400">Password Strength:</span>
@@ -198,8 +248,10 @@ const PasswordTab = () => {
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                {...register('confirmPassword', {
+                  required: 'Please confirm your password',
+                  validate: (value) => value === newPassword || 'Passwords do not match'
+                })}
                 className="w-full bg-[#18181b] border border-[#232326] rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800]"
                 placeholder="Confirm your new password"
               />
@@ -211,11 +263,14 @@ const PasswordTab = () => {
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-sm text-red-400">{errors.confirmPassword.message}</p>
+            )}
             
             {/* Password Match Indicator */}
-            {formData.confirmPassword && (
+            {confirmPassword && (
               <div className="mt-2 flex items-center space-x-2">
-                {formData.newPassword === formData.confirmPassword ? (
+                {newPassword === confirmPassword ? (
                   <>
                     <CheckCircle className="w-4 h-4 text-green-400" />
                     <span className="text-green-400 text-sm">Passwords match</span>
@@ -231,7 +286,7 @@ const PasswordTab = () => {
           </div>
 
           {/* Password Requirements */}
-          {formData.newPassword && (
+          {newPassword && (
             <div className="bg-[#18181b] rounded-xl p-4">
               <h4 className="text-white font-medium mb-3">Password Requirements</h4>
               <div className="space-y-2">
@@ -256,17 +311,13 @@ const PasswordTab = () => {
             <button
               type="submit"
               className="px-6 py-3 bg-[#ff8800] text-[#18181b] rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={
-                !formData.currentPassword || 
-                !formData.newPassword || 
-                formData.newPassword !== formData.confirmPassword ||
-                passwordStrength < 3
-              }
+              disabled={!isValid || passwordStrength < 3}
             >
               Update Password
             </button>
             <button
               type="button"
+              onClick={handleCancel}
               className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-gray-600 transition-colors"
             >
               Cancel
