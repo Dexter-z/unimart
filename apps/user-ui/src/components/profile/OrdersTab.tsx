@@ -42,8 +42,12 @@ interface OrderDetailsResponse {
       id: string;
       quantity: number;
       price: number;
-      productTitle?: string;
-      productId?: string;
+      productId: string;
+      product?: {
+        id: string;
+        title: string;
+        images: string[];
+      };
     }>;
   };
 }
@@ -431,14 +435,45 @@ const OrdersTab = () => {
                     <h4 className="text-lg font-semibold text-white mb-3">Order Items</h4>
                     <div className="space-y-3">
                       {orderDetails.order.items.map((item: any, index: number) => (
-                        <div key={index} className="bg-[#1a1a1d] rounded-lg p-4 flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-white font-medium">{item.productTitle || `Item ${index + 1}`}</p>
-                            <p className="text-gray-400 text-sm">Quantity: {item.quantity}</p>
+                        <div key={index} className="bg-[#1a1a1d] rounded-lg p-4 flex items-center space-x-4">
+                          {/* Product Image */}
+                          <div className="flex-shrink-0">
+                            {item.product?.images && item.product.images.length > 0 ? (
+                              <img 
+                                src={item.product.images[0]} 
+                                alt={item.product.title || 'Product'}
+                                className="w-16 h-16 object-cover rounded-lg border border-[#232326]"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const placeholder = target.nextElementSibling as HTMLElement;
+                                  if (placeholder) placeholder.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className="w-16 h-16 bg-[#232326] rounded-lg flex items-center justify-center border border-[#232326]"
+                              style={{ display: item.product?.images && item.product.images.length > 0 ? 'none' : 'flex' }}
+                            >
+                              <Package className="w-6 h-6 text-gray-400" />
+                            </div>
                           </div>
+                          
+                          {/* Product Details */}
+                          <div className="flex-1">
+                            <p className="text-white font-medium">
+                              {item.product?.title || `Product ID: ${item.productId}`}
+                            </p>
+                            <p className="text-gray-400 text-sm">Quantity: {item.quantity}</p>
+                            <p className="text-gray-400 text-sm">Unit Price: {formatCurrency(item.price || 0)}</p>
+                          </div>
+                          
+                          {/* Total Price */}
                           <div className="text-right">
-                            <p className="text-white font-medium">{formatCurrency(item.price || 0)}</p>
-                            <p className="text-gray-400 text-sm">each</p>
+                            <p className="text-white font-medium text-lg">
+                              {formatCurrency((item.price || 0) * item.quantity)}
+                            </p>
+                            <p className="text-gray-400 text-sm">Total</p>
                           </div>
                         </div>
                       ))}
