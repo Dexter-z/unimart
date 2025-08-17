@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   ShoppingBag, 
   Package, 
@@ -12,7 +12,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
 
 interface Order {
@@ -28,13 +28,41 @@ interface Order {
   }>;
 }
 
+interface OrderDetailsResponse {
+  success: boolean;
+  order: {
+    id: string;
+    total: number;
+    status: string;
+    createdAt: string;
+    userId: string;
+    couponCode?: string;
+    discountAmount?: number;
+    items: Array<{
+      id: string;
+      quantity: number;
+      price: number;
+      productTitle?: string;
+      productId?: string;
+    }>;
+  };
+}
+
 const fetchUserOrders = async (): Promise<Order[]> => {
   const res = await axiosInstance.get("/order/api/get-user-orders")
   return res.data.orders;
 }
 
+const fetchOrderDetails = async (orderId: string): Promise<OrderDetailsResponse> => {
+  const res = await axiosInstance.get(`/order/api/get-order-details/${orderId}`)
+  return res.data;
+}
+
 const OrdersTab = () => {
   const [globalFilter, setGlobalFilter] = useState("")
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [orderDetails, setOrderDetails] = useState<OrderDetailsResponse | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   const { data: orders = [], isLoading, error, refetch } = useQuery({
     queryKey: ["user-orders"],
@@ -42,9 +70,54 @@ const OrdersTab = () => {
     staleTime: 1000 * 60 * 5,
   })
 
+  // Mutation for fetching order details
+  const orderDetailsMutation = useMutation({
+    mutationFn: fetchOrderDetails,
+    onSuccess: (data) => {
+      console.log("Order details:", data);
+      setOrderDetails(data);
+      setShowDetailsModal(true);
+    },
+    onError: (error) => {
+      console.error("Error fetching order details:", error);
+      alert("Failed to fetch order details. Please try again.");
+    }
+  })
+
   const handleRefresh = () => {
     refetch();
   }
+
+  const handleViewDetails = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    orderDetailsMutation.mutate(orderId);
+  }
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setOrderDetails(null);
+    setSelectedOrderId(null);
+  }
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showDetailsModal) {
+        closeDetailsModal();
+      }
+    };
+
+    if (showDetailsModal) {
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showDetailsModal]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -277,9 +350,19 @@ const OrdersTab = () => {
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white">{formatCurrency(order.total)}</p>
                   </div>
-                  <button className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center space-x-2">
-                    <Eye className="w-4 h-4" />
-                    <span>View Details</span>
+                  <button 
+                    onClick={() => handleViewDetails(order.id)}
+                    disabled={orderDetailsMutation.isPending && selectedOrderId === order.id}
+                    className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {orderDetailsMutation.isPending && selectedOrderId === order.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                    <span>
+                      {orderDetailsMutation.isPending && selectedOrderId === order.id ? 'Loading...' : 'View Details'}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -294,6 +377,98 @@ const OrdersTab = () => {
           <button className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-[#ff8800] hover:text-[#18181b] transition-colors">
             Load More Orders
           </button>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showDetailsModal && orderDetails && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={closeDetailsModal}
+        >
+          <div 
+            className="bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">Order Details</h3>
+                <button 
+                  onClick={closeDetailsModal}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Order Info */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Order ID</p>
+                    <p className="text-white font-medium">#{truncateOrderId(orderDetails.order?.id || '')}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Status</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(orderDetails.order?.status || '')}`}>
+                      {orderDetails.order?.status?.charAt(0).toUpperCase() + orderDetails.order?.status?.slice(1)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Order Date</p>
+                    <p className="text-white font-medium">{formatDate(orderDetails.order?.createdAt || '')}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Amount</p>
+                    <p className="text-white font-medium text-xl">{formatCurrency(orderDetails.order?.total || 0)}</p>
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                {orderDetails.order?.items && orderDetails.order.items.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">Order Items</h4>
+                    <div className="space-y-3">
+                      {orderDetails.order.items.map((item: any, index: number) => (
+                        <div key={index} className="bg-[#1a1a1d] rounded-lg p-4 flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="text-white font-medium">{item.productTitle || `Item ${index + 1}`}</p>
+                            <p className="text-gray-400 text-sm">Quantity: {item.quantity}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-medium">{formatCurrency(item.price || 0)}</p>
+                            <p className="text-gray-400 text-sm">each</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional Details */}
+                {orderDetails.order?.couponCode && (
+                  <div>
+                    <p className="text-gray-400 text-sm">Coupon Applied</p>
+                    <p className="text-green-400 font-medium">{orderDetails.order.couponCode}</p>
+                    {orderDetails.order.discountAmount && (
+                      <p className="text-green-400 text-sm">Discount: {formatCurrency(orderDetails.order.discountAmount)}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Close Button */}
+              <div className="mt-6 flex justify-end">
+                <button 
+                  onClick={closeDetailsModal}
+                  className="px-6 py-2 bg-[#ff8800] text-[#18181b] rounded-xl font-medium hover:bg-orange-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
