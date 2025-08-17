@@ -989,3 +989,73 @@ export const updateUserPassword = async (req: any, res: Response, next: NextFunc
         next(error);
     }
 }
+
+export const loginAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return next(new ValidationError("Email and password are required"));
+        }
+
+        const user = await prisma.users.findUnique({ where: { email } });
+
+        if (!user) {
+            return next(new AuthError("User does not exist"));
+        }
+
+        //Verify password
+        const isMatch = await bcrypt.compare(password, user.password!);
+        if (!isMatch) {
+            return next(new AuthError("Invalid email or password"));
+        }
+
+        const isAdmin = user.role === "admin";
+
+        const isProduction = process.env.NODE_ENV === "production";
+        
+        // Clear only seller cookies before setting new ones
+        res.clearCookie("seller_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+        res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
+        //Generate access and refresh tokens
+        const accessToken = jwt.sign(
+            {
+                id: seller.id,
+                role: "seller"
+            },
+            process.env.ACCESS_TOKEN_SECRET as string,
+            { expiresIn: "15m" }
+        )
+
+        const refreshToken = jwt.sign(
+            {
+                id: seller.id,
+                role: "seller"
+            },
+            process.env.REFRESH_TOKEN_SECRET as string,
+            { expiresIn: "7d" }
+        )
+
+        //Store refresh and access token in httpOnly secure cookie
+        setCookie(res, "seller_access_token", accessToken);
+        setCookie(res, "seller_refresh_token", refreshToken);
+
+        res.status(200).json({
+            message: "Login successful",
+            seller: { id: seller.id, name: seller.name, email: seller.email },
+        })
+
+    } catch (error) {
+        return next(error);
+
+    }
+}
