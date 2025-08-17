@@ -1,5 +1,8 @@
 nx g @nx/express:app admin-service --directory=apps/admin-service --e2eTestRunner=none
 
+nx g @nx/next:app apps/admin-ui
+
+
 To generate prisma
 npx prisma db push
 
@@ -18,9 +21,11 @@ stripe login
 === OPTION 1: Manual commands (run each in separate terminal) ===
 stripe listen --forward-to localhost:6004/api/create-order
 npx nx serve api-gateway
+npx nx serve admin-service
 npx nx serve auth-service
 npx nx serve order-service
 npx nx serve product-service
+npm run admin-ui
 npm run user-ui
 npm run seller-ui
 
