@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useMutation } from '@tanstack/react-query'
 import { 
   Eye, 
   EyeOff, 
@@ -11,6 +12,8 @@ import {
   Loader2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axiosInstance from '../utils/axiosInstance'
+import axios, { AxiosError } from 'axios'
 
 interface AdminLoginFormData {
   email: string;
@@ -20,7 +23,6 @@ interface AdminLoginFormData {
 
 const AdminLoginForm = () => {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   
   const router = useRouter()
@@ -38,26 +40,27 @@ const AdminLoginForm = () => {
     }
   })
 
-  const onSubmit = async (data: AdminLoginFormData) => {
-    setIsLoading(true)
-    setServerError(null)
-    
-    try {
-      // TODO: Replace with actual admin login API call
-      console.log('Admin login data:', data)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // On success, redirect to admin dashboard
+  const loginMutation = useMutation({
+    mutationFn: async (data: AdminLoginFormData) => {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-admin`, data, { withCredentials: true })
+      return response.data
+    },
+    onSuccess: (data) => {
+      setServerError(null)
+      console.log('Admin login successful:', data)
+      // Redirect to admin dashboard
       router.push('/dashboard')
-      
-    } catch (error: any) {
+    },
+    onError: (error: AxiosError) => {
       console.error('Admin login error:', error)
-      setServerError('Invalid admin credentials. Please try again.')
-    } finally {
-      setIsLoading(false)
+      const errorMessage = (error.response?.data as { message?: string })?.message || "Invalid admin credentials. Please try again."
+      setServerError(errorMessage)
     }
+  })
+
+  const onSubmit = async (data: AdminLoginFormData) => {
+    console.log('Admin login data:', data)
+    loginMutation.mutate(data)
   }
 
   return (
@@ -91,7 +94,7 @@ const AdminLoginForm = () => {
                       message: 'Invalid email address'
                     }
                   })}
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                   className="w-full bg-[#18181b] border border-[#232326] rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="admin@company.com"
                 />
@@ -117,14 +120,14 @@ const AdminLoginForm = () => {
                       message: 'Password must be at least 6 characters'
                     }
                   })}
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                   className="w-full bg-[#18181b] border border-[#232326] rounded-xl pl-10 pr-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-[#ff8800] disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                   className="absolute right-3 top-3 text-gray-400 hover:text-white disabled:opacity-50"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -140,7 +143,7 @@ const AdminLoginForm = () => {
               <input
                 type="checkbox"
                 {...register('rememberMe')}
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
                 className="w-4 h-4 rounded border-[#232326] bg-[#18181b] text-[#ff8800] focus:ring-[#ff8800] focus:ring-2 disabled:opacity-50"
               />
               <label className="ml-2 text-sm text-gray-400">
@@ -158,10 +161,10 @@ const AdminLoginForm = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!isValid || isLoading}
+              disabled={!isValid || loginMutation.isPending}
               className="w-full bg-[#ff8800] text-[#18181b] rounded-xl py-3 font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              {isLoading ? (
+              {loginMutation.isPending ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Signing in...</span>
