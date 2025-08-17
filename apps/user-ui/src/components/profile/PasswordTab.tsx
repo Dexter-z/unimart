@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { 
@@ -9,6 +11,8 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react'
+import axiosInstance from '@/utils/axiosInstance';
+import { toast } from 'sonner';
 
 interface PasswordFormData {
   currentPassword: string;
@@ -57,11 +61,18 @@ const PasswordTab = () => {
     setPasswordStrength(checkPasswordStrength(newPassword || ''))
   }, [newPassword])
 
-  const onSubmit = (data: PasswordFormData) => {
+  const onSubmit = async (data: PasswordFormData) => {
     console.log('Password change data:', data);
+    try {
+      await axiosInstance.post("/api/change-password", data)
+      toast.success("Password changed successfully");
+      reset();
+    } catch (error) {
+      toast.error("Failed to change password");
+    }
     // Here you would typically make an API call to update the password
     // For now, just reset the form
-    reset();
+    
   }
 
   const handleCancel = () => {

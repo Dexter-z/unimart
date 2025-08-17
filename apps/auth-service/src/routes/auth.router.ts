@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp } from "../controller/auth.controller";
-import { isUserAuthenticated, isSellerAuthenticated } from "@packages/middleware/isAuthenticated";
+import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, updateUserPassword, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp } from "../controller/auth.controller";
+import isAuthenticated, { isUserAuthenticated, isSellerAuthenticated } from "@packages/middleware/isAuthenticated";
 
 const router:Router = express.Router();
 
@@ -13,6 +13,7 @@ router.get("/logged-in-user", isUserAuthenticated, getUser)
 router.post("/forgot-password-user", userForgotPassword);
 router.post("/reset-forgot-password-user", resetUserPassword);
 router.post("/verify-forgot-password-user", verifyUserForgotPasswordOtp);
+router.post("/change-password", isAuthenticated, updateUserPassword)
 
 router.post("/seller-registration", registerSeller)
 router.post("/verify-seller", verifySeller);
