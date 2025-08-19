@@ -27,6 +27,7 @@ model users {
   name          String
   email         String          @unique
   password      String?
+  role          String          @default("user") // 'user' or 'admin'
   following     String[]
   images        images[]
   addresses     address[]
