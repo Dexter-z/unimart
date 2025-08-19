@@ -1012,21 +1012,21 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
 
         const isAdmin = user.role === "admin";
 
-        if(!isAdmin){
-            sendLog({
-                type: "error",
-                message: `Admin Login failed for ${email} - Not an admin`,
-                source: "auth-service"
-            })
+        // if(!isAdmin){
+        //     sendLog({
+        //         type: "error",
+        //         message: `Admin Login failed for ${email} - Not an admin`,
+        //         source: "auth-service"
+        //     })
 
-            return next(new AuthError("Not an admin"));
-        }
+        //     return next(new AuthError("Not an admin"));
+        // }
 
-        sendLog({
-            type: "success",
-            message: `Admin Login successful for ${email}`,
-            source: "auth-service"
-        })
+        // sendLog({
+        //     type: "success",
+        //     message: `Admin Login successful for ${email}`,
+        //     source: "auth-service"
+        // })
 
         const isProduction = process.env.NODE_ENV === "production";
         
