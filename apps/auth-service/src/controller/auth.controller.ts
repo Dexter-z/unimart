@@ -1012,13 +1012,29 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
 
         const isAdmin = user.role === "admin";
 
+        if(!isAdmin){
+            sendLog({
+                type: "error",
+                message: `Admin Login failed for ${email} - Not an admin`,
+                source: "auth-service"
+            })
+
+            return next(new AuthError("Not an admin"));
+        }
+
+        sendLog({
+            type: "success",
+            message: `Admin Login successful for ${email}`,
+            source: "auth-service"
+        })
+
         const isProduction = process.env.NODE_ENV === "production";
         
         // Clear only seller cookies before setting new ones
         res.clearCookie("seller_access_token", {
             httpOnly: true,
             secure: isProduction,
-            sameSite: isProduction ? "none" : "lax"
+            sameSite: isProduction ? "none" : "lax" 
         });
         res.clearCookie("seller_refresh_token", {
             httpOnly: true,
@@ -1029,8 +1045,8 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
         //Generate access and refresh tokens
         const accessToken = jwt.sign(
             {
-                id: seller.id,
-                role: "seller"
+                id: user.id,
+                role: "admin"
             },
             process.env.ACCESS_TOKEN_SECRET as string,
             { expiresIn: "15m" }
@@ -1038,20 +1054,20 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
 
         const refreshToken = jwt.sign(
             {
-                id: seller.id,
-                role: "seller"
+                id: user.id,
+                role: "admin"
             },
             process.env.REFRESH_TOKEN_SECRET as string,
             { expiresIn: "7d" }
         )
 
         //Store refresh and access token in httpOnly secure cookie
-        setCookie(res, "seller_access_token", accessToken);
-        setCookie(res, "seller_refresh_token", refreshToken);
+        setCookie(res, "admin_access_token", accessToken);
+        setCookie(res, "admin_refresh_token", refreshToken);
 
         res.status(200).json({
             message: "Login successful",
-            seller: { id: seller.id, name: seller.name, email: seller.email },
+            admin: { id: user.id, name: user.name, email: user.email },
         })
 
     } catch (error) {
