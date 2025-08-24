@@ -1,6 +1,6 @@
 import isAuthenticated, { isSellerAuthenticated, isUserAuthenticated } from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
-import { createPaymentIntent, createPaymentSession, getOrderDetails, getSellerOrders, getSellerPayments, getUserOrders, updateOrderStatus, verifyingPaymentSession, getPlatformOrderStats } from "../controllers/order.controller";
+import { createPaymentIntent, createPaymentSession, getOrderDetails, getSellerOrders, getSellerPayments, getUserOrders, updateOrderStatus, verifyingPaymentSession, getPlatformOrderStats, getRecentOrders } from "../controllers/order.controller";
 import { isSeller } from "@packages/middleware/authorizeRoles";
 
 const router:Router = express.Router();
@@ -13,6 +13,8 @@ router.get("/get-seller-payments", isSellerAuthenticated, getSellerPayments)
 router.get("/get-order-details/:id", isAuthenticated, getOrderDetails) 
 router.put("/update-status/:orderId", isSellerAuthenticated, updateOrderStatus)
 router.get("/get-user-orders", isUserAuthenticated, getUserOrders)
+
 router.get("/platform-order-stats", getPlatformOrderStats)
+router.get("/recent-orders", getRecentOrders)
 
 export default router;

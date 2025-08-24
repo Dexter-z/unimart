@@ -1,3 +1,25 @@
+// Get recent orders for admin dashboard
+export const getRecentOrders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const orders = await prisma.orders.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            include: {
+                user: { select: { name: true } }
+            }
+        });
+        // Format for dashboard table
+        const formatted = orders.map(order => ({
+            id: order.id,
+            customerName: order.user?.name || "Unknown",
+            totalAmount: order.total,
+            status: order.status
+        }));
+        res.status(200).json(formatted);
+    } catch (error) {
+        next(error);
+    }
+}
 import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
