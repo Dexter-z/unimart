@@ -1,4 +1,4 @@
-import isAuthenticated, { isSellerAuthenticated, isUserAuthenticated } from "@packages/middleware/isAuthenticated";
+import isAuthenticated, { isAdminAuthenticated, isSellerAuthenticated, isUserAuthenticated } from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
 import { createPaymentIntent, createPaymentSession, getOrderDetails, getSellerOrders, getSellerPayments, getUserOrders, updateOrderStatus, verifyingPaymentSession, getPlatformOrderStats, getRecentOrders, getAdminOrders } from "../controllers/order.controller";
 import { isAdmin, isSeller } from "@packages/middleware/authorizeRoles";
@@ -16,7 +16,7 @@ router.get("/get-user-orders", isUserAuthenticated, getUserOrders)
 
 router.get("/platform-order-stats", getPlatformOrderStats)
 router.get("/recent-orders", getRecentOrders)
-router.get("/get-admin-orders", isAuthenticated, isAdmin, getAdminOrders)
+router.get("/get-admin-orders",isAdminAuthenticated, getAdminOrders)
 
 
 export default router;
