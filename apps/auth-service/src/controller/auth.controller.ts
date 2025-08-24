@@ -1,3 +1,37 @@
+// Refresh admin token
+export const refreshAdminToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies["admin_refresh_token"] || req.body.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({ message: "Refresh token missing" });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+        } catch (err) {
+            return res.status(401).json({ message: "Invalid or expired refresh token" });
+        }
+
+        // Find admin by id
+        const admin = await prisma.users.findUnique({ where: { id: (decoded as any).id } });
+        if (!admin || admin.role !== "admin") {
+            return res.status(401).json({ message: "Admin not found or invalid role" });
+        }
+
+        // Issue new access token
+        const newAccessToken = jwt.sign(
+            { id: admin.id, role: "admin" },
+            process.env.ACCESS_TOKEN_SECRET!,
+            { expiresIn: "15m" }
+        );
+        setCookie(res, "admin_access_token", newAccessToken);
+
+        res.status(200).json({ accessToken: newAccessToken });
+    } catch (error) {
+        return next(error);
+    }
+};
 import { NextFunction, Request, Response } from "express";
 import { checkOtpRestrictions, handleForgotPassword, sendOtp, trackOtpRequests, validateRegistrationData, verifyForgotPasswordOtp, verifyOtp } from "../utils/auth.helper";
 import prisma from "@packages/libs/prisma";
