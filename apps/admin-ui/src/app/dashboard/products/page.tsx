@@ -34,10 +34,7 @@ interface Product {
   images: Array<{ url: string }>;
 }
 
-const fetchProducts = async (): Promise<Product[]> => {
-  const res = await axiosInstance.get('/product/api/get-all-products')
-  return res?.data?.products || []
-}
+
 
 const ProductList = () => {
   const [globalFilter, setGlobalFilter] = useState('')
@@ -45,7 +42,15 @@ const ProductList = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [deletedProducts, setDeletedProducts] = useState<{ [id: string]: boolean }>({})
   const queryClient = useQueryClient()
-    const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
+  const fetchProducts = async (): Promise<Product[]> => {
+    const res = await axiosInstance.get(`/admin/api/get-all-products?page=${page}&limit=${limit}`)
+    console.log(res?.data)
+    return res?.data || []
+  }
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
@@ -56,11 +61,11 @@ const ProductList = () => {
       setSelectedProduct(null)
       setDeletedProducts(prev => ({ ...prev, [productId]: true }))
       queryClient.invalidateQueries({ queryKey: ['all-products'] })
-        setDeleteError(null)
+      setDeleteError(null)
     },
-      onError: (error: any) => {
-        setDeleteError(error?.response?.data?.message || 'Error deleting product. Please try again.')
-      },
+    onError: (error: any) => {
+      setDeleteError(error?.response?.data?.message || 'Error deleting product. Please try again.')
+    },
   })
 
   const restoreProductMutation = useMutation({
