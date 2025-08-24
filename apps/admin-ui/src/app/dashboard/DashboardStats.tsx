@@ -16,8 +16,14 @@ export default function DashboardStatsSection() {
     queryFn: fetchDashboardStats,
   });
 
-  if (isLoading) return <div className="text-white">Loading...</div>;
-  if (error || !data) return <div className="text-red-500">Error loading stats</div>;
+  // Prepare values for each card
+  const stats = {
+    totalRevenue: isLoading ? null : error ? "error" : (data?.totalRevenue ?? null),
+    platformFees: isLoading ? null : error ? "error" : (data?.platformFees ?? null),
+    totalOrders: isLoading ? null : error ? "error" : (data?.totalOrders ?? null),
+    totalUsers: isLoading ? null : error ? "error" : (data?.totalUsers ?? null),
+    // pending payouts is always static
+  };
 
-  return <DashboardCards stats={data} />;
+  return <DashboardCards stats={stats} />;
 }

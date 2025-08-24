@@ -2,10 +2,10 @@ import React from "react";
 import { DollarSign, Percent, ShoppingCart, Users } from "lucide-react";
 
 export interface DashboardStats {
-  totalRevenue: number;
-  platformFees: number;
-  totalOrders: number;
-  totalUsers: number;
+  totalRevenue: number | string | null;
+  platformFees: number | string | null;
+  totalOrders: number | string | null;
+  totalUsers: number | string | null;
 }
 
 export default function DashboardCards({ stats }: { stats: DashboardStats }) {
@@ -25,11 +25,22 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
     "Total Users",
     "Pending Payouts"
   ];
+  // Accept isLoading and error props
+  // @ts-ignore
+  const { isLoading, error } = arguments[0];
   const values = [
-    `₦${stats.totalRevenue.toLocaleString()}`,
-    `₦${stats.platformFees.toLocaleString()}`,
-    stats.totalOrders.toLocaleString(),
-    stats.totalUsers.toLocaleString(),
+    stats.totalRevenue === null ? <span className="animate-pulse bg-gray-700 rounded h-7 w-24 inline-block" />
+      : stats.totalRevenue === "error" ? <span className="text-red-500">Error</span>
+      : `₦${Number(stats.totalRevenue).toLocaleString()}`,
+    stats.platformFees === null ? <span className="animate-pulse bg-gray-700 rounded h-7 w-24 inline-block" />
+      : stats.platformFees === "error" ? <span className="text-red-500">Error</span>
+      : `₦${Number(stats.platformFees).toLocaleString()}`,
+    stats.totalOrders === null ? <span className="animate-pulse bg-gray-700 rounded h-7 w-16 inline-block" />
+      : stats.totalOrders === "error" ? <span className="text-red-500">Error</span>
+      : Number(stats.totalOrders).toLocaleString(),
+    stats.totalUsers === null ? <span className="animate-pulse bg-gray-700 rounded h-7 w-16 inline-block" />
+      : stats.totalUsers === "error" ? <span className="text-red-500">Error</span>
+      : Number(stats.totalUsers).toLocaleString(),
     3 // static value for pending payouts
   ];
   return (
