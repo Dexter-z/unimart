@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react'
 import { Eye, Loader2, DollarSign } from 'lucide-react';
 import axiosInstance from 'apps/admin-ui/src/utils/axiosInstance';
+import { useRouter } from 'next/navigation';
 
 interface Payment {
     id: string;
@@ -24,6 +25,7 @@ const fetchOrders = async (): Promise<Payment[]> => {
 
 const PaymentsTable = () => {
     const [globalFilter, setGlobalFilter] = useState("")
+    const router = useRouter()
 
     const { data: payments = [], isLoading, error } = useQuery({
         queryKey: ["admin-orders"],
@@ -31,8 +33,8 @@ const PaymentsTable = () => {
         staleTime: 1000 * 60 * 5,
     })
 
-    const handleViewPayment = (paymentId: string) => {
-        console.log("Payment details button clicked for payment:", paymentId);
+    const handleViewOrder = (orderId: string) => {
+        router.push(`/order/${orderId}`);
     }
 
     const truncateOrderId = (id: string) => {
@@ -135,24 +137,24 @@ const PaymentsTable = () => {
                             <div key={payment.id} className="px-4 py-4 hover:bg-blue-900 transition-colors duration-200">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex-1">
-                                        <div className="text-sm font-medium text-white">
+                                        <div className="text-2xl font-bold text-white">
                                             Order #{truncateOrderId(payment.id)}
                                         </div>
-                                        <div className="text-sm text-gray-400 mt-1">
+                                        <div className="text-2xl text-gray-400 mt-2">
                                             {payment.user?.name || 'Unknown Customer'}
                                         </div>
-                                        <div className="text-xs text-gray-500">
+                                        <div className="text-xl text-gray-500 mt-2">
                                             Total: {formatCurrency(payment.total)}
                                         </div>
-                                        <div className="text-xs text-red-400">
+                                        <div className="text-xl text-red-400 mt-2">
                                             Platform Fee: -{formatCurrency(calculatePlatformFee(payment.total))}
                                         </div>
-                                        <div className="text-xs text-green-400">
-                                            Seller's Cut: {formatCurrency(calculateSellerCut(payment.total))}
+                                        <div className="text-xl text-green-400 mt-2">
+                                            Seller's Earning: {formatCurrency(calculateSellerCut(payment.total))}
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => handleViewPayment(payment.id)}
+                                        onClick={() => handleViewOrder(payment.id)}
                                         className="text-blue-400 hover:text-blue-300 transition-colors duration-200 ml-2"
                                         title="View Payment Details"
                                     >
@@ -244,7 +246,7 @@ const PaymentsTable = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <button
-                                            onClick={() => handleViewPayment(payment.id)}
+                                            onClick={() => handleViewOrder(payment.id)}
                                             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
                                             title="View Payment Details"
                                         >
