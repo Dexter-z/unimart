@@ -48,8 +48,8 @@ const ProductList = () => {
 
   const fetchProducts = async (): Promise<Product[]> => {
     const res = await axiosInstance.get(`/admin/api/get-all-products?page=${page}&limit=${limit}`)
-    console.log(res?.data)
-    return res?.data || []
+    // The API returns { success, data, meta }
+    return res?.data?.data || []
   }
 
   const deleteProductMutation = useMutation({
@@ -79,7 +79,7 @@ const ProductList = () => {
   })
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
-    queryKey: ['all-products'],
+    queryKey: ['all-products', page, limit],
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5,
   })
@@ -196,9 +196,6 @@ const ProductList = () => {
               <div className="relative">
                 <input type="text" placeholder="Search products..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
-              <Link href="/dashboard/create-product" className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm whitespace-nowrap'>
-                <Plus size={18} /> Add Product
-              </Link>
             </div>
           </div>
         </div>
