@@ -6,6 +6,7 @@ export interface DashboardStats {
   platformFees: number | string | null;
   totalOrders: number | string | null;
   totalUsers: number | string | null;
+  totalShops?: number | string | null;
 }
 
 export default function DashboardCards({ stats }: { stats: DashboardStats }) {
@@ -15,15 +16,17 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
     "bg-green-600",   // Fees
     "bg-yellow-600",  // Orders
     "bg-purple-600",  // Users
-    "bg-red-600"      // Pending Payouts
+    "bg-red-600",     // Pending Payouts
+    "bg-indigo-600"   // Shops
   ];
-  const icons = [DollarSign, Percent, ShoppingCart, Users, Percent];
+  const icons = [DollarSign, Percent, ShoppingCart, Users, Percent, Users];
   const titles = [
     "Total Platform Revenue",
     "Generated Platform Fees",
     "Total Orders",
     "Total Users",
-    "Pending Payouts"
+    "Pending Payouts",
+    "Total Shops"
   ];
   // Accept isLoading and error props
   // @ts-ignore
@@ -41,7 +44,10 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
     stats.totalUsers === null ? <span className="animate-pulse bg-gray-700 rounded h-7 w-16 inline-block" />
       : stats.totalUsers === "error" ? <span className="text-red-500">Error</span>
       : Number(stats.totalUsers).toLocaleString(),
-    3 // static value for pending payouts
+    3, // static value for pending payouts
+    stats.totalShops === null || stats.totalShops === undefined ? <span className="animate-pulse bg-gray-700 rounded h-7 w-16 inline-block" />
+      : stats.totalShops === "error" ? <span className="text-red-500">Error</span>
+      : Number(stats.totalShops).toLocaleString()
   ];
   return (
     <div className="mb-8">

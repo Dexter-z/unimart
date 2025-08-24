@@ -89,6 +89,7 @@ export default function DashboardStatsSection() {
     platformFees: isLoading ? null : error ? "error" : (data?.platformFees ?? null),
     totalOrders: isLoading ? null : error ? "error" : (data?.totalOrders ?? null),
     totalUsers: isLoading ? null : error ? "error" : (data?.totalUsers ?? null),
+    totalShops: isLoading ? null : error ? "error" : (data?.totalShops ?? null),
     // pending payouts is always static
   };
 

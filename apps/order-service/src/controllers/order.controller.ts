@@ -812,19 +812,21 @@ export const getUserOrders = async (req: any, res: Response, next: NextFunction)
 export const getPlatformOrderStats = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Aggregate total revenue, total orders, total users
-    const totalRevenueAgg = await prisma.orders.aggregate({
-      _sum: { total: true }
-    });
-    const totalOrders = await prisma.orders.count();
-    const totalUsers = await prisma.users.count();
-    const revenue = totalRevenueAgg._sum.total || 0;
-    const platformFees = Math.round(revenue * 0.1);
-    res.status(200).json({
-      totalRevenue: revenue,
-      platformFees,
-      totalOrders,
-      totalUsers,
-    });
+        const totalRevenueAgg = await prisma.orders.aggregate({
+            _sum: { total: true }
+        });
+        const totalOrders = await prisma.orders.count();
+        const totalUsers = await prisma.users.count();
+        const totalShops = await prisma.shops.count();
+        const revenue = totalRevenueAgg._sum.total || 0;
+        const platformFees = Math.round(revenue * 0.1);
+        res.status(200).json({
+            totalRevenue: revenue,
+            platformFees,
+            totalOrders,
+            totalUsers,
+            totalShops,
+        });
   } catch (error) {
     next(error);
   }
