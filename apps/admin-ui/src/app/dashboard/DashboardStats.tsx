@@ -17,19 +17,24 @@ async function fetchDashboardStats(): Promise<DashboardStats> {
 
 function getStatusColor(status: string) {
   switch (status) {
-    case "Paid":
-      return "bg-green-600 text-white";
-    case "Pending":
-      return "bg-yellow-600 text-white";
-    case "Cancelled":
-      return "bg-red-600 text-white";
+    case "paid":
+      return "bg-green-600";
+    case "processing":
+      return "bg-yellow-500";
+    case "cancelled":
+      return "bg-red-600";
     default:
-      return "bg-gray-600 text-white";
+      return "bg-gray-600";
   }
 }
 
 
 function RecentOrdersTable({ orders, isLoading, error }: { orders?: any[]; isLoading: boolean; error: any }) {
+  if (orders && orders.length > 0) {
+    // Log all statuses for debugging
+    // eslint-disable-next-line no-console
+    console.log('Order statuses:', orders.map((order: any) => order.status));
+  }
   return (
     <div className="mt-10">
       <h2 className="text-lg font-semibold text-white mb-4">Recent Orders</h2>
@@ -61,7 +66,7 @@ function RecentOrdersTable({ orders, isLoading, error }: { orders?: any[]; isLoa
                   <td className="px-2 py-4 md:px-4 text-gray-300">{order.customerName}</td>
                   <td className="px-2 py-4 md:px-4 text-green-400 font-semibold">₦{order.totalAmount.toLocaleString()}</td>
                   <td className="px-2 py-4 md:px-4">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>{order.status}</span>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${getStatusColor(order.status)}`}>{order.status}</span>
                   </td>
                 </tr>
               ))
