@@ -1,9 +1,9 @@
 "use client"
 
-import axiosInstance from '@/utils/axiosInstance'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { ArrowLeft, Package, User, MapPin, Calendar, DollarSign, Loader2, ShoppingBag } from 'lucide-react'
+import axiosInstance from 'apps/admin-ui/src/utils/axiosInstance'
 
 const statuses = [
     "pending",
@@ -68,7 +68,7 @@ const Page = () => {
 
     const fetchOrder = async () => {
         try {
-            const res = await axiosInstance.get(`/order/api/get-order-details/${orderId}`)
+            const res = await axiosInstance.get(`/order/api/get-admin-order-details/${orderId}`)
             setOrder(res.data.order)
         } catch (error) {
             setLoading(false)
