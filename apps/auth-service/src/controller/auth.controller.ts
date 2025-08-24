@@ -25,9 +25,9 @@ export const refreshAdminToken = async (req: Request, res: Response, next: NextF
             process.env.ACCESS_TOKEN_SECRET!,
             { expiresIn: "15m" }
         );
-        setCookie(res, "admin_access_token", newAccessToken);
+    setCookie(res, "admin_access_token", newAccessToken);
 
-        res.status(200).json({ accessToken: newAccessToken });
+    res.status(200).json({ message: "Admin access token refreshed" });
     } catch (error) {
         return next(error);
     }
