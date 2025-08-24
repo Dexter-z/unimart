@@ -204,6 +204,64 @@ const ProductList = () => {
             </div>
           </div>
         </div>
+        {/* Loading skeleton for products */}
+        {isLoading ? (
+          <>
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-800">
+                <thead className="bg-gray-900">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Image</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Product Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rating</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-black divide-y divide-gray-800">
+                  {[...Array(limit)].map((_, i) => (
+                    <tr key={i}>
+                      {[...Array(7)].map((_, j) => (
+                        <td key={j} className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-6 bg-gray-800 rounded animate-pulse" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="block sm:hidden">
+              {[...Array(limit)].map((_, i) => (
+                <div key={i} className="px-4 py-4 border-b border-gray-800">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 rounded-md bg-gray-800 animate-pulse" />
+                    <div className="flex-1 min-w-0">
+                      <div className="h-4 bg-gray-800 rounded w-2/3 mb-2 animate-pulse" />
+                      <div className="h-3 bg-gray-800 rounded w-1/3 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm mt-3">
+                    <div className="h-3 bg-gray-800 rounded w-1/2 animate-pulse" />
+                    <div className="h-3 bg-gray-800 rounded w-1/2 animate-pulse" />
+                    <div className="col-span-2 h-3 bg-gray-800 rounded w-1/3 animate-pulse" />
+                  </div>
+                  <div className="flex justify-between items-center pt-3 mt-3 border-t border-gray-800">
+                    <div className="flex gap-3">
+                      <div className="w-8 h-8 bg-gray-800 rounded animate-pulse" />
+                      <div className="w-8 h-8 bg-gray-800 rounded animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="w-8 h-8 bg-gray-800 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : null}
         {isLoading ? (
           <div className="flex items-center justify-center h-64 bg-black">
             <div className="text-white">Loading Products...</div>
