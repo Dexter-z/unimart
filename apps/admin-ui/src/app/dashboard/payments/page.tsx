@@ -26,7 +26,7 @@ const PaymentsTable = () => {
     const [globalFilter, setGlobalFilter] = useState("")
 
     const { data: payments = [], isLoading, error } = useQuery({
-        queryKey: ["seller-payments"],
+        queryKey: ["admin-payments"],
         queryFn: fetchPayments,
         staleTime: 1000 * 60 * 5,
     })
