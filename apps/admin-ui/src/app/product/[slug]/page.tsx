@@ -1,4 +1,5 @@
-import ProductPage from '@/components/product-page';
+//import ProductPage from '@/components/product-page';
+import ProductPage from 'apps/admin-ui/src/components/product-page';
 import axiosInstance from 'apps/admin-ui/src/utils/axiosInstance';
 import { Metadata } from 'next';
 import React from 'react'
