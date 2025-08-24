@@ -785,3 +785,25 @@ export const getUserOrders = async (req: any, res: Response, next: NextFunction)
         return next(error);
     }
 }
+
+// Get platform-wide order stats for admin dashboard
+export const getPlatformOrderStats = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Aggregate total revenue, total orders, total users
+    const totalRevenueAgg = await prisma.orders.aggregate({
+      _sum: { total: true }
+    });
+    const totalOrders = await prisma.orders.count();
+    const totalUsers = await prisma.users.count();
+    const revenue = totalRevenueAgg._sum.total || 0;
+    const platformFees = Math.round(revenue * 0.1);
+    res.status(200).json({
+      totalRevenue: revenue,
+      platformFees,
+      totalOrders,
+      totalUsers,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
