@@ -1,7 +1,7 @@
 // Debug: log cookies and authorization header for admin token troubleshooting
 export const logAuthDebug = (req: any, res: any, next: any) => {
-    console.log('[OrderService] Cookies:', req.cookies);
-    console.log('[OrderService] Authorization header:', req.headers.authorization);
+    //console.log('[OrderService] Cookies:', req.cookies);
+    //console.log('[OrderService] Authorization header:', req.headers.authorization);
     next();
 };
 // Get recent orders for admin dashboard

@@ -176,12 +176,11 @@ const isAdminAuthenticated = async (req: any, res: Response, next: NextFunction)
             })
         }
 
-        const admin = await prisma.admins.findUnique({ where: { id: decoded.id } })
-
-        if (!admin) {
-            return res.status(401).json({ message: "Unauthorized! Admin not found" });
+        const admin = await prisma.users.findUnique({ where: { id: decoded.id } })
+        if (!admin || admin.role !== "admin") {
+            return res.status(401).json({ message: "Unauthorized! Admin not found or invalid role" });
         }
-
+        console.log(admin)
         req.admin = admin;
         req.role = decoded.role;
 
