@@ -18,7 +18,7 @@ interface Payment {
 }
 
 const fetchPayments = async (): Promise<Payment[]> => {
-    const res = await axiosInstance.get("/order/api/get-seller-payments")
+    const res = await axiosInstance.get("/order/api/get-admin-payments")
     return res.data.payments;
 }
 
