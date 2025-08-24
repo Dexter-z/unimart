@@ -260,8 +260,6 @@ const Page = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Sidebar */}
                 
             </div>
         </div>
