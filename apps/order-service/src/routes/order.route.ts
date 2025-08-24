@@ -1,7 +1,6 @@
 import isAuthenticated, { isAdminAuthenticated, isSellerAuthenticated, isUserAuthenticated } from "@packages/middleware/isAuthenticated";
 import express, { Router } from "express";
 import { createPaymentIntent, createPaymentSession, getOrderDetails, getSellerOrders, getSellerPayments, getUserOrders, updateOrderStatus, verifyingPaymentSession, getPlatformOrderStats, getRecentOrders, getAdminOrders, logAuthDebug } from "../controllers/order.controller";
-import { isAdmin, isSeller } from "@packages/middleware/authorizeRoles";
 
 const router:Router = express.Router();
 
