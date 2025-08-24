@@ -324,7 +324,7 @@ const ProductList = () => {
                         </div>
                         <div className="flex justify-between items-center pt-3 mt-3 border-t border-gray-800">
                           <div className="flex gap-3">
-                            <Link href={`/product/${product.id}`} className='text-blue-400 hover:text-blue-300 transition-colors duration-200 p-2' title="View Product"><Eye size={18} /></Link>
+                            <Link href={`/product/${product.slug}`} className='text-blue-400 hover:text-blue-300 transition-colors duration-200 p-2' title="View Product"><Eye size={18} /></Link>
                             {/* Edit button removed */}
                             <button className='text-green-400 hover:text-green-300 transition-colors duration-200 p-2' title="View Analytics"><BarChart size={18} /></button>
                           </div>
