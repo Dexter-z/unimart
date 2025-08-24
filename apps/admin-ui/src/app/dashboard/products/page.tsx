@@ -44,12 +44,15 @@ const ProductList = () => {
   const queryClient = useQueryClient()
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const limit = 10;
 
-  const fetchProducts = async (): Promise<Product[]> => {
+  const fetchProducts = async () => {
     const res = await axiosInstance.get(`/admin/api/get-all-products?page=${page}&limit=${limit}`)
     // The API returns { success, data, meta }
-    return res?.data?.data || []
+    return {
+      products: res?.data?.data || [],
+      meta: res?.data?.meta || { currentPage: 1, totalPages: 1, totalProducts: 0 }
+    }
   }
 
   const deleteProductMutation = useMutation({
@@ -78,11 +81,13 @@ const ProductList = () => {
     },
   })
 
-  const { data: products = [], isLoading } = useQuery<Product[]>({
+  const { data, isLoading } = useQuery({
     queryKey: ['all-products', page, limit],
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5,
   })
+  const products = data?.products || [];
+  const meta = data?.meta || { currentPage: 1, totalPages: 1, totalProducts: 0 };
 
   const columns = useMemo(() => [
     {
@@ -316,9 +321,26 @@ const ProductList = () => {
             )}
           </>
         )}
-        {!isLoading && products.length > 0 && (
-          <div className="px-4 sm:px-6 py-3 border-t border-gray-800 bg-gray-900">
-            <div className="text-sm text-gray-300">Showing {table.getRowModel().rows.length} of {products.length} products</div>
+        {!isLoading && (
+          <div className="px-4 sm:px-6 py-3 border-t border-gray-800 bg-gray-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="text-sm text-gray-300">Total Products: {meta.totalProducts}</div>
+            <div className="flex items-center gap-2 mt-2 sm:mt-0">
+              <button
+                className="px-3 py-1 rounded bg-gray-800 text-gray-300 disabled:opacity-50"
+                disabled={meta.currentPage === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Previous
+              </button>
+              <span className="text-gray-400">Page {meta.currentPage} of {meta.totalPages}</span>
+              <button
+                className="px-3 py-1 rounded bg-gray-800 text-gray-300 disabled:opacity-50"
+                disabled={meta.currentPage === meta.totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
