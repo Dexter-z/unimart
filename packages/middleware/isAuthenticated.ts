@@ -48,42 +48,25 @@ import jwt from "jsonwebtoken";
 
 const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
     try {
-        console.log("In isAuthenticated function")
-        
-        // First try to get user token, then seller token
+        // Accept user, seller, or admin tokens
         const userToken = req.cookies["user_access_token"];
         const sellerToken = req.cookies["seller_access_token"];
+        const adminToken = req.cookies["admin_access_token"];
         const headerToken = req.headers.authorization?.split(" ")[1];
-        
-        console.log("Available tokens:", {
-            userToken: userToken ? "present" : "missing",
-            sellerToken: sellerToken ? "present" : "missing",
-            headerToken: headerToken ? "present" : "missing"
-        });
-        
-        const token = userToken || sellerToken || headerToken;
+
+        const token = userToken || sellerToken || adminToken || headerToken;
 
         if (!token) {
-            console.log("No token found in request");
             return res.status(401).json({ message: "Unauthorized! Token Missing" });
         }
 
-        //To verify the token
+        // Verify token and role
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
             id: string;
-            role: "user" | "seller";
-        }
-
-        console.log("Decoded token:", { id: decoded.id, role: decoded.role });
-
-        if (!decoded) {
-            return res.status(401).json({
-                message: "Unauthorised! Invalid token"
-            })
+            role: "user" | "seller" | "admin";
         }
 
         let account;
-
         if(decoded.role === "user"){
             account = await prisma.users.findUnique({ where: { id: decoded.id } })
             req.user = account;
@@ -92,34 +75,25 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
                 where: { id: decoded.id },
                 include: {shop:true} 
             });
-            
             req.seller = account
-            //console.log("Account: ", account)
+        } else if(decoded.role === "admin"){
+            account = await prisma.admins.findUnique({ where: { id: decoded.id } })
+            req.admin = account;
         }
 
-        
-
         if (!account) {
-            console.log("Account not found for:", { id: decoded.id, role: decoded.role });
             return res.status(401).json({ message: "Unauthorized! Account not found" });
         }
 
         req.role = decoded.role;
-        console.log("Authentication successful for:", decoded.role);
-
         return next();
-
     } catch (error: any) {
-        console.log("Error in isAuthenticated: ", error);
-        
-        // Check if it's a token expiration error
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 message: "Token expired",
                 code: "TOKEN_EXPIRED"
             });
         }
-        
         return res.status(401).json({
             message: "Unauthorized! Invalid token"
         })

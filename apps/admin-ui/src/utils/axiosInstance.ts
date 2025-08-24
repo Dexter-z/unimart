@@ -48,6 +48,7 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
+                // Use the correct auth service endpoint for admin token refresh
                 await axios.post(
                     `${process.env.NEXT_PUBLIC_SERVER_URI}/api/refresh-token-admin`,
                     {},
