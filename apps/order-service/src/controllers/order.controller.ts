@@ -831,3 +831,25 @@ export const getPlatformOrderStats = async (req: Request, res: Response, next: N
     next(error);
   }
 }
+
+export const getAdminOrders = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const orders = await prisma.orders.findMany({
+      include: {
+        user: true,
+        shop: true,
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      orders
+    });
+
+  } catch (error) {
+    next(error);
+  }
+}
