@@ -33,41 +33,41 @@ function RecentOrdersTable({ orders, isLoading, error }: { orders?: any[]; isLoa
   return (
     <div className="mt-10">
       <h2 className="text-lg font-semibold text-white mb-4">Recent Orders</h2>
-      <div className="bg-black border border-gray-800 rounded-lg overflow-x-auto">
-        <table className="min-w-full text-left">
+      <div className="bg-black border border-gray-800 rounded-lg">
+        <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-gray-800">
-              <th className="px-6 py-3 text-gray-400">Order ID</th>
-              <th className="px-6 py-3 text-gray-400">Customer Name</th>
-              <th className="px-6 py-3 text-gray-400">Total Amount</th>
-              <th className="px-6 py-3 text-gray-400">Status</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-gray-400">Order ID</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-gray-400">Customer Name</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-gray-400">Total Amount</th>
+              <th className="px-2 py-2 md:px-4 md:py-3 text-gray-400">Status</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center">
+                <td colSpan={4} className="px-2 py-4 md:px-4 text-center">
                   <span className="animate-pulse bg-gray-700 rounded h-6 w-32 inline-block" />
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-red-500">Error loading orders</td>
+                <td colSpan={4} className="px-2 py-4 md:px-4 text-center text-red-500">Error loading orders</td>
               </tr>
             ) : orders && orders.length > 0 ? (
               orders.map((order: any) => (
                 <tr key={order.id} className="border-b border-gray-800">
-                  <td className="px-6 py-4 text-white font-mono">#{order.id.slice(-6)}</td>
-                  <td className="px-6 py-4 text-gray-300">{order.customerName}</td>
-                  <td className="px-6 py-4 text-green-400 font-semibold">₦{order.totalAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-2 py-4 md:px-4 text-white font-mono">#{order.id.slice(-6)}</td>
+                  <td className="px-2 py-4 md:px-4 text-gray-300">{order.customerName}</td>
+                  <td className="px-2 py-4 md:px-4 text-green-400 font-semibold">₦{order.totalAmount.toLocaleString()}</td>
+                  <td className="px-2 py-4 md:px-4">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>{order.status}</span>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-400">No recent orders</td>
+                <td colSpan={4} className="px-2 py-4 md:px-4 text-center text-gray-400">No recent orders</td>
               </tr>
             )}
           </tbody>

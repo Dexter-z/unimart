@@ -44,20 +44,22 @@ export default function DashboardCards({ stats }: { stats: DashboardStats }) {
     3 // static value for pending payouts
   ];
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-      {icons.map((Icon, i) => (
-        <div key={i} className="bg-black border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition-colors duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-gray-400 text-sm font-medium">{titles[i]}</div>
-              <div className="text-2xl font-bold text-white mt-1">{values[i]}</div>
-            </div>
-            <div className={`${iconBg[i]} p-3 rounded-full`}>
-              <Icon className="h-6 w-6 text-white" />
+    <div className="mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+        {icons.map((Icon, i) => (
+          <div key={i} className="bg-black border border-gray-800 rounded-lg p-4 md:p-6 hover:border-gray-700 transition-colors duration-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-gray-400 text-sm font-medium">{titles[i]}</div>
+                <div className="text-2xl font-bold text-white mt-1">{values[i]}</div>
+              </div>
+              <div className={`${iconBg[i]} p-3 rounded-full`}>
+                <Icon className="h-6 w-6 text-white" />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
