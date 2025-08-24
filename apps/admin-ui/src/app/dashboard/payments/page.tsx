@@ -17,17 +17,17 @@ interface Payment {
     }
 }
 
-const fetchPayments = async (): Promise<Payment[]> => {
-    const res = await axiosInstance.get("/order/api/get-admin-payments")
-    return res.data.payments;
+const fetchOrders = async (): Promise<Payment[]> => {
+    const res = await axiosInstance.get("/order/api/get-admin-orders")
+    return res.data.orders;
 }
 
 const PaymentsTable = () => {
     const [globalFilter, setGlobalFilter] = useState("")
 
     const { data: payments = [], isLoading, error } = useQuery({
-        queryKey: ["admin-payments"],
-        queryFn: fetchPayments,
+        queryKey: ["admin-orders"],
+        queryFn: fetchOrders,
         staleTime: 1000 * 60 * 5,
     })
 
@@ -148,7 +148,7 @@ const PaymentsTable = () => {
                                             Platform Fee: -{formatCurrency(calculatePlatformFee(payment.total))}
                                         </div>
                                         <div className="text-xs text-green-400">
-                                            Your Cut: {formatCurrency(calculateSellerCut(payment.total))}
+                                            Seller's Cut: {formatCurrency(calculateSellerCut(payment.total))}
                                         </div>
                                     </div>
                                     <button
