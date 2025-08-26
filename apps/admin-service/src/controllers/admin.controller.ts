@@ -26,7 +26,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
                     ratings: true,
                     category: true,
                     images: { take: 1, select: { url: true } },
-                    Shop: { select: { name: true } },
+                    Shop: { select: { name: true, id: true } },
                 }
             }),
             prisma.products.count({

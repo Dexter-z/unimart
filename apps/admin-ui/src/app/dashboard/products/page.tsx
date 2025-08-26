@@ -108,6 +108,9 @@ const ProductList = () => {
       header: 'Product Name',
       cell: ({ row }: { row: { original: Product } }) => {
         const truncatedTitle = row.original.title.length > 25 ? `${row.original.title.substring(0, 25)}...` : row.original.title;
+        if (row.original.Shop) {
+          console.log('Product Shop:', row.original.Shop);
+        }
         return (
           <div>
             <Link
