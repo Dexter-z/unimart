@@ -34,6 +34,7 @@ interface Product {
   startingDate: string;
   endingDate: string;
   images: Array<{ url: string }>;
+  Shop?: { id: string; name: string };
 }
 
 
@@ -119,6 +120,14 @@ const EventsPage = () => {
               {truncatedTitle}
             </Link>
             <div className="text-sm text-gray-400 mt-1">{row.original.category}</div>
+            {row.original.Shop && (
+              <div className="text-xs mt-1">
+                <Link href={`/shop/${row.original.Shop.id}`} className="text-[#ff8800] hover:underline font-semibold">{row.original.Shop.name}</Link>
+              </div>
+            )}
+            <div className="text-xs text-gray-400 mt-1">
+              <span>Start: {new Date(row.original.startingDate).toLocaleDateString()}</span> | <span>End: {new Date(row.original.endingDate).toLocaleDateString()}</span>
+            </div>
           </div>
         )
       }
@@ -140,12 +149,16 @@ const EventsPage = () => {
     {
       accessorKey: "startingDate",
       header: "Starting Date",
-      cell: ({row}) => new Date(row.original.startingDate).toLocaleDateString()
+      cell: ({ row }: { row: { original: Product } }) => (
+        <span className="text-white">{row.original.startingDate ? new Date(row.original.startingDate).toLocaleDateString() : '-'}</span>
+      )
     },
     {
       accessorKey: "endingDate",
       header: "Ending Date",
-      cell: ({row}) => new Date(row.original.endingDate).toLocaleDateString()
+      cell: ({ row }: { row: { original: Product } }) => (
+        <span className="text-white">{row.original.endingDate ? new Date(row.original.endingDate).toLocaleDateString() : '-'}</span>
+      )
     },
     {
       accessorKey: 'category',
@@ -208,10 +221,10 @@ const EventsPage = () => {
       <div className="bg-black rounded-lg shadow border border-gray-800">
         <div className="px-4 sm:px-6 py-4 border-b border-gray-800">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-            <h2 className="text-xl font-semibold text-white">All Products</h2>
+            <h2 className="text-xl font-semibold text-white">All Events</h2>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
               <div className="relative">
-                <input type="text" placeholder="Search products..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <input type="text" placeholder="Search events..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full sm:w-auto pl-4 pr-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
           </div>
@@ -327,6 +340,15 @@ const EventsPage = () => {
                           <div className="flex-1 min-w-0">
                             <Link href={`/product/${product.slug}`} className='text-blue-400 hover:underline font-medium text-sm leading-tight' title={product.title}>{product.title}</Link>
                             <p className="text-gray-400 text-xs mt-1">{product.category}</p>
+                            {product.Shop && (
+                              <div className="text-xs mt-1">
+                                <Link href={`/shop/${product.Shop.id}`} className="text-[#ff8800] hover:underline font-semibold">{product.Shop.name}</Link>
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-400 mt-1">
+                              <span>Starting Date: {new Date(product.startingDate).toLocaleDateString()}</span><br />
+                              <span>Ending Date: {new Date(product.endingDate).toLocaleDateString()}</span>
+                            </div>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-sm mt-3">
