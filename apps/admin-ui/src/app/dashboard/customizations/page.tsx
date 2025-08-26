@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axiosInstance from "apps/admin-ui/src/utils/axiosInstance";
-import { Pencil, UploadCloud, ImagePlus } from "lucide-react";
+import { Pencil, UploadCloud, ImagePlus, Trash2 } from "lucide-react";
 
 const TABS = ["Categories", "Logo", "Banner"];
 
@@ -31,7 +31,7 @@ export default function CustomizationsPage() {
   // Add category
   const addCategoryMutation = useMutation({
     mutationFn: async () => {
-      return await axiosInstance.post("/admin/api/customizations/category", { category: newCategory });
+      return await axiosInstance.put("/admin/api/add-category", { category: newCategory });
     },
     onSuccess: () => { setNewCategory(""); refetch(); },
   });
@@ -39,7 +39,7 @@ export default function CustomizationsPage() {
   // Add subcategory
   const addSubCategoryMutation = useMutation({
     mutationFn: async () => {
-      return await axiosInstance.post("/admin/api/customizations/subcategory", { category: selectedCategory, subCategory: newSubCategory });
+      return await axiosInstance.put("/admin/api/add-subcategory", { category: selectedCategory, subCategory: newSubCategory });
     },
     onSuccess: () => { setNewSubCategory(""); refetch(); },
   });
@@ -47,7 +47,7 @@ export default function CustomizationsPage() {
   // Delete category
   const deleteCategoryMutation = useMutation({
     mutationFn: async (category: string) => {
-      return await axiosInstance.delete(`/admin/api/customizations/category/${category}`);
+      return await axiosInstance.delete(`/admin/api/delete-category/${category}`);
     },
     onSuccess: () => { setEditModal({category: "", open: false}); refetch(); },
   });
@@ -55,7 +55,7 @@ export default function CustomizationsPage() {
   // Delete subcategory
   const deleteSubCategoryMutation = useMutation({
     mutationFn: async ({category, subCategory}: {category: string, subCategory: string}) => {
-      return await axiosInstance.delete(`/admin/api/customizations/subcategory`, { data: { category, subCategory } });
+      return await axiosInstance.delete(`/admin/api/delete-subcategory`, { data: { category, subCategory } });
     },
     onSuccess: () => { refetch(); },
   });
@@ -63,7 +63,7 @@ export default function CustomizationsPage() {
   // Upload logo
   const uploadLogoMutation = useMutation({
     mutationFn: async (base64: string) => {
-      return await axiosInstance.post(`/admin/api/customizations/logo`, { fileName: base64 });
+      return await axiosInstance.put(`/admin/api/upload-logo`, { fileName: base64 });
     },
     onSuccess: () => { setLogoFile(null); refetch(); },
   });
@@ -71,7 +71,7 @@ export default function CustomizationsPage() {
   // Upload banner
   const uploadBannerMutation = useMutation({
     mutationFn: async (base64: string) => {
-      return await axiosInstance.post(`/admin/api/customizations/banner`, { fileName: base64 });
+      return await axiosInstance.put(`/admin/api/upload-banner`, { fileName: base64 });
     },
     onSuccess: () => { setBannerFile(null); refetch(); },
   });
@@ -90,12 +90,12 @@ export default function CustomizationsPage() {
   return (
     <div className="p-4 sm:p-8 min-h-screen bg-black">
       <h1 className="text-2xl font-bold text-white mb-6">Site Customizations</h1>
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-2 sm:gap-4 mb-8 flex-wrap">
         {TABS.map(tab => (
-          <button key={tab} className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === tab ? "bg-[#ff8800] text-white" : "bg-gray-900 text-gray-300"}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+          <button key={tab} className={`px-3 py-2 sm:px-4 sm:py-2 rounded-t-lg font-semibold text-sm sm:text-base ${activeTab === tab ? "bg-[#ff8800] text-white" : "bg-gray-900 text-gray-300"}`} onClick={() => setActiveTab(tab)}>{tab}</button>
         ))}
       </div>
-      <div className="bg-gray-900 rounded-lg shadow p-6">
+      <div className="bg-gray-900 rounded-lg shadow p-3 sm:p-6">
         {/* Categories Tab */}
         {activeTab === "Categories" && (
           <div>
@@ -110,11 +110,11 @@ export default function CustomizationsPage() {
                         <button className="p-1 text-blue-400 hover:text-blue-300" onClick={() => setEditModal({category: cat, open: true})}><Pencil size={16} /></button>
                       </div>
                       {(data?.subCategories?.[cat] || []).length > 0 && (
-                        <div className="ml-6">
+                        <div className="ml-4 sm:ml-6">
                           {(data?.subCategories?.[cat] || []).map((sub: string) => (
                             <div key={sub} className="flex items-center gap-2 text-gray-300 py-1">
                               <span className="pl-2">{sub}</span>
-                              <button className="p-1 text-red-400 hover:text-red-300" onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})}>Delete</button>
+                              <button className="p-1 text-red-400 hover:text-red-300" onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})}><Trash2 size={16} /></button>
                             </div>
                           ))}
                         </div>
