@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
-import { Suspense } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js'
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -20,7 +19,7 @@ const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
 
 console.log("Stripe Promise:", stripePromise);
 
-const Page = () => {
+const CheckoutPageContent = () => {
     const [clientSecret, setClientSecret] = useState("")
     const [cartItems, setCartItems] = useState<any[]>([])
     const [coupon, setCoupon] = useState()
@@ -228,5 +227,11 @@ const Page = () => {
         </Suspense>
     )
 }
+
+const Page = () => (
+    <Suspense>
+        <CheckoutPageContent />
+    </Suspense>
+);
 
 export default Page

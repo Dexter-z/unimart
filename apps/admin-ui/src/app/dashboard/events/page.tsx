@@ -9,10 +9,8 @@ import {
   getFilteredRowModel
 } from '@tanstack/react-table'
 import {
-  Pencil,
   Trash,
   Eye,
-  Plus,
   BarChart,
   Star,
   Recycle
