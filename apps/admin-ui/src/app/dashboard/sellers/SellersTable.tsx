@@ -106,6 +106,7 @@ export default function SellersTable() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-white font-medium">{seller.name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-300">{seller.email}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-gray-300">{seller.phone_number}</td>
+                                                {/* <td className="px-6 py-4 whitespace-nowrap text-white font-semibold">{seller.shop_name}</td> */}
                                                 <td className="px-6 py-4 whitespace-nowrap text-white font-semibold">
                                                     {seller.shop_id ? (
                                                         <a href={`/shop/${seller.shop_id}`} className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
@@ -148,7 +149,6 @@ export default function SellersTable() {
                                             </div>
                                             <div className="text-gray-300 text-sm">{seller.email}</div>
                                             <div className="text-gray-300 text-sm">{seller.phone_number}</div>
-                                            <div className="text-white text-sm font-semibold">Shop: {seller.shop_name}</div>
                                             <div className="text-white text-sm font-semibold">
                                                 Shop: {seller.shop_id ? (
                                                     <a href={`/shop/${seller.shop_id}`} className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
