@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axiosInstance from "apps/admin-ui/src/utils/axiosInstance";
-import { Pencil, UploadCloud, ImagePlus, Trash2 } from "lucide-react";
+import { Pencil, UploadCloud, ImagePlus, Trash2, Loader2 } from "lucide-react";
 
 const TABS = ["Categories", "Logo", "Banner"];
 
@@ -92,10 +92,10 @@ export default function CustomizationsPage() {
       <h1 className="text-2xl font-bold text-white mb-6">Site Customizations</h1>
       <div className="flex gap-2 sm:gap-4 mb-8 flex-wrap">
         {TABS.map(tab => (
-          <button key={tab} className={`px-3 py-2 sm:px-4 sm:py-2 rounded-t-lg font-semibold text-sm sm:text-base ${activeTab === tab ? "bg-[#ff8800] text-white" : "bg-gray-900 text-gray-300"}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+          <button key={tab} className={`px-3 py-2 sm:px-4 sm:py-2 rounded-t-lg font-semibold text-sm sm:text-base transition-colors duration-200 ${activeTab === tab ? "bg-blue-700 text-white" : "bg-black text-blue-300 hover:bg-blue-900 hover:text-white"}`} onClick={() => setActiveTab(tab)}>{tab}</button>
         ))}
       </div>
-      <div className="bg-gray-900 rounded-lg shadow p-3 sm:p-6">
+      <div className="bg-black rounded-lg shadow p-3 sm:p-6 border border-blue-900">
         {/* Categories Tab */}
         {activeTab === "Categories" && (
           <div>
@@ -107,14 +107,18 @@ export default function CustomizationsPage() {
                     <div key={cat} className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-white font-semibold text-base">{cat}</span>
-                        <button className="p-1 text-blue-400 hover:text-blue-300" onClick={() => setEditModal({category: cat, open: true})}><Pencil size={16} /></button>
+                        <button className={`p-1 rounded transition-colors duration-200 ${editModal.open ? "bg-blue-900" : "bg-black hover:bg-blue-900"} text-blue-300 hover:text-white`} onClick={() => setEditModal({category: cat, open: true})} disabled={addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
+                          <Pencil size={16} />
+                        </button>
                       </div>
                       {(data?.subCategories?.[cat] || []).length > 0 && (
                         <div className="ml-4 sm:ml-6">
                           {(data?.subCategories?.[cat] || []).map((sub: string) => (
-                            <div key={sub} className="flex items-center gap-2 text-gray-300 py-1">
+                            <div key={sub} className="flex items-center gap-2 text-blue-200 py-1">
                               <span className="pl-2">{sub}</span>
-                              <button className="p-1 text-red-400 hover:text-red-300" onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})}><Trash2 size={16} /></button>
+                              <button className={`p-1 rounded transition-colors duration-200 ${deleteSubCategoryMutation.isPending ? "bg-blue-900" : "bg-black hover:bg-blue-900"} text-blue-300 hover:text-white`} onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})} disabled={addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
+                                {deleteSubCategoryMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -122,25 +126,31 @@ export default function CustomizationsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-2 mb-4">
-                  <input type="text" className="px-3 py-2 rounded bg-gray-800 text-white" placeholder="Add new category" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
-                  <button className="px-4 py-2 bg-[#ff8800] text-white rounded" onClick={() => addCategoryMutation.mutate()} disabled={!newCategory}>Add Category</button>
+                <div className="flex flex-col sm:flex-row gap-2 mb-4 w-full">
+                  <input type="text" className="px-3 py-2 rounded bg-black text-white border border-blue-900 w-full sm:w-auto" placeholder="Add new category" value={newCategory} onChange={e => setNewCategory(e.target.value)} disabled={addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending} />
+                  <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full sm:w-auto ${addCategoryMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={() => addCategoryMutation.mutate()} disabled={!newCategory || addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
+                    {addCategoryMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : "Add Category"}
+                  </button>
                 </div>
-                <div className="flex gap-2 mb-4">
-                  <select className="px-3 py-2 rounded bg-gray-800 text-white" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                <div className="flex flex-col sm:flex-row gap-2 mb-4 w-full">
+                  <select className="px-3 py-2 rounded bg-black text-white border border-blue-900 w-full sm:w-auto" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} disabled={addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
                     <option value="">Select category</option>
                     {(data?.categories || []).map((cat: string) => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
-                  <input type="text" className="px-3 py-2 rounded bg-gray-800 text-white" placeholder="Add subcategory" value={newSubCategory} onChange={e => setNewSubCategory(e.target.value)} />
-                  <button className="px-4 py-2 bg-[#ff8800] text-white rounded" onClick={() => addSubCategoryMutation.mutate()} disabled={!selectedCategory || !newSubCategory}>Add Subcategory</button>
+                  <input type="text" className="px-3 py-2 rounded bg-black text-white border border-blue-900 w-full sm:w-auto" placeholder="Add subcategory" value={newSubCategory} onChange={e => setNewSubCategory(e.target.value)} disabled={addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending} />
+                  <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full sm:w-auto ${addSubCategoryMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={() => addSubCategoryMutation.mutate()} disabled={!selectedCategory || !newSubCategory || addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
+                    {addSubCategoryMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : "Add Subcategory"}
+                  </button>
                 </div>
                 {/* Edit/Delete Modal */}
                 {editModal.open && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                    <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-                      <div className="text-lg text-white font-bold mb-2">Edit Category: {editModal.category}</div>
-                      <button className="px-4 py-2 bg-red-600 text-white rounded" onClick={() => deleteCategoryMutation.mutate(editModal.category)}>Delete Category</button>
-                      <button className="px-4 py-2 bg-gray-700 text-gray-300 ml-2" onClick={() => setEditModal({category: "", open: false})}>Close</button>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+                    <div className="bg-black border border-blue-900 rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+                      <div className="text-lg text-white font-bold mb-2">Edit Category: <span className="text-blue-300">{editModal.category}</span></div>
+                      <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full sm:w-auto mb-2 ${deleteCategoryMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={() => deleteCategoryMutation.mutate(editModal.category)} disabled={deleteCategoryMutation.isPending || addCategoryMutation.isPending || addSubCategoryMutation.isPending || deleteSubCategoryMutation.isPending}>
+                        {deleteCategoryMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : "Delete Category"}
+                      </button>
+                      <button className="px-4 py-2 rounded font-semibold transition-colors duration-200 w-full sm:w-auto bg-gray-800 text-blue-300" onClick={() => setEditModal({category: "", open: false})} disabled={deleteCategoryMutation.isPending}>Close</button>
                     </div>
                   </div>
                 )}
@@ -152,13 +162,13 @@ export default function CustomizationsPage() {
         {activeTab === "Logo" && (
           <div>
             <h2 className="text-xl font-bold text-white mb-4">Site Logo</h2>
-            <div className="mb-4 flex flex-col items-center">
+            <div className="mb-4 flex flex-col items-center w-full max-w-xs mx-auto">
               {data?.logo ? (
-                <img src={data.logo} alt="Site Logo" className="w-32 h-32 object-contain rounded mb-2 border border-gray-700" />
+                <img src={data.logo} alt="Site Logo" className="w-32 h-32 object-contain rounded mb-2 border border-blue-900 bg-black" />
               ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-800 text-gray-400 rounded mb-2 border border-gray-700">No Logo</div>
+                <div className="w-32 h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Logo</div>
               )}
-              <input type="file" accept="image/*" className="mb-2" onChange={e => {
+              <input type="file" accept="image/*" className="mb-2 w-full" onChange={e => {
                 const file = e.target.files?.[0];
                 setLogoFile(file || null);
                 if (file) {
@@ -166,13 +176,15 @@ export default function CustomizationsPage() {
                 } else {
                   setLogoPreview("");
                 }
-              }} />
+              }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
               {logoFile && logoPreview && (
-                <img src={logoPreview} alt="Preview" className="w-24 h-24 object-contain rounded mb-2" />
+                <img src={logoPreview} alt="Preview" className="w-24 h-24 object-contain rounded mb-2 border border-blue-900 bg-black" />
               )}
-              <button className="px-4 py-2 bg-[#ff8800] text-white rounded flex items-center gap-2" onClick={async () => {
+              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadLogoMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (logoFile && logoPreview) await uploadLogoMutation.mutateAsync(logoPreview);
-              }} disabled={!logoFile}>Upload Logo <UploadCloud size={16} /></button>
+              }} disabled={!logoFile || uploadLogoMutation.isPending || uploadBannerMutation.isPending}>
+                {uploadLogoMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upload Logo <UploadCloud size={16} /></>}
+              </button>
             </div>
           </div>
         )}
@@ -180,13 +192,13 @@ export default function CustomizationsPage() {
         {activeTab === "Banner" && (
           <div>
             <h2 className="text-xl font-bold text-white mb-4">Site Banner</h2>
-            <div className="mb-4 flex flex-col items-center">
+            <div className="mb-4 flex flex-col items-center w-full max-w-xl mx-auto">
               {data?.banner ? (
-                <img src={data.banner} alt="Site Banner" className="w-full max-w-xl h-32 object-cover rounded mb-2 border border-gray-700" />
+                <img src={data.banner} alt="Site Banner" className="w-full max-w-xl h-32 object-cover rounded mb-2 border border-blue-900 bg-black" />
               ) : (
-                <div className="w-full max-w-xl h-32 flex items-center justify-center bg-gray-800 text-gray-400 rounded mb-2 border border-gray-700">No Banner</div>
+                <div className="w-full max-w-xl h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Banner</div>
               )}
-              <input type="file" accept="image/*" className="mb-2" onChange={e => {
+              <input type="file" accept="image/*" className="mb-2 w-full" onChange={e => {
                 const file = e.target.files?.[0];
                 setBannerFile(file || null);
                 if (file) {
@@ -194,13 +206,15 @@ export default function CustomizationsPage() {
                 } else {
                   setBannerPreview("");
                 }
-              }} />
+              }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
               {bannerFile && bannerPreview && (
-                <img src={bannerPreview} alt="Preview" className="w-full max-w-xs h-24 object-cover rounded mb-2" />
+                <img src={bannerPreview} alt="Preview" className="w-full max-w-xs h-24 object-cover rounded mb-2 border border-blue-900 bg-black" />
               )}
-              <button className="px-4 py-2 bg-[#ff8800] text-white rounded flex items-center gap-2" onClick={async () => {
+              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadBannerMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (bannerFile && bannerPreview) await uploadBannerMutation.mutateAsync(bannerPreview);
-              }} disabled={!bannerFile}>Upload Banner <ImagePlus size={16} /></button>
+              }} disabled={!bannerFile || uploadLogoMutation.isPending || uploadBannerMutation.isPending}>
+                {uploadBannerMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upload Banner <ImagePlus size={16} /></>}
+              </button>
             </div>
           </div>
         )}
