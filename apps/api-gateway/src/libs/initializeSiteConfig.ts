@@ -27,7 +27,9 @@ const initializeSiteConfig = async() => {
                         "Electronics": ["Generators", "TVs", "Speakers", "Cameras", "Smart Home Devices"],
                         "Bedroom essentials": ["Mattress", "Bed Stand", "Laundry", "Cleaning", "Furniture", "Decor", "Lighting"],
                         "Food and pastries": ["Bread", "Cakes", "Snacks", "Beverages"]
-                    }
+                    },
+                    logo: "",
+                    banner: ""
                 }
             })
         }
