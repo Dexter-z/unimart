@@ -26,6 +26,7 @@ model users {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   email         String          @unique
+  phone_number String?
   password      String?
   role          String          @default("user") // 'user' or 'admin'
   following     String[]
