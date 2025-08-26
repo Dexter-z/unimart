@@ -32,6 +32,7 @@ interface Product {
   ratings?: number;
   deleted?: boolean;
   images: Array<{ url: string }>;
+  Shop?: { id: string; name: string };
 }
 
 
@@ -117,6 +118,11 @@ const ProductList = () => {
               {truncatedTitle}
             </Link>
             <div className="text-sm text-gray-400 mt-1">{row.original.category}</div>
+            {row.original.Shop && (
+              <div className="text-xs mt-1">
+                <Link href={`/shop/${row.original.Shop.id}`} className="text-[#ff8800] hover:underline font-semibold">{row.original.Shop.name}</Link>
+              </div>
+            )}
           </div>
         )
       }
@@ -315,6 +321,11 @@ const ProductList = () => {
                           <div className="flex-1 min-w-0">
                             <Link href={`/product/${product.slug}`} className='text-blue-400 hover:underline font-medium text-sm leading-tight' title={product.title}>{product.title}</Link>
                             <p className="text-gray-400 text-xs mt-1">{product.category}</p>
+                            {product.Shop && (
+                              <div className="text-xs mt-1">
+                                <Link href={`/shop/${product.Shop.id}`} className="text-[#ff8800] hover:underline font-semibold">{product.Shop.name}</Link>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-sm mt-3">
