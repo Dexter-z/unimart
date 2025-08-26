@@ -64,6 +64,21 @@ const UsersPage = () => {
   const users = data?.users || [];
   const meta = data?.meta || { currentPage: 1, totalPages: 1, totalUsers: 0 };
 
+  // Cache admins and users after initial load
+  const [admins, setAdmins] = useState<User[]>([]);
+  const [normalUsers, setNormalUsers] = useState<User[]>([]);
+
+  React.useEffect(() => {
+    if (users.length) {
+      setAdmins(users.filter((u: User) => u.role === 'admin'));
+      setNormalUsers(users.filter((u: User) => u.role === 'user'));
+    }
+  }, [users]);
+
+  let displayedUsers: User[] = users;
+  if (roleFilter === 'admin') displayedUsers = admins;
+  else if (roleFilter === 'user') displayedUsers = normalUsers;
+
   const columns = useMemo(() => [
     {
       accessorKey: 'name',
@@ -106,7 +121,7 @@ const UsersPage = () => {
   ], [])
 
   const table = useReactTable({
-    data: users,
+  data: displayedUsers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
