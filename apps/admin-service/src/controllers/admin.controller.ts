@@ -1,3 +1,7 @@
+// --- Customization Controllers ---
+import { imagekit } from "@packages/libs/imagekit";
+
+
 import { ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
@@ -253,3 +257,141 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
         next(error)
     }
 }
+
+
+// Get all categories and subcategories
+export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const config = await prisma.site_config.findFirst();
+        if (!config) {
+            return res.status(404).json({ message: "Site config not found" });
+        }
+        return res.status(200).json({
+            categories: config.categories,
+            subCategories: config.subCategories,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Add a new category
+export const addCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { category } = req.body;
+        if (!category) return res.status(400).json({ message: "Category is required" });
+        const config = await prisma.site_config.findFirst();
+        if (!config) return res.status(404).json({ message: "Site config not found" });
+        const updated = await prisma.site_config.update({
+            where: { id: config.id },
+            data: { categories: { push: category } },
+        });
+        return res.status(201).json({ categories: updated.categories });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Add a subcategory to a category
+export const addSubCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { category, subCategory } = req.body;
+        if (!category || !subCategory) return res.status(400).json({ message: "Category and subCategory required" });
+        const config = await prisma.site_config.findFirst();
+        if (!config) return res.status(404).json({ message: "Site config not found" });
+        let subCategories = (config.subCategories || {}) as Record<string, string[]>;
+        if (!subCategories[category]) subCategories[category] = [];
+        subCategories[category].push(subCategory);
+        const updated = await prisma.site_config.update({
+            where: { id: config.id },
+            data: { subCategories },
+        });
+        return res.status(201).json({ subCategories: updated.subCategories });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Delete a category and its subcategories
+export const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { category } = req.params;
+        const config = await prisma.site_config.findFirst();
+        if (!config) return res.status(404).json({ message: "Site config not found" });
+        const categories = config.categories.filter((cat: string) => cat !== category);
+        let subCategories = (config.subCategories || {}) as Record<string, string[]>;
+        delete subCategories[category];
+        const updated = await prisma.site_config.update({
+            where: { id: config.id },
+            data: { categories, subCategories },
+        });
+        return res.status(200).json({ categories: updated.categories, subCategories: updated.subCategories });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Delete a subcategory
+export const deleteSubCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { category, subCategory } = req.body;
+        const config = await prisma.site_config.findFirst();
+        if (!config) return res.status(404).json({ message: "Site config not found" });
+        let subCategories = (config.subCategories || {}) as Record<string, string[]>;
+        if (!subCategories[category]) return res.status(404).json({ message: "Category not found" });
+        subCategories[category] = subCategories[category].filter((sub: string) => sub !== subCategory);
+        const updated = await prisma.site_config.update({
+            where: { id: config.id },
+            data: { subCategories },
+        });
+        return res.status(200).json({ subCategories: updated.subCategories });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Upload logo
+export const uploadLogo = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { fileName } = req.body;
+        const matches = fileName.match(/^data:(image\/[a-zA-Z0-9+]+);base64,/);
+        const mimeType = matches ? matches[1] : "image/jpeg";
+        const extension = mimeType.split("/")[1];
+        const response = await imagekit.upload({
+            file: fileName,
+            fileName: `logo-${Date.now()}.${extension}`,
+            folder: "/site-logo",
+        });
+        const config = await prisma.site_config.findFirst();
+        await prisma.site_config.update({
+            where: { id: config!.id },
+            data: { logo: response.url },
+        });
+        res.status(201).json({ logo_url: response.url });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Upload banner
+export const uploadBanner = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { fileName } = req.body;
+        const matches = fileName.match(/^data:(image\/[a-zA-Z0-9+]+);base64,/);
+        const mimeType = matches ? matches[1] : "image/jpeg";
+        const extension = mimeType.split("/")[1];
+        const response = await imagekit.upload({
+            file: fileName,
+            fileName: `banner-${Date.now()}.${extension}`,
+            folder: "/site-banner",
+        });
+        const config = await prisma.site_config.findFirst();
+        await prisma.site_config.update({
+            where: { id: config!.id },
+            data: { banner: response.url },
+        });
+        res.status(201).json({ banner_url: response.url });
+    } catch (error) {
+        next(error);
+    }
+};

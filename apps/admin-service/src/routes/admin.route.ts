@@ -1,5 +1,6 @@
 import express, { Router } from "express";
-import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers } from "../controllers/admin.controller";
+import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, getCategories, addCategory, addSubCategory, deleteCategory, deleteSubCategory, uploadLogo, uploadBanner } from "../controllers/admin.controller";
+
 import { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
 
 const router:Router = express.Router();
@@ -11,6 +12,15 @@ router.put("/add-new-admin",isAdminAuthenticated, addNewAdmin)
 router.get("/get-all-sellers",isAdminAuthenticated, getAllSellers)
 router.get("/get-all-users",isAdminAuthenticated, getAllUsers)
 router.get("/get-all-customizations",isAdminAuthenticated, getAllCustomizations)
+
+// --- Customization routes ---
+router.get("/get-categories", isAdminAuthenticated, getCategories);
+router.put("/add-category", isAdminAuthenticated, addCategory);
+router.put("/add-subcategory", isAdminAuthenticated, addSubCategory);
+router.delete("/delete-category/:category", isAdminAuthenticated, deleteCategory);
+router.delete("/delete-subcategory", isAdminAuthenticated, deleteSubCategory);
+router.put("/upload-logo", isAdminAuthenticated, uploadLogo);
+router.put("/upload-banner", isAdminAuthenticated, uploadBanner);
 
 
 export default router;
