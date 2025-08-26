@@ -102,22 +102,26 @@ export default function CustomizationsPage() {
             <h2 className="text-xl font-bold text-white mb-4">Categories & Subcategories</h2>
             {isLoading ? <div className="text-gray-400">Loading...</div> : (
               <div>
-                <ul className="mb-6">
+                <div className="mb-6">
                   {(data?.categories || []).map((cat: string) => (
-                    <li key={cat} className="flex items-center gap-2 mb-2">
-                      <span className="text-white font-semibold">{cat}</span>
-                      <button className="p-1 text-blue-400 hover:text-blue-300" onClick={() => setEditModal({category: cat, open: true})}><Pencil size={16} /></button>
-                      <ul className="ml-6 mt-2">
-                        {(data?.subCategories?.[cat] || []).map((sub: string) => (
-                          <li key={sub} className="flex items-center gap-2 text-gray-300">
-                            {sub}
-                            <button className="p-1 text-red-400 hover:text-red-300" onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})}>Delete</button>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
+                    <div key={cat} className="mb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white font-semibold text-base">{cat}</span>
+                        <button className="p-1 text-blue-400 hover:text-blue-300" onClick={() => setEditModal({category: cat, open: true})}><Pencil size={16} /></button>
+                      </div>
+                      {(data?.subCategories?.[cat] || []).length > 0 && (
+                        <div className="ml-6">
+                          {(data?.subCategories?.[cat] || []).map((sub: string) => (
+                            <div key={sub} className="flex items-center gap-2 text-gray-300 py-1">
+                              <span className="pl-2">{sub}</span>
+                              <button className="p-1 text-red-400 hover:text-red-300" onClick={() => deleteSubCategoryMutation.mutate({category: cat, subCategory: sub})}>Delete</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </ul>
+                </div>
                 <div className="flex gap-2 mb-4">
                   <input type="text" className="px-3 py-2 rounded bg-gray-800 text-white" placeholder="Add new category" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
                   <button className="px-4 py-2 bg-[#ff8800] text-white rounded" onClick={() => addCategoryMutation.mutate()} disabled={!newCategory}>Add Category</button>
