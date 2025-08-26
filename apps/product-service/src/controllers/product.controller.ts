@@ -3,7 +3,7 @@ import { imagekit } from "@packages/libs/imagekit";
 import prisma from "@packages/libs/prisma";
 import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
-import ImageKit from "imagekit";
+//import ImageKit from "imagekit";
 
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
     try {
