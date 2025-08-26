@@ -164,7 +164,9 @@ export default function CustomizationsPage() {
             <h2 className="text-xl font-bold text-white mb-4">Site Logo</h2>
             <div className="mb-4 flex flex-col items-center w-full max-w-xs mx-auto">
               {data?.logo ? (
-                <img src={data.logo} alt="Site Logo" className="w-32 h-32 object-contain rounded mb-2 border border-blue-900 bg-black" />
+                <div className="w-40 h-40 flex items-center justify-center bg-black rounded mb-2 border border-blue-900">
+                  <img src={data.logo} alt="Site Logo" className="w-full h-full object-contain" />
+                </div>
               ) : (
                 <div className="w-32 h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Logo</div>
               )}
@@ -183,7 +185,9 @@ export default function CustomizationsPage() {
                 }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
               </label>
               {logoFile && logoPreview && (
-                <img src={logoPreview} alt="Preview" className="w-24 h-24 object-contain rounded mb-2 border border-blue-900 bg-black" />
+                <div className="w-40 h-40 flex items-center justify-center bg-black rounded mb-2 border border-blue-900">
+                  <img src={logoPreview} alt="Preview" className="w-full h-full object-contain" />
+                </div>
               )}
               <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadLogoMutation.isPending || !logoFile ? "bg-blue-900 text-blue-200 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (logoFile && logoPreview) await uploadLogoMutation.mutateAsync(logoPreview);
@@ -199,7 +203,9 @@ export default function CustomizationsPage() {
             <h2 className="text-xl font-bold text-white mb-4">Site Banner</h2>
             <div className="mb-4 flex flex-col items-center w-full max-w-xl mx-auto">
               {data?.banner ? (
-                <img src={data.banner} alt="Site Banner" className="w-full max-w-xl h-32 object-cover rounded mb-2 border border-blue-900 bg-black" />
+                <div className="w-full max-w-2xl h-40 flex items-center justify-center bg-black rounded mb-2 border border-blue-900">
+                  <img src={data.banner} alt="Site Banner" className="w-full h-full object-contain" />
+                </div>
               ) : (
                 <div className="w-full max-w-xl h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Banner</div>
               )}
@@ -218,7 +224,9 @@ export default function CustomizationsPage() {
                 }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
               </label>
               {bannerFile && bannerPreview && (
-                <img src={bannerPreview} alt="Preview" className="w-full max-w-xs h-24 object-cover rounded mb-2 border border-blue-900 bg-black" />
+                <div className="w-full max-w-2xl h-40 flex items-center justify-center bg-black rounded mb-2 border border-blue-900">
+                  <img src={bannerPreview} alt="Preview" className="w-full h-full object-contain" />
+                </div>
               )}
               <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadBannerMutation.isPending || !bannerFile ? "bg-blue-900 text-blue-200 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (bannerFile && bannerPreview) await uploadBannerMutation.mutateAsync(bannerPreview);
