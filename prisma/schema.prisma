@@ -103,6 +103,8 @@ model site_config {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   categories    String[]
   subCategories Json
+  logo          String?
+  banner        String?
 }
 
 model discount_codes {
@@ -230,7 +232,7 @@ model notifications {
   creatorId     String   @db.ObjectId
   receiverId    String   @db.ObjectId
   redirect_link String?
-  isRead        Boolean  @default(false)
+  status        String   @default("unread") // unread, read
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -249,4 +251,13 @@ model address {
   user        users    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model uniqueShopVisitors {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  visitedAt DateTime @default(now())
+
+  @@unique([shopId, userId])
 }

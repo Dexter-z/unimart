@@ -1,3 +1,4 @@
+import { ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
 
@@ -48,5 +49,120 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
         })
     } catch (error) {
         next(error)
+    }
+}
+
+//Get All events
+export const getAllEvents = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 20;
+        const skip = (page - 1) * limit;
+
+        const [events, totalEvents] = await Promise.all([
+            prisma.products.findMany({
+                where: {
+                    startingDate: {
+                        not: null
+                    },
+                },
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    salePrice: true,
+                    stock: true,
+                    createdAt: true,
+                    ratings: true,
+                    category: true,
+                    startingDate: true,
+                    endingDate: true,
+                    images: { take: 1, select: { url: true } },
+                    Shop: { select: { name: true } },
+                }
+            }),
+            prisma.products.count({
+                where: {
+                    startingDate: {
+                        not: null
+                    },
+                }
+            })
+        ])
+
+        const totalPages = Math.ceil(totalEvents / limit);
+
+        res.status(200).json({
+            success: true,
+            data: events,
+            meta: {
+                totalEvents,
+                currentPage: page,
+                totalPages
+            }
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+//Get all admins
+export const getAllAdmins = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const admins = await prisma.users.findMany({
+            where: {
+                role: 'admin',
+            }
+        })
+
+        res.status(201).json({
+            success: true,
+            data: admins
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const addNewAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, role } = req.body;
+
+        const isUser = await prisma.users.findUnique({where: {email}});
+
+        if(!isUser){
+            return next (new ValidationError("User not found"))
+        }
+
+        const updateRole = await prisma.users.update({
+            where: {email},
+            data: {role}
+        })
+
+        res.status(201).json({
+            success: true,
+            updateRole
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+//Fetch all customizations 
+export const getAllCustomizations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const config = await prisma.site_config.findFirst();
+
+        return res.status(200).json({
+            categories: config?.categories || [],
+            subCategories: config?.subCategories || {},
+            logo: config?.logo || null,
+            banner: config?.banner || null
+        });
+    } catch (error) {
+        return next(error)
     }
 }
