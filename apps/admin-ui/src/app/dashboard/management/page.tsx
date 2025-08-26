@@ -35,8 +35,12 @@ export default function ManagementPage() {
   const admins: Admin[] = data || [];
 
   const removeAdminMutation = useMutation({
-    mutationFn: async (adminId: string) => {
-      return await axiosInstance.put(`/admin/api/remove-admin/${adminId}`);
+    mutationFn: async (admin: Admin) => {
+      // Workaround: call add-new-admin with role 'user' for the admin's email
+      return await axiosInstance.put(`/admin/api/add-new-admin`, {
+        email: admin.email,
+        role: "user",
+      });
     },
     onSuccess: () => {
       setShowRemoveModal(false);
@@ -167,7 +171,7 @@ export default function ManagementPage() {
             <div className="flex gap-3 justify-end">
               <button
                 className="px-4 py-2 rounded bg-red-600 text-white font-semibold disabled:opacity-50"
-                onClick={() => selectedAdmin && removeAdminMutation.mutate(selectedAdmin.id)}
+                onClick={() => selectedAdmin && removeAdminMutation.mutate(selectedAdmin)}
                 disabled={removeAdminMutation.isPending || !selectedAdmin}
               >
                 {removeAdminMutation.isPending ? "Removing..." : "Remove"}
