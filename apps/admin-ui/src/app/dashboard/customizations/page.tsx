@@ -168,19 +168,24 @@ export default function CustomizationsPage() {
               ) : (
                 <div className="w-32 h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Logo</div>
               )}
-              <input type="file" accept="image/*" className="mb-2 w-full" onChange={e => {
-                const file = e.target.files?.[0];
-                setLogoFile(file || null);
-                if (file) {
-                  fileToBase64(file).then(setLogoPreview);
-                } else {
-                  setLogoPreview("");
-                }
-              }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
+              <label className="w-full mb-2">
+                <span className="block w-full px-4 py-2 rounded font-semibold transition-colors duration-200 text-center cursor-pointer bg-black text-blue-300 border border-blue-900 hover:bg-blue-900 hover:text-white">
+                  Choose Logo File
+                </span>
+                <input type="file" accept="image/*" className="hidden" onChange={e => {
+                  const file = e.target.files?.[0];
+                  setLogoFile(file || null);
+                  if (file) {
+                    fileToBase64(file).then(setLogoPreview);
+                  } else {
+                    setLogoPreview("");
+                  }
+                }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
+              </label>
               {logoFile && logoPreview && (
                 <img src={logoPreview} alt="Preview" className="w-24 h-24 object-contain rounded mb-2 border border-blue-900 bg-black" />
               )}
-              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadLogoMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
+              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadLogoMutation.isPending || !logoFile ? "bg-blue-900 text-blue-200 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (logoFile && logoPreview) await uploadLogoMutation.mutateAsync(logoPreview);
               }} disabled={!logoFile || uploadLogoMutation.isPending || uploadBannerMutation.isPending}>
                 {uploadLogoMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upload Logo <UploadCloud size={16} /></>}
@@ -198,19 +203,24 @@ export default function CustomizationsPage() {
               ) : (
                 <div className="w-full max-w-xl h-32 flex items-center justify-center bg-black text-blue-300 rounded mb-2 border border-blue-900">No Banner</div>
               )}
-              <input type="file" accept="image/*" className="mb-2 w-full" onChange={e => {
-                const file = e.target.files?.[0];
-                setBannerFile(file || null);
-                if (file) {
-                  fileToBase64(file).then(setBannerPreview);
-                } else {
-                  setBannerPreview("");
-                }
-              }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
+              <label className="w-full mb-2">
+                <span className="block w-full px-4 py-2 rounded font-semibold transition-colors duration-200 text-center cursor-pointer bg-black text-blue-300 border border-blue-900 hover:bg-blue-900 hover:text-white">
+                  Choose Banner File
+                </span>
+                <input type="file" accept="image/*" className="hidden" onChange={e => {
+                  const file = e.target.files?.[0];
+                  setBannerFile(file || null);
+                  if (file) {
+                    fileToBase64(file).then(setBannerPreview);
+                  } else {
+                    setBannerPreview("");
+                  }
+                }} disabled={uploadLogoMutation.isPending || uploadBannerMutation.isPending} />
+              </label>
               {bannerFile && bannerPreview && (
                 <img src={bannerPreview} alt="Preview" className="w-full max-w-xs h-24 object-cover rounded mb-2 border border-blue-900 bg-black" />
               )}
-              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadBannerMutation.isPending ? "bg-blue-900 text-blue-200" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
+              <button className={`px-4 py-2 rounded font-semibold transition-colors duration-200 w-full flex items-center justify-center gap-2 ${uploadBannerMutation.isPending || !bannerFile ? "bg-blue-900 text-blue-200 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-900"}`} onClick={async () => {
                 if (bannerFile && bannerPreview) await uploadBannerMutation.mutateAsync(bannerPreview);
               }} disabled={!bannerFile || uploadLogoMutation.isPending || uploadBannerMutation.isPending}>
                 {uploadBannerMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upload Banner <ImagePlus size={16} /></>}
