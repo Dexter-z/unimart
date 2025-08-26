@@ -29,6 +29,7 @@ model users {
   phone_number String?
   password      String?
   role          String          @default("user") // 'user' or 'admin'
+  banned        Boolean         @default(false)
   following     String[]
   images        images[]
   addresses     address[]
@@ -93,6 +94,7 @@ model sellers {
   phone_number String
   country      String
   password     String
+  banned       Boolean  @default(false)
   stripeId     String?
   shop         shops?
   orders       orders[]
