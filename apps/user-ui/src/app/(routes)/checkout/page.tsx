@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
+import { Suspense } from 'react'
 import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js'
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -208,21 +209,23 @@ const Page = () => {
     }
     
     return (
-        clientSecret && stripePromise && (
-            <Elements 
-                stripe={stripePromise}
-                options={{ clientSecret, appearance }}>
-                <CheckoutForm 
-                    clientSecret={clientSecret}
-                    cartItems={cartItems}
-                    coupon={coupon}
-                    sessionId={sessionId}
-                    discountedTotal={discountedTotal}
-                    platformFee={platformFee}
-                    grandTotal={grandTotal}
-                />
-            </Elements>
-        )
+        <Suspense>
+            {clientSecret && stripePromise && (
+                <Elements 
+                    stripe={stripePromise}
+                    options={{ clientSecret, appearance }}>
+                    <CheckoutForm 
+                        clientSecret={clientSecret}
+                        cartItems={cartItems}
+                        coupon={coupon}
+                        sessionId={sessionId}
+                        discountedTotal={discountedTotal}
+                        platformFee={platformFee}
+                        grandTotal={grandTotal}
+                    />
+                </Elements>
+            )}
+        </Suspense>
     )
 }
 
