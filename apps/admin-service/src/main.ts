@@ -6,7 +6,7 @@ import router from './routes/admin.route';
 
 
 const app = express();
-app.use(express.json())
+//app.use(express.json())
 
 app.use(cors({
     origin: [
