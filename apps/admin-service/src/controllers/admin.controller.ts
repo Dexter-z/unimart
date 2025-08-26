@@ -190,6 +190,7 @@ export const getAllSellers = async (req: Request, res: Response, next: NextFunct
                             name: true,
                             avatar: true,
                             address: true,
+                            id: true,
                         }
                     },
                 }
