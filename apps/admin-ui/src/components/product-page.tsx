@@ -10,7 +10,6 @@ interface ProductPageProps {
 
 const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || '');
 
     if (!product) {
         return (
