@@ -1,55 +1,42 @@
 "use client"
 
-import React, { useEffect } from 'react'
-import {CheckCircle, Truck} from "lucide-react"
-import { useSearchParams, useRouter } from 'next/navigation'
-import { useStore } from '@/store'
-import confetti from 'canvas-confetti'
 
+import React, { Suspense, useEffect } from 'react';
+import { CheckCircle, Truck } from "lucide-react";
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useStore } from '@/store';
+import confetti from 'canvas-confetti';
 
-const PaymentSuccessPage = () => {
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const sessionId = searchParams.get("sessionId")
+function PaymentSuccessContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const sessionId = searchParams.get("sessionId");
 
-    //Clear Cart and trigger confetti
-    useEffect(() => {
-        useStore.setState({cart: []})
-
-        //Confetti
-        confetti({
-            particleCount: 120,
-            spread: 90,
-            origin: { y: 0.6 },
-        })
-    }, [])
+  useEffect(() => {
+    useStore.setState({ cart: [] });
+    confetti({
+      particleCount: 120,
+      spread: 90,
+      origin: { y: 0.6 },
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#18181b] to-[#0f0f0f] py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Success Header */}
         <div className="text-center mb-8">
-          {/* Success Icon with Animation */}
           <div className="relative inline-flex items-center justify-center mb-6">
             <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-2xl animate-pulse">
               <CheckCircle className="w-12 h-12 text-white" />
             </div>
-            {/* Animated rings */}
             <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-green-400/30 animate-ping"></div>
             <div className="absolute inset-0 w-32 h-32 -m-4 rounded-full border-2 border-green-400/20 animate-ping" style={{ animationDelay: '0.5s' }}></div>
           </div>
-
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Payment Successful! 🎉
-          </h1>
-          <p className="text-xl text-gray-300 mb-2">
-            Thank you for your purchase!
-          </p>
-          <p className="text-gray-400">
-            Your order has been confirmed and is being processed.
-          </p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Payment Successful! 🎉</h1>
+          <p className="text-xl text-gray-300 mb-2">Thank you for your purchase!</p>
+          <p className="text-gray-400">Your order has been confirmed and is being processed.</p>
         </div>
-
         {/* Order Status Card */}
         <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-2xl p-6 sm:p-8 border border-[#232326] shadow-xl mb-8">
           <div className="flex items-center gap-4 mb-6">
@@ -61,7 +48,6 @@ const PaymentSuccessPage = () => {
               <p className="text-gray-400">Your order is being prepared for shipment</p>
             </div>
           </div>
-
           {sessionId && (
             <div className="bg-[#18181b] rounded-xl p-4 border border-[#232326] mb-6">
               <div className="flex items-center justify-between">
@@ -78,7 +64,6 @@ const PaymentSuccessPage = () => {
               </div>
             </div>
           )}
-
           {/* Order Timeline */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
@@ -90,7 +75,6 @@ const PaymentSuccessPage = () => {
                 <p className="text-gray-400 text-sm">Just now</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 bg-[#ff8800] rounded-full flex items-center justify-center animate-pulse">
                 <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -100,7 +84,6 @@ const PaymentSuccessPage = () => {
                 <p className="text-gray-400 text-sm">In progress</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                 <Truck className="w-5 h-5 text-gray-300" />
@@ -110,7 +93,6 @@ const PaymentSuccessPage = () => {
                 <p className="text-gray-500 text-sm">Pending</p>
               </div>
             </div>
-            
             <div className="flex items-center gap-4">
               <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-gray-300" />
@@ -122,7 +104,6 @@ const PaymentSuccessPage = () => {
             </div>
           </div>
         </div>
-
         {/* Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Order Details */}
@@ -135,9 +116,7 @@ const PaymentSuccessPage = () => {
               </div>
               <h3 className="text-white font-semibold">Order Details</h3>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              View your complete order information and receipt
-            </p>
+            <p className="text-gray-400 text-sm mb-4">View your complete order information and receipt</p>
             <button
               onClick={() => router.push('/profile?tab=orders')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors duration-200 text-sm font-medium"
@@ -145,7 +124,6 @@ const PaymentSuccessPage = () => {
               View Order
             </button>
           </div>
-
           {/* Continue Shopping */}
           <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl p-6 border border-[#232326] hover:border-[#ff8800]/50 transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
@@ -156,9 +134,7 @@ const PaymentSuccessPage = () => {
               </div>
               <h3 className="text-white font-semibold">Continue Shopping</h3>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Discover more amazing products in our store
-            </p>
+            <p className="text-gray-400 text-sm mb-4">Discover more amazing products in our store</p>
             <button
               onClick={() => router.push('/products')}
               className="w-full bg-gradient-to-r from-[#ff8800] to-[#ff6600] hover:from-[#ff6600] hover:to-[#ff4400] text-[#18181b] py-2 rounded-lg transition-all duration-200 text-sm font-bold"
@@ -166,7 +142,6 @@ const PaymentSuccessPage = () => {
               Shop More
             </button>
           </div>
-
           {/* Support */}
           <div className="bg-gradient-to-b from-[#232326] to-[#18181b] rounded-xl p-6 border border-[#232326] hover:border-[#ff8800]/50 transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
@@ -177,9 +152,7 @@ const PaymentSuccessPage = () => {
               </div>
               <h3 className="text-white font-semibold">Need Help?</h3>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Contact our support team for any questions
-            </p>
+            <p className="text-gray-400 text-sm mb-4">Contact our support team for any questions</p>
             <button
               onClick={() => router.push('/support')}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-colors duration-200 text-sm font-medium"
@@ -188,15 +161,10 @@ const PaymentSuccessPage = () => {
             </button>
           </div>
         </div>
-
         {/* Thank You Message */}
         <div className="text-center bg-gradient-to-r from-[#ff8800]/5 to-[#ff6600]/5 border border-[#ff8800]/20 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-white mb-4">
-            Thank You for Choosing UniMart! 🛍️
-          </h3>
-          <p className="text-gray-300 mb-4">
-            We appreciate your business and trust in our platform. You'll receive email confirmations and tracking information shortly.
-          </p>
+          <h3 className="text-2xl font-bold text-white mb-4">Thank You for Choosing UniMart! 🛍️</h3>
+          <p className="text-gray-300 mb-4">We appreciate your business and trust in our platform. You'll receive email confirmations and tracking information shortly.</p>
           <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full"></span>
@@ -214,7 +182,13 @@ const PaymentSuccessPage = () => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default PaymentSuccessPage
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentSuccessContent />
+    </Suspense>
+  );
+}
