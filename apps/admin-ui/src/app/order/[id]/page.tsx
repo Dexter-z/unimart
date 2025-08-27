@@ -2,17 +2,17 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { ArrowLeft, Package, User, MapPin, Calendar, DollarSign, Loader2, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, Package, DollarSign, Loader2, ShoppingBag } from 'lucide-react'
 import axiosInstance from 'apps/admin-ui/src/utils/axiosInstance'
 
-const statuses = [
-    "pending",
-    "paid",
-    "processing",
-    "shipped",
-    "delivered",
-    "cancelled"
-]
+// const statuses = [
+//     "pending",
+//     "paid",
+//     "processing",
+//     "shipped",
+//     "delivered",
+//     "cancelled"
+// ]
 
 interface OrderItem {
     id: string;
@@ -63,7 +63,6 @@ const Page = () => {
 
     const [order, setOrder] = useState<Order | null>(null)
     const [loading, setLoading] = useState(true)
-    const [updating, setUpdating] = useState(false)
     const router = useRouter()
 
     const fetchOrder = async () => {
@@ -78,22 +77,6 @@ const Page = () => {
         }
     }
 
-    const handleStatusChange = async (
-        e: React.ChangeEvent<HTMLSelectElement>
-    ) => {
-        const newStatus = e.target.value
-        setUpdating(true)
-        try {
-            await axiosInstance.put(`/order/api/update-status/${order?.id}`, {
-                status: newStatus
-            })
-            setOrder((prev: any) => ({ ...prev, status: newStatus }))
-        } catch (error) {
-            console.log("Failed to update order status ", error)
-        } finally {
-            setUpdating(false)
-        }
-    }
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
