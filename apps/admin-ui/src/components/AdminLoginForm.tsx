@@ -12,7 +12,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import axiosInstance from '../utils/axiosInstance'
+//import axiosInstance from '../utils/axiosInstance'
 import axios, { AxiosError } from 'axios'
 
 interface AdminLoginFormData {
