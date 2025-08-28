@@ -6,7 +6,6 @@ import router from './routes/logger.route';
 
 
 const app = express();
-//app.use(express.json())
 
 app.use(cors({
     origin: [
@@ -31,7 +30,10 @@ app.get('/', (req, res) => {
 });
 
 //Routes
-app.use("/api", router)
+//app.use("/api", router)
+
+//Web socket server
+
 
 const port = process.env.PORT || 6007;
 const server = app.listen(port, () => {
