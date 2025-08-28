@@ -2,7 +2,7 @@ import express from 'express';
 import cors from "cors"
 import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import cookieParser from 'cookie-parser';
-import router from './routes/admin.route';
+import router from './routes/recommendation.route';
 
 
 const app = express();
@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 //Routes
 app.use("/api", router)
 
-const port = process.env.PORT || 6007;
+const port = process.env.PORT || 6008;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
