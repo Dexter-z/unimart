@@ -36,6 +36,9 @@
     },
     {
       "path": "./apps/admin-ui"
+    },
+    {
+      "path": "./apps/chatting-service"
     }
   ]
 }
