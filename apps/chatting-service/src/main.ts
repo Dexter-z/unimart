@@ -33,10 +33,12 @@ app.get('/', (req, res) => {
 //Routes
 //app.use("/api", router)
 
+
+const port = process.env.PORT || 6006;
+
 //Web socket
 
 
-const port = process.env.PORT || 6006;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
