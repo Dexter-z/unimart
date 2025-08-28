@@ -30,10 +30,7 @@ app.get('/', (req, res) => {
 });
 
 //Routes
-//app.use("/api", router)
-
-//Web socket server
-
+app.use("/api", router)
 
 const port = process.env.PORT || 6007;
 const server = app.listen(port, () => {
