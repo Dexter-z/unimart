@@ -1,4 +1,6 @@
-import React from 'react'
+"use client"
+
+import React, { useRef, useState } from 'react'
 import { 
   Mail, 
   Search, 
@@ -9,8 +11,29 @@ import {
   Trash2,
   MoreVertical
 } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import useRequiredAuth from '@/hooks/useRequiredAuth'
+import { useQueryClient } from '@tanstack/react-query'
 
 const InboxTab = () => {
+  const searchParams = useSearchParams()
+  const {user, isLoading: userLoading} = useRequiredAuth()
+  const router = useRouter()
+  const wsRef = useRef<WebSocket | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
+  const queryClient = useQueryClient()
+
+
+  const [chats, setChats] = useState<any[]>([]);
+  const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [message, setMessage] = useState("")
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+
+  const conversationId = searchParams.get("conversationId")
+
   // Mock inbox data
   const messages = [
     {
