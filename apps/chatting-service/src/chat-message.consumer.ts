@@ -74,7 +74,7 @@ async function flushBufferToDb() {
             data: prismaPayload,
         });
 
-        //Redis unseen counter only if db insert was successful
+        //Redis unseen counter only if db insert was successfull
         for (const msg of prismaPayload) {
             const receiverType = msg.senderType === "user" ? "seller" : "user";
             await incrementUnseenCount(receiverType, msg.conversationId);
