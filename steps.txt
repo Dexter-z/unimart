@@ -9,6 +9,11 @@ npx prisma db push
 TO RUN THE CONSUMER
 node apps/kafka-service/dist/main.js
 
+TO RUN KAFKA LOCALLY
+cd .. & cd .. & cd .. & cd .. & cd .. & cd kafka & cd kafka_2.13-3.9.1 & .\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+
+cd .. & cd .. & cd .. & cd .. & cd .. & cd kafka & cd kafka_2.13-3.9.1 & .\bin\windows\kafka-server-start.bat .\config\server.properties
+
 DYNAMIC FEATURES COMPLETED:
 - OrdersTab in user-ui now fetches real orders from /order/api/get-user-orders
 - Real-time order statistics (total, processing, shipped, delivered)
