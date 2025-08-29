@@ -3,6 +3,8 @@ import cors from "cors"
 import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import cookieParser from 'cookie-parser';
 import router from './routes/chatting.route';
+import { createWebSocketServer } from './websocket';
+import { startConsumer } from './chat-message.consumer';
 
 
 const app = express();
@@ -36,10 +38,17 @@ app.get('/', (req, res) => {
 
 const port = process.env.PORT || 6006;
 
-//Web socket
-
-
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
+
+//Web socket
+createWebSocketServer(server)
+
+//Start kafka consumer
+startConsumer().catch((error:any) => {
+  console.error("Error starting Kafka consumer:", error);
+})
+
+
 server.on('error', console.error);
