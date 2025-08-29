@@ -49,9 +49,9 @@ const processQueue = async () => {
       await updateUserAnalytics(event);
       // console.log(`✅ Successfully processed ${event.action} for user ${event.userId}`);
     } catch (error: any) {
-      console.error("❌ Error processing event:", error?.message || error);
-      console.error("📋 Full error stack:", error?.stack);
-      console.error("📋 Event data:", event);
+      // console.error("❌ Error processing event:", error?.message || error);
+      // console.error("📋 Full error stack:", error?.stack);
+      // console.error("📋 Event data:", event);
     }
   }
 }
@@ -88,14 +88,14 @@ export const consumeKafkaMessages = async () => {
           eventQueue.push(event);
           // console.log(`📦 Event added to queue (${eventQueue.length} total)`);
         } catch (parseError: any) {
-          console.error('❌ Failed to parse message:', parseError?.message);
-          console.error('❌ Raw message:', message.value?.toString());
+          // console.error('❌ Failed to parse message:', parseError?.message);
+          // console.error('❌ Raw message:', message.value?.toString());
         }
       }
     });
   } catch (error: any) {
-    console.error('❌ Kafka consumer error:', error?.message || error);
-    console.error('❌ Full error stack:', error?.stack);
+    // console.error('❌ Kafka consumer error:', error?.message || error);
+    // console.error('❌ Full error stack:', error?.stack);
     
     // Retry connection after 10 seconds
     // console.log('🔄 Retrying connection in 10 seconds...');
@@ -112,7 +112,7 @@ process.on('SIGTERM', async () => {
     await consumer.disconnect();
     // console.log('✅ Kafka consumer disconnected');
   } catch (error) {
-    console.error('❌ Error disconnecting:', error);
+    // console.error('❌ Error disconnecting:', error);
   }
   process.exit(0);
 });
@@ -123,7 +123,7 @@ process.on('SIGINT', async () => {
     await consumer.disconnect();
     // console.log('✅ Kafka consumer disconnected');
   } catch (error) {
-    console.error('❌ Error disconnecting:', error);
+    // console.error('❌ Error disconnecting:', error);
   }
   process.exit(0);
 });
