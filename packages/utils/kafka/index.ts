@@ -17,13 +17,14 @@ if (!process.env.KAFKA_API_KEY || !process.env.KAFKA_API_SECRET) {
 export const kafka = new Kafka({
   clientId: 'kafka-service',
   //GET BROKER ADDRESS FROM RED PANDA WEBSITE
-  brokers: ["d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"],
-  ssl: {},
-  sasl: {
-    mechanism: 'scram-sha-256',
-    username: process.env.KAFKA_API_KEY!,
-    password: process.env.KAFKA_API_SECRET!,
-  },
+  //brokers: ["d25ujkc4nva65l4a4500.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"],
+  brokers: ["localhost:9092"],
+  // ssl: {},
+  // sasl: {
+  //   mechanism: 'scram-sha-256',
+  //   username: process.env.KAFKA_API_KEY!,
+  //   password: process.env.KAFKA_API_SECRET!,
+  // },
   connectionTimeout: 60000,
   requestTimeout: 60000,
   retry: {
