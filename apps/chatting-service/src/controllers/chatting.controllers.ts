@@ -195,3 +195,24 @@ export const getSellerConversations = async(req:any, res:Response, next: NextFun
         return next(error)
     }
 }
+
+export const fetchMessages = async(req:any, res:Response, next: NextFunction) => {
+    try {
+        const userId = req.user.id;
+        const {conversationId} = req.params;
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = 10;
+
+        if(!conversationId){
+            return next (new ValidationError("Conversation ID is required"));
+        }
+
+        const conversation = await prisma.conversationGroup.findUnique({
+            where: {
+                id: conversationId
+            }
+        })
+    } catch (error) {
+        
+    }
+}
