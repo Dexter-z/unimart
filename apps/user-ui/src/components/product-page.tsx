@@ -95,7 +95,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
                 {sellerId: product?.Shop?.sellerId},
                 isProtected
             )
-            router.push("")
+            router.push("/profile?tab=inbox")
         } catch (error) {
             
         }
