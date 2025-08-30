@@ -57,61 +57,43 @@ const InboxTab = () => {
     }
   }, [conversationId, chats])
 
-  // Mock inbox data
-  const messages = [
-    {
-      id: 1,
-      sender: 'UniMart Support',
-      subject: 'Your order has been shipped!',
-      preview: 'Great news! Your order ORD-2024-001 has been shipped and is on its way...',
-      time: '2 hours ago',
-      isRead: false,
-      isImportant: true,
-      avatar: 'US'
-    },
-    {
-      id: 2,
-      sender: 'TechWorld Store',
-      subject: 'Thank you for your purchase',
-      preview: 'We appreciate your business! Your recent purchase of the wireless headphones...',
-      time: '1 day ago',
-      isRead: true,
-      isImportant: false,
-      avatar: 'TW'
-    },
-    {
-      id: 3,
-      sender: 'UniMart Notifications',
-      subject: 'New deals available in your favorite categories',
-      preview: 'Don\'t miss out on these amazing deals! Up to 50% off on electronics...',
-      time: '2 days ago',
-      isRead: true,
-      isImportant: false,
-      avatar: 'UN'
-    },
-    {
-      id: 4,
-      sender: 'Fashion Hub',
-      subject: 'Your wishlist item is on sale!',
-      preview: 'The jacket you added to your wishlist is now 30% off. Limited time offer...',
-      time: '3 days ago',
-      isRead: false,
-      isImportant: false,
-      avatar: 'FH'
-    },
-    {
-      id: 5,
-      sender: 'UniMart Security',
-      subject: 'Login from new device detected',
-      preview: 'We detected a login to your account from a new device. If this wasn\'t you...',
-      time: '1 week ago',
-      isRead: true,
-      isImportant: true,
-      avatar: 'US'
-    }
-  ]
+  // Use chats from API as messages
+  const messages = chats;
+  const unreadCount = messages.filter(msg => !msg?.isRead).length;
 
-  const unreadCount = messages.filter(msg => !msg.isRead).length
+  // Pagination
+  const paginatedMessages = messages.slice(0, page * 10);
+
+  // Select chat handler
+  const handleSelectChat = (chat: any) => {
+    setSelectedChat(chat);
+    if (chat?.conversationId) {
+      router.push(`?conversationId=${chat.conversationId}`);
+    }
+  };
+
+  // Reply handler
+  const handleReply = async () => {
+    if (!selectedChat || !message.trim()) return;
+    try {
+      await axiosInstance.post('/chatting/api/send-message', {
+        conversationId: selectedChat.conversationId,
+        body: message,
+      });
+      setMessage("");
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    } catch (err) {
+      // Optionally show error
+    }
+  };
+
+  // Load more handler
+  const handleLoadMore = () => {
+    setPage(page + 1);
+    if (paginatedMessages.length >= messages.length) {
+      setHasMore(false);
+    }
+  };
 
   return (
     <div className="min-h-[130vh]">
@@ -153,17 +135,21 @@ const InboxTab = () => {
 
       {/* Messages List */}
       <div className="space-y-2">
-        {messages.map((message) => (
+        {paginatedMessages.length === 0 && (
+          <div className="text-center text-gray-400 py-12">No messages found.</div>
+        )}
+        {paginatedMessages.map((message: any) => (
           <div
-            key={message.id}
+            key={message.conversationId || message.id}
             className={`bg-gradient-to-r from-[#232326] to-[#18181b] rounded-2xl border border-[#232326] p-6 cursor-pointer hover:border-[#ff8800] transition-all duration-200 ${
               !message.isRead ? 'border-l-4 border-l-[#ff8800]' : ''
-            }`}
+            } ${selectedChat?.conversationId === message.conversationId ? 'ring-2 ring-[#ff8800]' : ''}`}
+            onClick={() => handleSelectChat(message)}
           >
             <div className="flex items-start space-x-4">
               {/* Avatar */}
               <div className="w-12 h-12 bg-[#ff8800] rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-[#18181b] font-bold text-sm">{message.avatar}</span>
+                <span className="text-[#18181b] font-bold text-sm">{message.avatar || (message.senderName ? message.senderName[0] : '?')}</span>
               </div>
 
               {/* Message Content */}
@@ -172,7 +158,7 @@ const InboxTab = () => {
                   <div className="flex-grow">
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className={`font-semibold ${!message.isRead ? 'text-white' : 'text-gray-300'}`}>
-                        {message.sender}
+                        {message.senderName || message.sender || 'Unknown Sender'}
                       </h3>
                       {message.isImportant && (
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -182,28 +168,32 @@ const InboxTab = () => {
                       )}
                     </div>
                     <h4 className={`mb-2 ${!message.isRead ? 'text-white font-medium' : 'text-gray-400'}`}>
-                      {message.subject}
+                      {message.subject || message.title || 'No Subject'}
                     </h4>
                     <p className="text-gray-400 text-sm line-clamp-2">
-                      {message.preview}
+                      {message.preview || message.lastMessage || message.body || ''}
                     </p>
                   </div>
-                  
                   {/* Time and Actions */}
                   <div className="flex items-start space-x-2 ml-4">
                     <div className="flex items-center text-gray-400 text-sm">
                       <Clock className="w-4 h-4 mr-1" />
-                      <span>{message.time}</span>
+                      <span>{message.time || message.updatedAt || message.createdAt || ''}</span>
                     </div>
                     <button className="p-1 hover:bg-[#232326] rounded-lg transition-colors">
                       <MoreVertical className="w-4 h-4 text-gray-400" />
                     </button>
                   </div>
                 </div>
-
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-2 mt-4">
-                  <button className="px-3 py-1 bg-[#ff8800] text-[#18181b] rounded-lg text-sm hover:bg-orange-600 transition-colors flex items-center space-x-1">
+                  <button
+                    className="px-3 py-1 bg-[#ff8800] text-[#18181b] rounded-lg text-sm hover:bg-orange-600 transition-colors flex items-center space-x-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectChat(message);
+                    }}
+                  >
                     <Reply className="w-3 h-3" />
                     <span>Reply</span>
                   </button>
@@ -224,12 +214,37 @@ const InboxTab = () => {
       </div>
 
       {/* Load More */}
-      <div className="text-center mt-8">
-        <button className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-[#ff8800] hover:text-[#18181b] transition-colors">
-          Load More Messages
-        </button>
+      {hasMore && (
+        <div className="text-center mt-8">
+          <button
+            className="px-6 py-3 bg-[#232326] text-white rounded-xl hover:bg-[#ff8800] hover:text-[#18181b] transition-colors"
+            onClick={handleLoadMore}
+          >
+            Load More Messages
+          </button>
+        </div>
+      )}
+    {/* Reply Box for selected chat */}
+    {selectedChat && (
+      <div className="fixed bottom-0 left-0 w-full bg-[#18181b] border-t border-[#232326] p-4 z-50">
+        <div className="max-w-2xl mx-auto flex items-center gap-2">
+          <input
+            type="text"
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            placeholder={`Reply to ${selectedChat.senderName || selectedChat.sender || 'this chat'}...`}
+            className="flex-grow bg-[#232326] text-white rounded-lg px-4 py-2 focus:outline-none"
+          />
+          <button
+            className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+            onClick={handleReply}
+          >
+            Send
+          </button>
+        </div>
       </div>
-    </div>
+    )}
+  </div>
   )
 }
 
