@@ -95,9 +95,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
                 {sellerId: product?.Shop?.sellerId},
                 isProtected
             )
-            router.push("/profile?tab=inbox")
+            console.log
+            router.push(`/profile?tab=inbox&conversationId=${res.data.conversation.id}`)
         } catch (error) {
-            
+            console.log(error)
+        } finally {
+            setIsLoading(false)
         }
     };
 
