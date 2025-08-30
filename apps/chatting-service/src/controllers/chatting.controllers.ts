@@ -1,7 +1,7 @@
-import { ValidationError } from "@packages/error-handler";
+import { AuthError, NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/libs/prisma";
 import redis from "@packages/libs/redis";
-import { getUnseenCount } from "@packages/libs/redis/message.redis";
+import { clearUnseenCount, getUnseenCount } from "@packages/libs/redis/message.redis";
 import { NextFunction, Response } from "express";
 
 
@@ -212,7 +212,145 @@ export const fetchMessages = async(req:any, res:Response, next: NextFunction) =>
                 id: conversationId
             }
         })
+
+        if(!conversation){
+            return next (new NotFoundError("Conversation not found"));
+        }
+
+        const hasAccess = conversation.participantIds.includes(userId);
+        if(!hasAccess){
+            return next(new AuthError("You do not have access to this conversation"));
+        }
+
+        //Clear unseen count
+        await clearUnseenCount("user", conversationId);
+
+        //Get the seller participant
+        const sellerParticipant = await prisma.participant.findFirst({
+            where: {
+                conversationId,
+                sellerId: { not: null }
+            }
+        })
+
+        //Fetch seller info
+        let seller = null;
+        let isOnline = false;
+
+        if(sellerParticipant?.sellerId) {
+            seller = await prisma.sellers.findUnique({
+                where: {
+                    id: sellerParticipant.sellerId
+                },
+                include: {
+                    shop: true
+                }
+            })
+
+            //Check online status from redis
+            const redisKey = `online:seller:${sellerParticipant.sellerId}`;
+            const redisResult = await redis.get(redisKey);
+            isOnline = !!redisResult    
+        }
+
+        //Fetch paginated messages 
+        const messages = await prisma.message.findMany({
+            where: {conversationId},
+            orderBy: {createdAt: "desc"},
+            skip: (page - 1) * pageSize,
+            take: pageSize
+        })
+
+        return res.status(200).json({
+            messages,
+            seller:{
+                id: seller?.id || null,
+                name: seller?.shop?.name || "Unknown Seller",
+                avatar: seller?.shop?.avatar || null,
+                isOnline,
+            },
+            currentPage: page,
+            hasMore: messages.length === pageSize
+        })
+
     } catch (error) {
-        
+        return next(error)
+    }
+}
+
+export const fetchSellerMessages = async(req:any, res:Response, next: NextFunction) => {
+    try {
+        const sellerId = req.seller.id;
+        const {conversationId} = req.params;
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = 10;
+
+        if(!conversationId){
+            return next (new ValidationError("Conversation ID is required"));
+        }
+
+        const conversation = await prisma.conversationGroup.findUnique({
+            where: {
+                id: conversationId
+            }
+        })
+
+        if(!conversation){
+            return next (new NotFoundError("Conversation not found"));
+        }
+
+        if(!conversation.participantIds.includes(sellerId)){
+            return next(new AuthError("You do not have access to this conversation"));
+        }
+
+        //Clear unseen count
+        await clearUnseenCount("seller", conversationId);
+
+        //Get the user participant
+        const userParticipant = await prisma.participant.findFirst({
+            where: {
+                conversationId,
+                userId: { not: null }
+            }
+        })
+
+        //Fetch user info
+        let user = null;
+        let isOnline = false;
+
+        if(userParticipant?.userId) {
+            user = await prisma.users.findUnique({
+                where: {
+                    id: userParticipant.userId
+                },
+            })
+
+            //Check online status from redis
+            const redisKey = `online:user:user_${userParticipant.userId}`;
+            const redisResult = await redis.get(redisKey);
+            isOnline = !!redisResult    
+        }
+
+        //Fetch paginated messages 
+        const messages = await prisma.message.findMany({
+            where: {conversationId},
+            orderBy: {createdAt: "desc"},
+            skip: (page - 1) * pageSize,
+            take: pageSize
+        })
+
+        return res.status(200).json({
+            messages,
+            user:{
+                id: user?.id || null,
+                name: user?.name || "Unknown User",
+                isOnline,
+            },
+            currentPage: page,
+            hasMore: messages.length === pageSize
+        })
+
+    } catch (error) {
+        return next(error)
     }
 }
