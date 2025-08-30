@@ -127,13 +127,35 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 
         const isProduction = process.env.NODE_ENV === "production";
         
-        // Clear only user cookies before setting new ones
+        // Clear admin, user and seller cookies before setting new ones
         res.clearCookie("user_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax" 
+        });
+        res.clearCookie("user_refresh_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax"
         });
-        res.clearCookie("user_refresh_token", {
+
+        res.clearCookie("seller_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+        res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
+        res.clearCookie("admin_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax" 
+        });
+        res.clearCookie("admin_refresh_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax"
@@ -366,13 +388,35 @@ export const loginSeller = async (req: Request, res: Response, next: NextFunctio
 
         const isProduction = process.env.NODE_ENV === "production";
         
-        // Clear only seller cookies before setting new ones
+        // Clear admin, user and seller cookies before setting new ones
+        res.clearCookie("user_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax" 
+        });
+        res.clearCookie("user_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
         res.clearCookie("seller_access_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax"
         });
         res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
+        res.clearCookie("admin_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax" 
+        });
+        res.clearCookie("admin_refresh_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax"
@@ -1064,13 +1108,36 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
 
         const isProduction = process.env.NODE_ENV === "production";
         
-        // Clear only seller cookies before setting new ones
-        res.clearCookie("seller_access_token", {
+        // Clear user and seller cookies before setting new ones
+        // Clear admin, user and seller cookies before setting new ones
+        res.clearCookie("user_access_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax" 
         });
+        res.clearCookie("user_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
+        res.clearCookie("seller_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
         res.clearCookie("seller_refresh_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax"
+        });
+
+        res.clearCookie("admin_access_token", {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax" 
+        });
+        res.clearCookie("admin_refresh_token", {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax"
