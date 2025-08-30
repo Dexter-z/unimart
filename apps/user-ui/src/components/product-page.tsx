@@ -12,6 +12,8 @@ import ShareModal from '@/components/share-modal';
 import ProductReviews from '@/components/product-reviews';
 import RecommendedProducts from '@/components/recommended-products';
 import axiosInstance from '@/utils/axiosInstance';
+import { isProtected } from '@/utils/protected';
+import { useRouter } from 'next/navigation';
 
 interface ProductPageProps {
     product: any;
@@ -27,10 +29,13 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
     const [showRemoveCartDialog, setShowRemoveCartDialog] = useState(false);
     const [priceRange, setPriceRange] = useState([product?.salePrice, 1199]); // Default price range
     const [recommendedProducts, setRecommendedProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const { user } = useUser();
     const location = useLocationTracking();
     const deviceInfo = useDeviceTracking();
+
+    const router = useRouter()
 
     const addToCart = useStore((state: any) => state.addToCart);
     const removeFromCart = useStore((state: any) => state.removeFromCart);
@@ -79,8 +84,21 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
         setShowShareModal(true);
     };
 
-    const handleChatClick = () => {
+    const handleChatClick = async () => {
+        if(isLoading){
+            return
+        }
 
+        setIsLoading(true)
+        try {
+            const res = await axiosInstance.post("/chatting/api/create-user-conversationGroup", 
+                {sellerId: product?.Shop?.sellerId},
+                isProtected
+            )
+            router.push("")
+        } catch (error) {
+            
+        }
     };
 
     const fetchFilteredProducts = async () => {

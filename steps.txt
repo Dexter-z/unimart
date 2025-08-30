@@ -2,6 +2,9 @@ nx g @nx/express:app logger-service --directory=apps/logger-service --e2eTestRun
 
 nx g @nx/next:app apps/admin-ui
 
+TO COUNT NUMBER OF LINES OF CODE 
+find . -type f \( -name "*.ts" -o -name "*.tsx" \) ! -path "./node_modules/*" | xargs wc -l
+
 
 To generate prisma
 npx prisma db push
