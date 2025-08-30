@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 });
 
 //Routes
-//app.use("/api", router)
+app.use("/api", router)
 
 
 const port = process.env.PORT || 6006;
