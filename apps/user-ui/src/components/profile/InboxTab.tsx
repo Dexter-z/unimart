@@ -149,9 +149,15 @@ const InboxTab = () => {
             onClick={() => handleSelectChat(message)}
           >
             <div className="flex items-start space-x-4">
-              {/* Avatar */}
-              <div className="w-12 h-12 bg-[#ff8800] rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-[#18181b] font-bold text-sm">{message.seller?.avatar || (message.senderName ? message.senderName[0] : '?')}</span>
+              {/* Seller Avatar */}
+              <div className="w-12 h-12 bg-[#ff8800] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {message.seller?.avatar ? (
+                  <img src={message.seller.avatar} alt="Seller Avatar" className="w-12 h-12 object-cover rounded-full" />
+                ) : (
+                  <span className="text-[#18181b] font-bold text-sm">
+                    {message.seller?.name ? message.seller.name[0] : '?'}
+                  </span>
+                )}
               </div>
 
               {/* Message Content */}
