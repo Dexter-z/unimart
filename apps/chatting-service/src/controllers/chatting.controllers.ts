@@ -39,8 +39,8 @@ export const newConversation = async(req:any, res:Response, next: NextFunction) 
 
         await prisma.participant.createMany({
             data: [
-                { conversationId: newGroup.id, userId},
-                { conversationId: newGroup.id, userId: sellerId }
+                { conversationId: newGroup.id, userId: userId},
+                { conversationId: newGroup.id, sellerId: sellerId }
             ]
         })
 

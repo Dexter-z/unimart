@@ -59,6 +59,7 @@ const InboxTab = () => {
 
   // Use chats from API as messages
   const messages = chats;
+  console.log(messages)
   const unreadCount = messages.filter(msg => !msg?.isRead).length;
 
   // Pagination
@@ -67,6 +68,7 @@ const InboxTab = () => {
   // Select chat handler
   const handleSelectChat = (chat: any) => {
     setSelectedChat(chat);
+    {console.log(chat)}
     if (chat?.conversationId) {
       router.push(`?conversationId=${chat.conversationId}`);
     }
@@ -158,7 +160,7 @@ const InboxTab = () => {
                   <div className="flex-grow">
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className={`font-semibold ${!message.isRead ? 'text-white' : 'text-gray-300'}`}>
-                        {message.senderName || message.sender || 'Unknown Sender'}
+                        {message.seller?.Name || message.sender || 'Unknown Sender'}
                       </h3>
                       {message.isImportant && (
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
