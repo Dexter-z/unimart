@@ -151,7 +151,7 @@ const InboxTab = () => {
             <div className="flex items-start space-x-4">
               {/* Avatar */}
               <div className="w-12 h-12 bg-[#ff8800] rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-[#18181b] font-bold text-sm">{message.avatar || (message.senderName ? message.senderName[0] : '?')}</span>
+                <span className="text-[#18181b] font-bold text-sm">{message.seller?.avatar || (message.senderName ? message.senderName[0] : '?')}</span>
               </div>
 
               {/* Message Content */}
@@ -160,7 +160,7 @@ const InboxTab = () => {
                   <div className="flex-grow">
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className={`font-semibold ${!message.isRead ? 'text-white' : 'text-gray-300'}`}>
-                        {message.seller?.Name || message.sender || 'Unknown Sender'}
+                        {message.seller?.name}
                       </h3>
                       {message.isImportant && (
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
