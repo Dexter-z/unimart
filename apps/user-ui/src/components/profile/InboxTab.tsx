@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { 
   Mail, 
   Search, 
@@ -13,7 +13,9 @@ import {
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useRequiredAuth from '@/hooks/useRequiredAuth'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import axiosInstance from '@/utils/axiosInstance'
+import { isProtected } from '@/utils/protected'
 
 const InboxTab = () => {
   const searchParams = useSearchParams()
@@ -33,6 +35,27 @@ const InboxTab = () => {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
   const conversationId = searchParams.get("conversationId")
+
+  const {data: conversations, isLoading} = useQuery({
+    queryKey: ["conversations"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/chatting/api/get-user-conversations", isProtected)
+      return res.data.conversations;
+    }
+  })
+
+  useEffect(() => {
+    if(conversations){
+      setChats(conversations);
+    }
+  }, [conversations])
+
+  useEffect(() => {
+    if(conversationId && chats.length > 0){
+      const chat = chats.find((c) => c.conversationId === conversationId);
+      setSelectedChat(chat || null);
+    }
+  }, [conversationId, chats])
 
   // Mock inbox data
   const messages = [
