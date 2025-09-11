@@ -5,6 +5,8 @@ import { X, Send, Loader2 } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { isProtected } from "@/utils/protected";
 import { useWebSocket } from "@/context/web-socket-context";
+import useUser from "@/hooks/useUser";
+import useRequiredAuth from "@/hooks/useRequiredAuth";
 
 type ChatMessage = {
   id: string;
@@ -36,6 +38,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const {ws, unreadCounts} = useWebSocket()
+  const {user} = useUser()
+  //const {user} = useRequiredAuth()
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -94,25 +98,11 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     if (!input.trim() || sending) return;
     setSending(true);
     try {
-      await axiosInstance.post(
-        "/chatting/api/send-message",
-        {
-          conversationId,
-          // send both keys to be safe with backend variants
-          body: input.trim(),
-          content: input.trim(),
-        },
-        isProtected
-      );
-      const newMsg: ChatMessage = {
-        id: Math.random().toString(36).slice(2),
-        conversationId,
-        senderId: "me",
-        senderType: "user",
-        content: input.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, newMsg]);
+      const payload = {
+        fromUserId: user?.id,
+        toUserId: sele
+
+      }
       setInput("");
     } catch (e) {
       // no-op, could toast
