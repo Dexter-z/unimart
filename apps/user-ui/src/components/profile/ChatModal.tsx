@@ -55,7 +55,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
         seller: SellerInfo;
         currentPage: number;
         hasMore: boolean;
-      };
+      }; 
 
       // API returns newest first; build ascending list for UI.
       const normalized = [...data.messages].reverse();
