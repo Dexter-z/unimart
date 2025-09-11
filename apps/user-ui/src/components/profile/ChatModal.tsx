@@ -37,7 +37,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const {ws, addMessageListener, sendChat} = useWebSocket()
-  //const {user} = useUser()
+  //const {user} = useUser() 
   const {user} = useRequiredAuth()
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
