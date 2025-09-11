@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
+import { isProtected } from '@/utils/protected'
 
 interface Order {
   id: string;
@@ -35,7 +36,7 @@ interface ProfileTabProps {
 }
 
 const fetchUserOrders = async (): Promise<Order[]> => {
-  const res = await axiosInstance.get("/order/api/get-user-orders")
+  const res = await axiosInstance.get("/order/api/get-user-orders", isProtected)
   return res.data.orders;
 }
 

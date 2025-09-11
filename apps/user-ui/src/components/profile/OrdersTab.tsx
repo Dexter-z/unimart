@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
+import { isProtected } from '@/utils/protected'
 
 interface Order {
   id: string;
@@ -57,12 +58,12 @@ interface OrderDetailsResponse {
 }
 
 const fetchUserOrders = async (): Promise<Order[]> => {
-  const res = await axiosInstance.get("/order/api/get-user-orders")
+  const res = await axiosInstance.get("/order/api/get-user-orders", isProtected)
   return res.data.orders;
 }
 
 const fetchOrderDetails = async (orderId: string): Promise<OrderDetailsResponse> => {
-  const res = await axiosInstance.get(`/order/api/get-order-details/${orderId}`)
+  const res = await axiosInstance.get(`/order/api/get-order-details/${orderId}`, isProtected)
   return res.data;
 }
 
