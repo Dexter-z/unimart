@@ -13,6 +13,7 @@ TO RUN THE CONSUMER
 node apps/kafka-service/dist/main.js
 
 TO RUN KAFKA LOCALLY
+OPEN TWO COMMAND PROMPT TERMINALS
 cd .. & cd .. & cd .. & cd .. & cd .. & cd kafka & cd kafka_2.13-3.9.1 & .\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
 
 cd .. & cd .. & cd .. & cd .. & cd .. & cd kafka & cd kafka_2.13-3.9.1 & .\bin\windows\kafka-server-start.bat .\config\server.properties
