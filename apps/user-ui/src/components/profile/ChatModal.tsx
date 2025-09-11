@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, Send, Loader2 } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { isProtected } from "@/utils/protected";
+import { useWebSocket } from "@/context/web-socket-context";
 
 type ChatMessage = {
   id: string;
@@ -34,6 +35,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
+  const {ws, unreadCounts} = useWebSocket()
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
