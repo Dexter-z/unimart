@@ -37,9 +37,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
-  const {ws, unreadCounts} = useWebSocket()
-  const {user} = useUser()
-  //const {user} = useRequiredAuth()
+  const {ws, addMessageListener} = useWebSocket()
+  //const {user} = useUser()
+  const {user} = useRequiredAuth()
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -87,6 +87,29 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
 
+  // Listen for realtime incoming messages
+  useEffect(() => {
+    if(!conversationId) return;
+    const unsubscribe = addMessageListener((incoming: any) => {
+      if(!incoming) return;
+      if(incoming.conversationId !== conversationId) return;
+      // prevent duplicate temp + server copy by checking id+content+timestamp
+      setMessages(prev => {
+        const exists = prev.some(m => m.id === incoming.id || (m.content === incoming.content && Math.abs(new Date(m.createdAt).getTime() - new Date(incoming.createdAt).getTime()) < 1500));
+        if (exists) return prev;
+        return [...prev, incoming];
+      })
+    })
+    return () => unsubscribe();
+  }, [conversationId, addMessageListener]);
+
+  // Mark as seen when modal opens / messages change
+  useEffect(() => {
+    if(!ws || ws.readyState !== WebSocket.OPEN) return;
+    if(!conversationId) return;
+    ws.send(JSON.stringify({ type: "MARK_AS_SEEN", conversationId }));
+  }, [conversationId, ws, messages.length]);
+
   const handleLoadOlder = async () => {
     if (!hasMore || loading) return;
     const next = page + 1;
@@ -96,25 +119,39 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
 
   const handleSend = async () => {
     if (!input.trim() || sending) return;
+    if(!user?.id || !seller?.id) return;
+    const open = ws && ws.readyState === WebSocket.OPEN;
     setSending(true);
+    const content = input.trim();
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: ChatMessage = {
+      id: tempId,
+      conversationId,
+      senderId: user.id,
+      senderType: 'user',
+      content,
+      createdAt: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, optimistic]);
+    setInput("");
     try {
       const payload = {
-        fromUserId: user?.id,
-        toUserId: seller?.id,
-        conversationId: conversationId,
-        messageBody: input,
-        senderType: "user",
+        fromUserId: user.id,
+        toUserId: seller.id,
+        conversationId,
+        messageBody: content,
+        senderType: 'user'
       };
-
-      ws.send(JSON.stringify(payload));
-      
-      
-      // Optionally, optimistically add the message to UI here
-      setMessages((prev) => [...prev, { id: 'temp-id', conversationId, senderId: user?.id || '', senderType: 'user', content: input, seen: false, createdAt: new Date().toISOString() }]);
-      
-      setInput("");
+      if(open){
+        ws!.send(JSON.stringify(payload));
+      } else {
+        // fallback HTTP send
+        await axiosInstance.post('/chatting/api/send-message', { conversationId, content }, isProtected);
+      }
     } catch (e) {
-      // no-op, could toast
+      // rollback optimistic on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setInput(content); // restore input
     } finally {
       setSending(false);
     }

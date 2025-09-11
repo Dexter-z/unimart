@@ -13,6 +13,14 @@ export const WebSocketProvider = ({
 }) => {
     const wsRef = useRef<WebSocket | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+    const messageListenersRef = useRef<((data: any) => void)[]>([]);
+
+    const addMessageListener = (fn: (data: any) => void) => {
+        messageListenersRef.current.push(fn);
+        return () => {
+            messageListenersRef.current = messageListenersRef.current.filter(l => l !== fn)
+        }
+    }
 
     useEffect(() => {
         if (!user?.id) return;
@@ -27,12 +35,23 @@ export const WebSocketProvider = ({
         }
 
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+            let data: any;
+            try {
+                data = JSON.parse(event.data);
+            } catch {
+                return; // ignore non-json
+            }
 
             if(data.type === "UNSEEN_COUNT_UPDATE") {
-                const {conversationId, count} = data.payload;
-
-                setUnreadCounts((prev) => ({ ...prev, [conversationId]: count}))
+                const {conversationId, count} = data.payload || {};
+                if (conversationId) {
+                    setUnreadCounts((prev) => ({ ...prev, [conversationId]: count}))
+                }
+            } else if (data.type === "NEW_MESSAGE") {
+                // fan out to listeners
+                messageListenersRef.current.forEach(fn => {
+                    try { fn(data.payload) } catch { /* ignore listener error */ }
+                })
             }
         }
 
@@ -43,7 +62,7 @@ export const WebSocketProvider = ({
     }, [user?.id]);
 
 
-    return <WebSocketContext.Provider value={{ ws: wsRef.current, unreadCounts}}>
+    return <WebSocketContext.Provider value={{ ws: wsRef.current, unreadCounts, addMessageListener }}>
         {children}
     </WebSocketContext.Provider>
 }
