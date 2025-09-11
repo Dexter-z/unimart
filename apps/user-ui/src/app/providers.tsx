@@ -1,23 +1,42 @@
 "use client"
 import React, { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {Toaster} from "sonner"
+import { Toaster } from "sonner"
+import useUser from '@/hooks/useUser';
+import { WebSocketProvider } from '@/context/web-socket-context';
 
-const Providers = ({children}: {children:React.ReactNode}) => {
-    const [queryClient] = useState(() => new QueryClient({
-      // If issues arise, delete this whole object
-      defaultOptions: {
-        queries: {
-          refetchOnWindowFocus: false,
-          staleTime: 1000 * 60 * 5, // 5 minutes
-        }
+const Providers = ({ children }: { children: React.ReactNode }) => {
+  const [queryClient] = useState(() => new QueryClient({
+    // If issues arise, delete this whole object
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
       }
-    }))
+    }
+  }))
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <ProvidersWithWebSocket>{children}</ProvidersWithWebSocket>
       <Toaster />
     </QueryClientProvider>
+  )
+}
+
+const ProvidersWithWebSocket = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const {user} = useUser()
+  return (
+    <>
+      {user && <WebSocketProvider user={user}>
+        {children}
+      </WebSocketProvider>}
+
+      {!user && children}
+    </>
   )
 }
 
