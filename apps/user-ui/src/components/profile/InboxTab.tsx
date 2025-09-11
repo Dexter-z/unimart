@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { 
   Mail, 
   Search, 
@@ -13,30 +13,27 @@ import {
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useRequiredAuth from '@/hooks/useRequiredAuth'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
 import { isProtected } from '@/utils/protected'
+import ChatModal from './ChatModal'
 
 const InboxTab = () => {
   const searchParams = useSearchParams()
-  const {user, isLoading: userLoading} = useRequiredAuth()
+  // Ensure the page is protected; the hook handles redirects/side-effects
+  useRequiredAuth()
   const router = useRouter()
-  const wsRef = useRef<WebSocket | null>(null);
-  const messageContainerRef = useRef<HTMLDivElement | null>(null);
-  const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
-  const queryClient = useQueryClient()
 
 
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
-  const [message, setMessage] = useState("")
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
   const conversationId = searchParams.get("conversationId")
+  const tab = searchParams.get("tab") || 'inbox'
 
-  const {data: conversations, isLoading} = useQuery({
+  const {data: conversations} = useQuery({
     queryKey: ["conversations"],
     queryFn: async () => {
       const res = await axiosInstance.get("/chatting/api/get-user-conversations", isProtected)
@@ -70,24 +67,13 @@ const InboxTab = () => {
     setSelectedChat(chat);
     {console.log(chat)}
     if (chat?.conversationId) {
-      router.push(`?conversationId=${chat.conversationId}`);
+      const params = new URLSearchParams(searchParams as any);
+      params.set('tab', tab);
+      params.set('conversationId', chat.conversationId);
+      router.push(`?${params.toString()}`);
     }
   };
 
-  // Reply handler
-  const handleReply = async () => {
-    if (!selectedChat || !message.trim()) return;
-    try {
-      await axiosInstance.post('/chatting/api/send-message', {
-        conversationId: selectedChat.conversationId,
-        body: message,
-      });
-      setMessage("");
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-    } catch (err) {
-      // Optionally show error
-    }
-  };
 
   // Load more handler
   const handleLoadMore = () => {
@@ -232,26 +218,18 @@ const InboxTab = () => {
           </button>
         </div>
       )}
-    {/* Reply Box for selected chat */}
-    {selectedChat && (
-      <div className="fixed bottom-0 left-0 w-full bg-[#18181b] border-t border-[#232326] p-4 z-50">
-        <div className="max-w-2xl mx-auto flex items-center gap-2">
-          <input
-            type="text"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            placeholder={`Reply to ${selectedChat.senderName || selectedChat.sender || 'this chat'}...`}
-            className="flex-grow bg-[#232326] text-white rounded-lg px-4 py-2 focus:outline-none"
-          />
-          <button
-            className="px-4 py-2 bg-[#ff8800] text-[#18181b] rounded-lg font-semibold hover:bg-orange-600 transition-colors"
-            onClick={handleReply}
-          >
-            Send
-          </button>
-        </div>
-      </div>
-    )}
+      {/* Chat modal opened when conversationId is present */}
+      {conversationId && (
+        <ChatModal
+          conversationId={conversationId}
+          onClose={() => {
+            const params = new URLSearchParams(searchParams as any);
+            params.delete('conversationId');
+            params.set('tab', tab);
+            router.push(`?${params.toString()}`);
+          }}
+        />
+      )}
   </div>
   )
 }
