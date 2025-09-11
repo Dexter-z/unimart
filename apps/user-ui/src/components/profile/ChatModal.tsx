@@ -5,7 +5,6 @@ import { X, Send, Loader2 } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { isProtected } from "@/utils/protected";
 import { useWebSocket } from "@/context/web-socket-context";
-import useUser from "@/hooks/useUser";
 import useRequiredAuth from "@/hooks/useRequiredAuth";
 
 type ChatMessage = {
@@ -37,7 +36,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
-  const {ws, addMessageListener} = useWebSocket()
+  const {ws, addMessageListener, sendChat} = useWebSocket()
   //const {user} = useUser()
   const {user} = useRequiredAuth()
 
@@ -117,10 +116,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     await fetchMessages(next);
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!input.trim() || sending) return;
     if(!user?.id || !seller?.id) return;
-    const open = ws && ws.readyState === WebSocket.OPEN;
     setSending(true);
     const content = input.trim();
     const tempId = `temp-${Date.now()}`;
@@ -134,25 +132,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     };
     setMessages(prev => [...prev, optimistic]);
     setInput("");
+    const payload = {
+      fromUserId: user.id,
+      toUserId: seller.id,
+      conversationId,
+      messageBody: content,
+      senderType: 'user'
+    };
     try {
-      const payload = {
-        fromUserId: user.id,
-        toUserId: seller.id,
-        conversationId,
-        messageBody: content,
-        senderType: 'user'
-      };
-      if(open){
-        ws!.send(JSON.stringify(payload));
-      } else {
-        // fallback HTTP send
-        await axiosInstance.post('/chatting/api/send-message', { conversationId, content }, isProtected);
-      }
-    } catch (e) {
-      // rollback optimistic on failure
-      setMessages(prev => prev.filter(m => m.id !== tempId));
-      setInput(content); // restore input
+      sendChat(payload);
     } finally {
+      // We rely on server echo to replace/duplicate-check; leaving optimistic message.
       setSending(false);
     }
   };

@@ -14,6 +14,9 @@ export const WebSocketProvider = ({
     const wsRef = useRef<WebSocket | null>(null);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
     const messageListenersRef = useRef<((data: any) => void)[]>([]);
+    const pendingQueueRef = useRef<any[]>([]); // queue of outbound chat payloads awaiting socket open
+    const reconnectAttemptsRef = useRef(0);
+    const manualCloseRef = useRef(false);
 
     const addMessageListener = (fn: (data: any) => void) => {
         messageListenersRef.current.push(fn);
@@ -22,17 +25,25 @@ export const WebSocketProvider = ({
         }
     }
 
-    useEffect(() => {
+    // Core connect logic with basic retry + queue flush
+    const connect = () => {
         if (!user?.id) return;
-
+        manualCloseRef.current = false;
         const ws = new WebSocket(process.env.NEXT_PUBLIC_CHATTING_WEBSOCKET_URI!);
-
         wsRef.current = ws;
 
         ws.onopen = () => {
+            reconnectAttemptsRef.current = 0;
             ws.send(`user_${user.id}`);
             console.log("WebSocket connected");
-        }
+            // Flush queued messages
+            if (pendingQueueRef.current.length) {
+                pendingQueueRef.current.forEach(p => {
+                    try { ws.send(JSON.stringify(p)); } catch {/* ignore */}
+                });
+                pendingQueueRef.current = [];
+            }
+        };
 
         ws.onmessage = (event) => {
             let data: any;
@@ -53,16 +64,42 @@ export const WebSocketProvider = ({
                     try { fn(data.payload) } catch { /* ignore listener error */ }
                 })
             }
-        }
+        };
 
+        ws.onclose = () => {
+            if (manualCloseRef.current) return; // intentional close (unmount/logout)
+            const attempt = reconnectAttemptsRef.current++;
+            const delay = Math.min(10000, 500 * Math.pow(2, attempt)); // exponential backoff capped at 10s
+            setTimeout(() => connect(), delay);
+        };
+
+        ws.onerror = () => {
+            // Let onclose handle retry
+        };
+    };
+
+    useEffect(() => {
+        if (!user?.id) return;
+        connect();
         return () => {
-            ws.close()
-        }
-
+            manualCloseRef.current = true;
+            wsRef.current?.close();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
 
+    // Public send that queues if socket not open
+    const sendChat = (payload: any) => {
+        const ws = wsRef.current;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            try { ws.send(JSON.stringify(payload)); } catch { pendingQueueRef.current.push(payload); }
+        } else {
+            pendingQueueRef.current.push(payload);
+        }
+    };
 
-    return <WebSocketContext.Provider value={{ ws: wsRef.current, unreadCounts, addMessageListener }}>
+
+    return <WebSocketContext.Provider value={{ ws: wsRef.current, unreadCounts, addMessageListener, sendChat }}>
         {children}
     </WebSocketContext.Provider>
 }
