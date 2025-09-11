@@ -100,9 +100,18 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     try {
       const payload = {
         fromUserId: user?.id,
-        toUserId: sele
+        toUserId: seller?.id,
+        conversationId: conversationId,
+        messageBody: input,
+        senderType: "user",
+      };
 
-      }
+      ws.send(JSON.stringify(payload));
+      
+      
+      // Optionally, optimistically add the message to UI here
+      setMessages((prev) => [...prev, { id: 'temp-id', conversationId, senderId: user?.id || '', senderType: 'user', content: input, seen: false, createdAt: new Date().toISOString() }]);
+      
       setInput("");
     } catch (e) {
       // no-op, could toast
