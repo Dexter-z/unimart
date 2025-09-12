@@ -70,22 +70,34 @@ async function flushBufferToDb() {
             createdAt: new Date(msg.createdAt),
         }));
 
+        const invalid = prismaPayload.filter(m => !m.senderId);
+        const valid = prismaPayload.filter(m => m.senderId);
+
+        if (invalid.length) {
+            console.warn(`Skipping ${invalid.length} invalid chat messages missing senderId (conversationIds: ${invalid.map(i => i.conversationId).join(",")})`);
+        }
+
+        if (valid.length === 0) {
+            console.log("No valid messages to flush after filtering; aborting createMany.");
+            return;
+        }
+
         await prisma.message.createMany({
-            data: prismaPayload,
+            data: valid,
         });
 
-        //Redis unseen counter only if db insert was successfull
-        for (const msg of prismaPayload) {
+        for (const msg of valid) {
             const receiverType = msg.senderType === "user" ? "seller" : "user";
             await incrementUnseenCount(receiverType, msg.conversationId);
         }
 
-        console.log(`Flushed ${prismaPayload.length} messages to DB and updated unseen counts.`);
+        console.log(`Flushed ${valid.length} messages to DB (filtered ${invalid.length}) and updated unseen counts.`);
 
     } catch (error) {
         console.error("Error flushing buffer to DB:", error);
 
-        buffer.unshift(...toInsert); //Re-add to start of buffer if failed
+    // Requeue only the original batch so we attempt again; however if failures were due to validation we already filtered.
+    buffer.unshift(...toInsert);
 
         if(!flushTimer){
             flushTimer = setTimeout(flushBufferToDb, BATCH_INTERVAL_MS);

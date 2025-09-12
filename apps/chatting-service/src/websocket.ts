@@ -45,7 +45,12 @@ export async function createWebSocketServer(server: HttpServer) {
                 }
 
                 //Process json message
-                const data: IncomingMessage = JSON.parse(messageStr);
+                const raw = JSON.parse(messageStr);
+                // Backward compatibility: clients might send fromSellerId; normalize to fromUserId
+                const data: IncomingMessage = {
+                    ...raw,
+                    fromUserId: raw.fromUserId || raw.fromSellerId, // prioritize standard key
+                };
 
                 //If it is seen update
                 if (data.type === "MARK_AS_SEEN" && registeredUserId) {
@@ -56,6 +61,10 @@ export async function createWebSocketServer(server: HttpServer) {
 
                 //Regular message
                 const { fromUserId, toUserId, messageBody, conversationId, senderType } = data;
+                if(!fromUserId){
+                    console.error("Missing fromUserId in message", raw);
+                    return;
+                }
 
                 if (!data || !toUserId || !messageBody || !conversationId) {
                     console.error("Invalid message format", data);
