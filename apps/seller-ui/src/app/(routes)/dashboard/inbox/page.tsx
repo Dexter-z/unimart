@@ -17,6 +17,8 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const lastUpdateTypeRef = React.useRef<'init' | 'append' | 'prepend'>('init');
 
   const fetchMessages = async (pageToFetch = 1) => {
     setLoading(true);
@@ -27,8 +29,9 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
       const normalized = [...data.messages].reverse();
       if (pageToFetch === 1) {
         setMessages(normalized);
+        lastUpdateTypeRef.current = 'init';
       } else {
-        setMessages(prev => [...normalized, ...prev]);
+        setMessages(prev => { lastUpdateTypeRef.current = 'prepend'; return [...normalized, ...prev]; });
       }
       setUserInfo(data.user);
       setHasMore(data.hasMore);
@@ -41,9 +44,19 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
       setMessages(prev => {
         const exists = prev.some(m => m.id === incoming.id || (m.content === incoming.content && Math.abs(new Date(m.createdAt).getTime() - new Date(incoming.createdAt).getTime()) < 1500));
         if (exists) return prev;
+        lastUpdateTypeRef.current = 'append';
         return [...prev, incoming];
       });
     }); return () => unsub(); }, [conversationId, addMessageListener]);
+
+  // Auto-scroll logic
+  useEffect(() => {
+    if (lastUpdateTypeRef.current === 'prepend') return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const behavior: ScrollBehavior = lastUpdateTypeRef.current === 'append' ? 'smooth' : 'auto';
+    el.scrollTo({ top: el.scrollHeight, behavior });
+  }, [messages.length]);
 
   const loadOlder = async () => { if (!hasMore || loading) return; const next = page + 1; setPage(next); await fetchMessages(next); };
 
@@ -52,7 +65,7 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
     const content = input.trim();
     const tempId = `temp-${Date.now()}`;
     const optimistic = { id: tempId, conversationId, senderId: seller.id, senderType: 'seller', content, createdAt: new Date().toISOString() };
-    setMessages(prev => [...prev, optimistic]);
+  setMessages(prev => { lastUpdateTypeRef.current = 'append'; return [...prev, optimistic]; });
     setInput("");
   // WebSocket server expects fromUserId irrespective of role; senderType disambiguates
   sendChat({ fromUserId: seller.id, toUserId: userInfo.id, conversationId, messageBody: content, senderType: 'seller' });
@@ -77,7 +90,7 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[#232326] text-gray-300">✕</button>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+  <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {hasMore && <div className="flex justify-center"><button onClick={loadOlder} disabled={loading} className="text-sm px-3 py-1 bg-[#232326] rounded-lg text-white disabled:opacity-50">{loading? 'Loading...' : 'Load older messages'}</button></div>}
           {messages.map(m => <div key={m.id} className={`flex ${m.senderType === 'seller' ? 'justify-end' : 'justify-start'}`}><div className={`${m.senderType === 'seller' ? 'bg-[#ff8800] text-[#18181b]' : 'bg-[#232326] text-white'} px-3 py-2 rounded-2xl max-w-[75%]`}>
             {m.content}

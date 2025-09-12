@@ -41,6 +41,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   const {user} = useRequiredAuth()
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Track type of last list mutation to decide if we should auto-scroll
+  const lastUpdateTypeRef = useRef<'init' | 'append' | 'prepend'>('init');
 
   const fetchMessages = async (pageToFetch = 1) => {
     setLoading(true);
@@ -62,9 +64,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
 
       if (pageToFetch === 1) {
         setMessages(normalized);
+        lastUpdateTypeRef.current = 'init';
       } else {
         // Prepend older messages to the beginning of the ascending list
-        setMessages((prev) => [...normalized, ...prev]);
+        setMessages((prev) => {
+          lastUpdateTypeRef.current = 'prepend';
+          return [...normalized, ...prev];
+        });
       }
       setSeller(data.seller);
       setHasMore(data.hasMore);
@@ -82,8 +88,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
   }, [conversationId]);
 
   useEffect(() => {
-    // Scroll to bottom on new messages for this conversation
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    // Auto-scroll only for initial load or appended messages (new inbound / optimistic)
+    if (lastUpdateTypeRef.current === 'prepend') return; // user loaded older messages; keep scroll position
+    const el = scrollRef.current;
+    if (!el) return;
+    // Smooth scroll for append; instant for init to avoid visible jump delay
+    const behavior: ScrollBehavior = lastUpdateTypeRef.current === 'append' ? 'smooth' : 'auto';
+    el.scrollTo({ top: el.scrollHeight, behavior });
   }, [messages.length]);
 
   // Listen for realtime incoming messages
@@ -96,6 +107,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
       setMessages(prev => {
         const exists = prev.some(m => m.id === incoming.id || (m.content === incoming.content && Math.abs(new Date(m.createdAt).getTime() - new Date(incoming.createdAt).getTime()) < 1500));
         if (exists) return prev;
+        lastUpdateTypeRef.current = 'append';
         return [...prev, incoming];
       })
     })
@@ -130,7 +142,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
       content,
       createdAt: new Date().toISOString()
     };
-    setMessages(prev => [...prev, optimistic]);
+    setMessages(prev => {
+      lastUpdateTypeRef.current = 'append';
+      return [...prev, optimistic];
+    });
     setInput("");
     const payload = {
       fromUserId: user.id,
