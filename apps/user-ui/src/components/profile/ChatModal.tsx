@@ -211,16 +211,18 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
               </button>
             </div>
           )}
-          {messages.map((m) => (
-            <div key={m.id} className={`flex ${m.senderType === "user" ? "justify-end" : "justify-start"}`}>
+          {messages.map((m, idx) => {
+            const fallbackKey = `${m.createdAt}-${m.senderId}-${idx}`;
+            const key = m.id || fallbackKey;
+            return (
+            <div key={key} className={`flex ${m.senderType === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`${m.senderType === "user" ? "bg-[#ff8800] text-[#18181b]" : "bg-[#232326] text-white"} px-3 py-2 rounded-2xl max-w-[75%] whitespace-pre-wrap`}>
                 {m.content || ""}
                 <div className="mt-1 text-[10px] opacity-60 text-right">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
-            </div>
-          ))}
+            </div>)})}
           {!loading && messages.length === 0 && (
             <div className="text-center text-gray-400 mt-10">No messages yet. Say hi!</div>
           )}
