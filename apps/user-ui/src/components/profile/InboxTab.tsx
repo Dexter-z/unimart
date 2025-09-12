@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@/utils/axiosInstance'
 import { isProtected } from '@/utils/protected'
 import ChatModal from './ChatModal'
+import { useWebSocket } from '@/context/web-socket-context'
 
 const InboxTab = () => {
   const searchParams = useSearchParams()
@@ -46,6 +47,43 @@ const InboxTab = () => {
       setChats(conversations);
     }
   }, [conversations])
+
+  // Realtime conversation list updates
+  const { addMessageListener } = useWebSocket();
+  useEffect(() => {
+    const unsub = addMessageListener((incoming: any) => {
+      if(!incoming || !incoming.conversationId) return;
+      setChats(prev => {
+        let found = false;
+        const updated = prev.map(c => {
+          if(c.conversationId === incoming.conversationId){
+            found = true;
+            const isActive = conversationId === incoming.conversationId; // modal open
+            return {
+              ...c,
+              lastMessage: incoming.content,
+              updatedAt: incoming.createdAt,
+              // simple unread flag logic
+              isRead: isActive ? true : false
+            }
+          }
+          return c;
+        });
+        if(!found){
+            // Append new conversation skeleton
+            return [...updated, {
+              conversationId: incoming.conversationId,
+              lastMessage: incoming.content,
+              updatedAt: incoming.createdAt,
+              isRead: conversationId === incoming.conversationId,
+              seller: incoming.senderType === 'seller' ? { id: incoming.senderId } : undefined
+            }];
+        }
+        return updated;
+      });
+    });
+    return () => unsub();
+  }, [addMessageListener, conversationId]);
 
   useEffect(() => {
     if(conversationId && chats.length > 0){

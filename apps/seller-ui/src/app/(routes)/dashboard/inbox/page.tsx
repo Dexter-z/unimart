@@ -42,11 +42,16 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
     useEffect(() => {
         const unsub = addMessageListener((incoming: any) => {
             if (!incoming || incoming.conversationId !== conversationId) return;
+            const normalized = { ...incoming, id: incoming.id || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}` };
             setMessages(prev => {
-                const exists = prev.some(m => m.id === incoming.id || (m.content === incoming.content && Math.abs(new Date(m.createdAt).getTime() - new Date(incoming.createdAt).getTime()) < 1500));
+                const exists = prev.some(m => {
+                    if (m.id && normalized.id && m.id === normalized.id) return true;
+                    const timeClose = Math.abs(new Date(m.createdAt).getTime() - new Date(normalized.createdAt).getTime()) < 1200;
+                    return !incoming.id && !m.id && m.senderId === normalized.senderId && m.senderType === normalized.senderType && m.content === normalized.content && timeClose;
+                });
                 if (exists) return prev;
                 lastUpdateTypeRef.current = 'append';
-                return [...prev, incoming];
+                return [...prev, normalized];
             });
         }); return () => unsub();
     }, [conversationId, addMessageListener]);
@@ -120,8 +125,8 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
 const SellerInboxPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { seller } = useSeller();
-    const { unreadCounts } = useWebSocket();
+        const { seller } = useSeller();
+        const { unreadCounts, addMessageListener } = useWebSocket();
     const [conversations, setConversations] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -140,6 +145,40 @@ const SellerInboxPage = () => {
     };
 
     useEffect(() => { if (seller?.id) fetchConversations(1); }, [seller?.id]);
+
+        // Realtime conversation list updates
+        useEffect(() => {
+            const unsub = addMessageListener((incoming: any) => {
+                if(!incoming || !incoming.conversationId) return;
+                setConversations(prev => {
+                    let found = false;
+                    const updated = prev.map(c => {
+                        if (c.conversationId === incoming.conversationId) {
+                            found = true;
+                            const isActive = conversationId === incoming.conversationId;
+                            return {
+                                ...c,
+                                lastMessage: incoming.content,
+                                updatedAt: incoming.createdAt,
+                                isRead: isActive ? true : c.isRead
+                            };
+                        }
+                        return c;
+                    });
+                    if(!found){
+                        return [...updated, {
+                            conversationId: incoming.conversationId,
+                            lastMessage: incoming.content,
+                            updatedAt: incoming.createdAt,
+                            isRead: conversationId === incoming.conversationId,
+                            user: incoming.senderType === 'user' ? { id: incoming.senderId } : undefined
+                        }];
+                    }
+                    return updated;
+                });
+            });
+            return () => unsub();
+        }, [addMessageListener, conversationId]);
 
     const paginated = conversations.slice(0, page * 10);
     const unreadTotal = Object.values(unreadCounts).reduce<number>((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0);

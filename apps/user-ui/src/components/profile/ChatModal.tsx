@@ -103,13 +103,23 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     const unsubscribe = addMessageListener((incoming: any) => {
       if(!incoming) return;
       if(incoming.conversationId !== conversationId) return;
-      // prevent duplicate temp + server copy by checking id+content+timestamp
+      // Normalize incoming (assign synthetic id if missing so consecutive messages don't collide on undefined id)
+      const normalized = {
+        ...incoming,
+        id: incoming.id || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}`
+      };
       setMessages(prev => {
-        const exists = prev.some(m => m.id === incoming.id || (m.content === incoming.content && Math.abs(new Date(m.createdAt).getTime() - new Date(incoming.createdAt).getTime()) < 1500));
+        const exists = prev.some(m => {
+          // If both have ids, compare ids
+          if (m.id && normalized.id && m.id === normalized.id) return true;
+          // If incoming had no real id (synthetic) treat echo duplicates only if same sender/content within 1200ms
+          const timeClose = Math.abs(new Date(m.createdAt).getTime() - new Date(normalized.createdAt).getTime()) < 1200;
+            return !incoming.id && !m.id && m.senderId === normalized.senderId && m.senderType === normalized.senderType && m.content === normalized.content && timeClose;
+        });
         if (exists) return prev;
         lastUpdateTypeRef.current = 'append';
-        return [...prev, incoming];
-      })
+        return [...prev, normalized];
+      });
     })
     return () => unsubscribe();
   }, [conversationId, addMessageListener]);
