@@ -44,9 +44,9 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
             if (!incoming || incoming.conversationId !== conversationId) return;
             const normalized = { ...incoming, id: incoming.id || incoming.clientMessageId || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}`, clientMessageId: incoming.clientMessageId, optimistic: false };
             setMessages(prev => {
-                if (normalized.clientMessageId){
+                if (normalized.clientMessageId) {
                     const idx = prev.findIndex(m => m.clientMessageId === normalized.clientMessageId && m.optimistic);
-                    if (idx !== -1){
+                    if (idx !== -1) {
                         const clone = [...prev];
                         clone[idx] = { ...clone[idx], ...normalized, optimistic: false };
                         lastUpdateTypeRef.current = 'append';
@@ -130,10 +130,10 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
 const SellerInboxPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-            const { seller } = useSeller();
-            const wsCtx = useWebSocket();
-            const unreadCounts = wsCtx?.unreadCounts || {};
-            const addMessageListener = wsCtx?.addMessageListener || (() => () => {});
+    const { seller } = useSeller();
+    const wsCtx = useWebSocket();
+    const unreadCounts = wsCtx?.unreadCounts || {};
+    const addMessageListener = wsCtx?.addMessageListener || (() => () => { });
     const [conversations, setConversations] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
@@ -153,39 +153,39 @@ const SellerInboxPage = () => {
 
     useEffect(() => { if (seller?.id) fetchConversations(1); }, [seller?.id]);
 
-        // Realtime conversation list updates
-        useEffect(() => {
-            const unsub = addMessageListener((incoming: any) => {
-                if(!incoming || !incoming.conversationId) return;
-                setConversations(prev => {
-                    let found = false;
-                    const updated = prev.map(c => {
-                        if (c.conversationId === incoming.conversationId) {
-                            found = true;
-                            const isActive = conversationId === incoming.conversationId;
-                            return {
-                                ...c,
-                                lastMessage: incoming.content,
-                                updatedAt: incoming.createdAt,
-                                isRead: isActive ? true : c.isRead
-                            };
-                        }
-                        return c;
-                    });
-                    if(!found){
-                        return [...updated, {
-                            conversationId: incoming.conversationId,
+    // Realtime conversation list updates
+    useEffect(() => {
+        const unsub = addMessageListener((incoming: any) => {
+            if (!incoming || !incoming.conversationId) return;
+            setConversations(prev => {
+                let found = false;
+                const updated = prev.map(c => {
+                    if (c.conversationId === incoming.conversationId) {
+                        found = true;
+                        const isActive = conversationId === incoming.conversationId;
+                        return {
+                            ...c,
                             lastMessage: incoming.content,
                             updatedAt: incoming.createdAt,
-                            isRead: conversationId === incoming.conversationId,
-                            user: incoming.senderType === 'user' ? { id: incoming.senderId } : undefined
-                        }];
+                            isRead: isActive ? true : c.isRead
+                        };
                     }
-                    return updated;
+                    return c;
                 });
+                if (!found) {
+                    return [...updated, {
+                        conversationId: incoming.conversationId,
+                        lastMessage: incoming.content,
+                        updatedAt: incoming.createdAt,
+                        isRead: conversationId === incoming.conversationId,
+                        user: incoming.senderType === 'user' ? { id: incoming.senderId } : undefined
+                    }];
+                }
+                return updated;
             });
-            return () => unsub();
-        }, [addMessageListener, conversationId]);
+        });
+        return () => unsub();
+    }, [addMessageListener, conversationId]);
 
     const paginated = conversations.slice(0, page * 10);
     const unreadTotal = Object.values(unreadCounts).reduce<number>((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0);
