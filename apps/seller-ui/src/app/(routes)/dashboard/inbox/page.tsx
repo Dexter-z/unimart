@@ -130,8 +130,10 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
 const SellerInboxPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-        const { seller } = useSeller();
-        const { unreadCounts, addMessageListener } = useWebSocket();
+            const { seller } = useSeller();
+            const wsCtx = useWebSocket();
+            const unreadCounts = wsCtx?.unreadCounts || {};
+            const addMessageListener = wsCtx?.addMessageListener || (() => () => {});
     const [conversations, setConversations] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);

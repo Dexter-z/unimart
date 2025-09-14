@@ -2,7 +2,12 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 
-const WebSocketContext = createContext<any>(null)
+const WebSocketContext = createContext<any>({
+    ws: null,
+    unreadCounts: {},
+    addMessageListener: () => () => {},
+    sendChat: () => {}
+})
 
 export const WebSocketProvider = ({
     children,
@@ -104,4 +109,6 @@ export const WebSocketProvider = ({
     </WebSocketContext.Provider>
 }
 
-export const useWebSocket = () => useContext(WebSocketContext)
+export const useWebSocket = () => {
+    return useContext(WebSocketContext)
+}
