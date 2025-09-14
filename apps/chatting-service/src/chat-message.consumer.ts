@@ -9,6 +9,7 @@ interface BufferedMessage {
     senderType: string;
     content: string;
     createdAt: string;
+    clientMessageId?: string;
 }
 
 const TOPIC = "chat.new_message";
@@ -68,6 +69,7 @@ async function flushBufferToDb() {
             senderType: msg.senderType,
             content: msg.content,
             createdAt: new Date(msg.createdAt),
+            clientMessageId: (msg as any).clientMessageId // harmless if column absent; Prisma will ignore if not in model
         }));
 
         const invalid = prismaPayload.filter(m => !m.senderId);

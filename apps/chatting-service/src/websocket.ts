@@ -14,6 +14,7 @@ type IncomingMessage = {
     messageBody: string;
     conversationId: string;
     senderType: string;
+    clientMessageId?: string;
 }
 
 export async function createWebSocketServer(server: HttpServer) {
@@ -60,7 +61,7 @@ export async function createWebSocketServer(server: HttpServer) {
                 }
 
                 //Regular message
-                const { fromUserId, toUserId, messageBody, conversationId, senderType } = data;
+                const { fromUserId, toUserId, messageBody, conversationId, senderType, clientMessageId } = data;
                 if(!fromUserId){
                     console.error("Missing fromUserId in message", raw);
                     return;
@@ -78,7 +79,8 @@ export async function createWebSocketServer(server: HttpServer) {
                     content: messageBody,
                     conversationId,
                     senderType,
-                    createdAt: now
+                    createdAt: now,
+                    clientMessageId
                 }
 
                 const messageEvent = JSON.stringify({

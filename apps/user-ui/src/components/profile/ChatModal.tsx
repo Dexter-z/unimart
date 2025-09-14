@@ -14,6 +14,8 @@ type ChatMessage = {
   senderType: "user" | "seller" | string;
   content?: string | null;
   createdAt: string;
+  clientMessageId?: string;
+  optimistic?: boolean;
 };
 
 type SellerInfo = {
@@ -97,26 +99,29 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     el.scrollTo({ top: el.scrollHeight, behavior });
   }, [messages.length]);
 
-  // Listen for realtime incoming messages
+  // Listen for realtime incoming messages (with optimistic reconciliation)
   useEffect(() => {
     if(!conversationId) return;
     const unsubscribe = addMessageListener((incoming: any) => {
       if(!incoming) return;
       if(incoming.conversationId !== conversationId) return;
-      // Normalize incoming (assign synthetic id if missing so consecutive messages don't collide on undefined id)
-      const normalized = {
+      const normalized: ChatMessage = {
         ...incoming,
-        id: incoming.id || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}`
+        id: incoming.id || incoming.clientMessageId || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}`,
+        clientMessageId: incoming.clientMessageId,
+        optimistic: false
       };
       setMessages(prev => {
-        const exists = prev.some(m => {
-          // If both have ids, compare ids
-          if (m.id && normalized.id && m.id === normalized.id) return true;
-          // If incoming had no real id (synthetic) treat echo duplicates only if same sender/content within 1200ms
-          const timeClose = Math.abs(new Date(m.createdAt).getTime() - new Date(normalized.createdAt).getTime()) < 1200;
-            return !incoming.id && !m.id && m.senderId === normalized.senderId && m.senderType === normalized.senderType && m.content === normalized.content && timeClose;
-        });
-        if (exists) return prev;
+        if (normalized.clientMessageId) {
+          const idx = prev.findIndex(m => m.clientMessageId === normalized.clientMessageId && m.optimistic);
+          if (idx !== -1) {
+            const clone = [...prev];
+            clone[idx] = { ...clone[idx], ...normalized, optimistic: false };
+            lastUpdateTypeRef.current = 'append';
+            return clone;
+          }
+        }
+        if (prev.some(m => m.id === normalized.id)) return prev;
         lastUpdateTypeRef.current = 'append';
         return [...prev, normalized];
       });
@@ -124,12 +129,21 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     return () => unsubscribe();
   }, [conversationId, addMessageListener]);
 
-  // Mark as seen when modal opens / messages change
+  // Mark as seen on open
   useEffect(() => {
     if(!ws || ws.readyState !== WebSocket.OPEN) return;
     if(!conversationId) return;
     ws.send(JSON.stringify({ type: "MARK_AS_SEEN", conversationId }));
-  }, [conversationId, ws, messages.length]);
+  }, [conversationId, ws]);
+
+  // Mark as seen again when new messages arrive while focused
+  useEffect(() => {
+    if(!ws || ws.readyState !== WebSocket.OPEN) return;
+    if(!conversationId) return;
+    if(document.visibilityState === 'visible') {
+      ws.send(JSON.stringify({ type: "MARK_AS_SEEN", conversationId }));
+    }
+  }, [messages.length, conversationId, ws]);
 
   const handleLoadOlder = async () => {
     if (!hasMore || loading) return;
@@ -143,14 +157,17 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
     if(!user?.id || !seller?.id) return;
     setSending(true);
     const content = input.trim();
-    const tempId = `temp-${Date.now()}`;
+    const clientMessageId = `cmsg_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const tempId = clientMessageId;
     const optimistic: ChatMessage = {
       id: tempId,
       conversationId,
       senderId: user.id,
       senderType: 'user',
       content,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      clientMessageId,
+      optimistic: true
     };
     setMessages(prev => {
       lastUpdateTypeRef.current = 'append';
@@ -162,7 +179,8 @@ const ChatModal: React.FC<ChatModalProps> = ({ conversationId, onClose }) => {
       toUserId: seller.id,
       conversationId,
       messageBody: content,
-      senderType: 'user'
+      senderType: 'user',
+      clientMessageId
     };
     try {
       sendChat(payload);

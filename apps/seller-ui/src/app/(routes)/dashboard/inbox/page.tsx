@@ -42,14 +42,18 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
     useEffect(() => {
         const unsub = addMessageListener((incoming: any) => {
             if (!incoming || incoming.conversationId !== conversationId) return;
-            const normalized = { ...incoming, id: incoming.id || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}` };
+            const normalized = { ...incoming, id: incoming.id || incoming.clientMessageId || `${incoming.conversationId}-${incoming.senderId}-${incoming.createdAt}`, clientMessageId: incoming.clientMessageId, optimistic: false };
             setMessages(prev => {
-                const exists = prev.some(m => {
-                    if (m.id && normalized.id && m.id === normalized.id) return true;
-                    const timeClose = Math.abs(new Date(m.createdAt).getTime() - new Date(normalized.createdAt).getTime()) < 1200;
-                    return !incoming.id && !m.id && m.senderId === normalized.senderId && m.senderType === normalized.senderType && m.content === normalized.content && timeClose;
-                });
-                if (exists) return prev;
+                if (normalized.clientMessageId){
+                    const idx = prev.findIndex(m => m.clientMessageId === normalized.clientMessageId && m.optimistic);
+                    if (idx !== -1){
+                        const clone = [...prev];
+                        clone[idx] = { ...clone[idx], ...normalized, optimistic: false };
+                        lastUpdateTypeRef.current = 'append';
+                        return clone;
+                    }
+                }
+                if (prev.some(m => m.id === normalized.id)) return prev;
                 lastUpdateTypeRef.current = 'append';
                 return [...prev, normalized];
             });
@@ -70,12 +74,13 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
     const handleSend = () => {
         if (!input.trim() || !seller?.id || !userInfo?.id) return;
         const content = input.trim();
-        const tempId = `temp-${Date.now()}`;
-        const optimistic = { id: tempId, conversationId, senderId: seller.id, senderType: 'seller', content, createdAt: new Date().toISOString() };
+        const clientMessageId = `cmsg_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const tempId = clientMessageId;
+        const optimistic = { id: tempId, conversationId, senderId: seller.id, senderType: 'seller', content, createdAt: new Date().toISOString(), clientMessageId, optimistic: true };
         setMessages(prev => { lastUpdateTypeRef.current = 'append'; return [...prev, optimistic]; });
         setInput("");
         // WebSocket server expects fromUserId irrespective of role; senderType disambiguates
-        sendChat({ fromUserId: seller.id, toUserId: userInfo.id, conversationId, messageBody: content, senderType: 'seller' });
+        sendChat({ fromUserId: seller.id, toUserId: userInfo.id, conversationId, messageBody: content, senderType: 'seller', clientMessageId });
     };
 
     const headerTitle = userInfo?.name || userInfo?.firstName || 'User';
