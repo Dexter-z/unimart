@@ -42,27 +42,21 @@ const ProvidersWithWebSocket = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const {seller, isLoading, isError} = useSeller()
+  const {seller, isLoading, isError, refetch} = useSeller()
+  // Mark optional values as intentionally observed (avoids unused warnings in some build pipelines)
+  void isError; void refetch;
 
   const content = seller ? (
     <WebSocketProvider seller={seller}>{children}</WebSocketProvider>
   ) : children;
 
-  return (
-    <div className="relative">
-      {content}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm z-50">
-          <div className="text-gray-300 text-sm">Loading seller session...</div>
-        </div>
-      )}
-      {isError && !isLoading && (
-        <div className="absolute top-2 right-2 bg-red-500/10 text-red-300 text-xs px-3 py-1 rounded-md border border-red-600/30">
-          Seller data failed to load
-        </div>
-      )}
-    </div>
-  )
+  // If loading, we now just render content immediately without overlay.
+  if(isLoading) {
+    // Minimal console trace (can be removed later)
+    // eslint-disable-next-line no-console
+    console.debug('[seller-ui] Loading seller session...');
+  }
+  return content;
 }
 
 export default Providers
