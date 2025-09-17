@@ -39,7 +39,9 @@ export async function generateMetadata({
     }
 }
 
-const ShopPage = () => {
+const ShopPage = async ({params}: {params: {id: string}}) => {
+    const data = await fetchSellerDetails(params.id);
+    
   return (
     <div>
       
