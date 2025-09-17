@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { useWebSocket } from '@/context/web-socket-context'
 import useSeller from '@/hooks/useSeller'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -127,7 +127,8 @@ const SellerChatModal = ({ conversationId, onClose }: { conversationId: string, 
     )
 };
 
-const SellerInboxPage = () => {
+// Split into inner content so we can wrap with Suspense at the page level
+const InboxContent = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { seller } = useSeller();
@@ -261,4 +262,10 @@ const SellerInboxPage = () => {
     )
 };
 
-export default SellerInboxPage
+export default function SellerInboxPage() {
+    return (
+        <Suspense fallback={<div className="text-gray-400">Loading inbox…</div>}>
+            <InboxContent />
+        </Suspense>
+    );
+}
