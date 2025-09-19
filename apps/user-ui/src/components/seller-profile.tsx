@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useState, useTransition } from 'react'
-import Link from 'next/link';
 import { shops } from '@prisma/client';
 import useUser from '@/hooks/useUser';
 import useLocationTracking from '@/hooks/useLocationTracking';
@@ -332,13 +331,15 @@ const SellerProfile = ({
                                         <Share2 className="w-4 h-4" />
                                         {copied ? 'Copied' : 'Share'}
                                     </button>
-                                    <Link
-                                        href={`/profile?tab=inbox&shopId=${shop?.id}`}
-                                        className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
+                                    <button
+                                        onClick={handleChatClick}
+                                        disabled={isPending}
+                                        aria-busy={isPending}
+                                        className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors ${isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     >
                                         <MessageSquare className="w-4 h-4" />
-                                        Message
-                                    </Link>
+                                        {isPending ? 'Opening…' : 'Message'}
+                                    </button>
                                     {isFollowStatusLoading ? (
                                         <div className="h-10 w-28 rounded-xl bg-[#232326] border border-[#232326] animate-pulse" />
                                     ) : (
