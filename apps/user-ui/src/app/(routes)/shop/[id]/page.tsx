@@ -47,7 +47,7 @@ const ShopPage = async ({params}: {params: {id: string}}) => {
     
   return (
     <div>
-      <SellerProfile shop={data?.shop} products={data?.products} />
+      <SellerProfile shop={data?.shop}  followersCount={data?.followersCount} />
     </div>
   )
 }

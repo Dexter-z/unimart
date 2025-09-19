@@ -42,7 +42,7 @@ const SellerProfile = ({
             }
 
             try {
-                const res = await axiosInstance.get(`/seller/api/isFollowing/${shop?.id}`);
+                const res = await axiosInstance.get(`/seller/api/is-following/${shop?.id}`);
                 setIsFollowing(res.data.isFollowing != null);
             } catch (error) {
                 console.log("Failed to fetch follow status", error);
