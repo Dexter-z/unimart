@@ -1,3 +1,4 @@
+import SellerProfile from '@/components/seller-profile';
 import axiosInstance from '@/utils/axiosInstance'
 import { Metadata } from 'next';
 import React from 'react'
@@ -41,10 +42,12 @@ export async function generateMetadata({
 
 const ShopPage = async ({params}: {params: {id: string}}) => {
     const data = await fetchSellerDetails(params.id);
+
+    console.log(data)
     
   return (
     <div>
-      
+      <SellerProfile shop={data?.shop} products={data?.products} />
     </div>
   )
 }

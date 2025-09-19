@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import axiosInstance from "@/utils/axiosInstance"
 import { isProtected } from "@/utils/protected";
@@ -25,21 +26,24 @@ const useUser = () => {
         data: user,
         isPending,
         isError,
+        refetch,
     } = useQuery({
         queryKey: ["user"],
         queryFn: () => fetchUser(isLoggedIn),
         staleTime: 1000 * 60, // 1 minute
         retry: false,
-        // @ts-ignore
-        onSuccess: () => {
-            setLoggedIn(true);
-        },
-        onError: () => {
-            setLoggedIn(false);
-        }
     })
 
-    return {user: user as any, isLoading: isPending, isError}
+    // Keep auth store in sync with query state
+    useEffect(() => {
+        setLoggedIn(!!user);
+    }, [user, setLoggedIn]);
+
+    useEffect(() => {
+        if (isError) setLoggedIn(false);
+    }, [isError, setLoggedIn]);
+
+    return {user: user as any, isLoading: isPending, isError, refetch}
 }
 
 export default useUser;

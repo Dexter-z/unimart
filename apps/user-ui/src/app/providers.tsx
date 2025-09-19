@@ -28,20 +28,22 @@ const ProvidersWithWebSocket = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const {user, isLoading} = useUser()
+  const {user, isLoading, isError} = useUser()
 
-  if(isLoading){
-    return null;
+  // Mark optional values as intentionally observed (avoids unused warnings in some build pipelines)
+  void isError;
+
+  const content = user ? (
+    <WebSocketProvider user={user}>{children}</WebSocketProvider>
+  ) : children;
+
+  // If loading, we now just render content immediately without overlay.
+  if(isLoading) {
+    // Minimal console trace (can be removed later)
+    // eslint-disable-next-line no-console
+    console.debug('[user-ui] Loading user session...');
   }
-  return (
-    <>
-      {user && <WebSocketProvider user={user}>
-        {children}
-      </WebSocketProvider>}
-
-      {!user && children}
-    </>
-  )
+  return content;
 }
 
 export default Providers
