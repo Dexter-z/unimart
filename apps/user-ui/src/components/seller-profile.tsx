@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
+import Link from 'next/link';
 import { shops } from '@prisma/client';
 import useUser from '@/hooks/useUser';
 import useLocationTracking from '@/hooks/useLocationTracking';
@@ -8,7 +9,7 @@ import useDeviceTracking from '@/hooks/useDeviceTracking';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import { sendKafkaEvent } from '@/actions/track-user';
-import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck } from 'lucide-react';
+import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck, Share2, MessageSquare } from 'lucide-react';
 import ProductCard from '@/components/product-card';
 
 const SellerProfile = ({
@@ -33,7 +34,10 @@ const SellerProfile = ({
         queryKey: ['seller-products', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-products/${shop.id}?page=1&limit=10`);
-            return res.data.products
+            const raw = res.data?.products;
+            if (Array.isArray(raw)) return raw;
+            if (raw && Array.isArray(raw.docs)) return raw.docs;
+            return [] as any[];
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
     })
@@ -59,7 +63,10 @@ const SellerProfile = ({
         queryKey: ['seller-events', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-events/${shop.id}?page=1&limit=10`)
-            return res.data.products;
+            const raw = res.data?.products;
+            if (Array.isArray(raw)) return raw;
+            if (raw && Array.isArray(raw.docs)) return raw.docs;
+            return [] as any[];
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
     })
@@ -131,7 +138,7 @@ const SellerProfile = ({
             </div>
             <div className="leading-tight">
                 <div className="text-xs text-gray-400">{label}</div>
-                <div className="text-lg font-semibold text-white">{value}</div>
+                <div className="text-lg font-semibold text-gray-200">{value}</div>
             </div>
         </div>
     );
@@ -142,7 +149,7 @@ const SellerProfile = ({
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === name
                     ? 'bg-[#ff8800] text-[#18181b] shadow-sm'
-                    : 'text-gray-300 hover:text-white'
+                    : 'text-gray-300 hover:text-gray-200'
             }`}
         >
             {name}
@@ -176,8 +183,19 @@ const SellerProfile = ({
 
     const isProfileLoading = !shop; // if shop prop missing, treat as loading
 
+    const [copied, setCopied] = useState(false);
+    const onShare = async () => {
+        try {
+            await navigator.clipboard?.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch (e) {
+            console.log('Copy failed', e);
+        }
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Cover + Header */}
             <div className="relative">
                 {isProfileLoading ? (
@@ -208,7 +226,7 @@ const SellerProfile = ({
 
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-white">{shop?.name}</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-200">{shop?.name}</h1>
                             <p className="text-gray-400 mt-1">{shop?.bio || 'No bio provided.'}</p>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {shop?.category && (
@@ -219,12 +237,28 @@ const SellerProfile = ({
                                 ))}
                             </div>
                         </div>
-                        <div className="flex items-center sm:justify-end gap-4">
+                        <div className="flex items-center sm:justify-end gap-3 sm:gap-4">
                             <div className="hidden sm:grid grid-cols-3 gap-3">
                                 <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} />
                                 <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} />
                                 <StatCard icon={<StarIcon className="w-5 h-5" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
                             </div>
+                            <button
+                                onClick={onShare}
+                                className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
+                                aria-live="polite"
+                                title={copied ? 'Link copied!' : 'Copy profile link'}
+                            >
+                                <Share2 className="w-4 h-4" />
+                                {copied ? 'Copied' : 'Share'}
+                            </button>
+                            <Link
+                                href={`/profile?tab=inbox&shopId=${shop?.id}`}
+                                className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                                Message
+                            </Link>
                             <button
                                 onClick={() => toggleFollowMutation.mutate()}
                                 disabled={toggleFollowMutation.isPending}
@@ -252,71 +286,85 @@ const SellerProfile = ({
             </div>
 
             {/* Tabs */}
-            <div className="w-full overflow-x-auto no-scrollbar">
-                <div className="inline-flex items-center gap-1 bg-[#232326] border border-[#232326] rounded-xl p-1">
-                    {TABS.map((t) => (
-                        <TabButton key={t} name={t} />
-                    ))}
+            <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl p-3 sm:p-4">
+                <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="inline-flex items-center gap-1 bg-[#18181b] border border-[#232326] rounded-xl p-1">
+                        {TABS.map((t) => (
+                            <TabButton key={t} name={t} />
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            {/* Content */}
-            <div>
-                {activeTab === 'Products' && (
-                    <div>
-                        {isLoading ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {Array.from({ length: 8 }).map((_, i) => (
-                                    <ProductCardSkeleton key={i} />
-                                ))}
-                            </div>
-                        ) : (
-                            <>
-                                {Array.isArray(products) && products.length > 0 ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {products.map((p: any) => (
-                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={false} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center text-gray-400 py-12">No products found.</div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {activeTab === 'Offers' && (
-                    <div>
-                        {isEventsLoading ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {Array.from({ length: 6 }).map((_, i) => (
-                                    <ProductCardSkeleton key={i} />
-                                ))}
-                            </div>
-                        ) : (
-                            <>
-                                {Array.isArray(events) && events.length > 0 ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {events.map((p: any) => (
-                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={true} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center text-gray-400 py-12">No offers right now. Check back later!</div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {activeTab === 'Reviews' && (
-                    <div className="space-y-4">
-                        <div className="bg-[#18181b] border border-[#232326] rounded-2xl p-6 text-gray-400">
-                            Reviews coming soon.
+                {/* Content */}
+                <div className="mt-4">
+                    {activeTab === 'Products' && (
+                        <div>
+                            {isLoading ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {Array.from({ length: 8 }).map((_, i) => (
+                                        <ProductCardSkeleton key={i} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <>
+                                    {Array.isArray(products) && products.length > 0 ? (
+                                        <>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className="text-gray-200 font-semibold">Products</h3>
+                                                <span className="text-sm text-gray-400">{numberFmt(products.length)} items</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                                {products.map((p: any) => (
+                                                    <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={false} />
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center text-gray-400 py-12">No products found.</div>
+                                    )}
+                                </>
+                            )}
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {activeTab === 'Offers' && (
+                        <div>
+                            {isEventsLoading ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {Array.from({ length: 6 }).map((_, i) => (
+                                        <ProductCardSkeleton key={i} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <>
+                                    {Array.isArray(events) && events.length > 0 ? (
+                                        <>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h3 className="text-gray-200 font-semibold">Offers</h3>
+                                                <span className="text-sm text-gray-400">{numberFmt(events.length)} items</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {events.map((p: any) => (
+                                                    <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={true} />
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center text-gray-400 py-12">No offers right now. Check back later!</div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'Reviews' && (
+                        <div className="space-y-4">
+                            <div className="bg-[#18181b] border border-[#232326] rounded-2xl p-6 text-gray-400">
+                                Reviews coming soon.
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

@@ -46,9 +46,11 @@ const ShopPage = async ({params}: {params: {id: string}}) => {
     console.log(data)
     
   return (
-    <div>
-      <SellerProfile shop={data?.shop}  followersCount={data?.followersCount} />
-    </div>
+        <div className="min-h-[180vh] bg-[#18181b]">
+            <div className="py-6">
+                <SellerProfile shop={data?.shop}  followersCount={data?.followersCount} />
+            </div>
+        </div>
   )
 }
 
