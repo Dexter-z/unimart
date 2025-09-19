@@ -160,7 +160,7 @@ export const getSellerProducts =async (req: any, res: Response, next: NextFuncti
                 orderBy: { createdAt: 'desc' },
                 include: {
                     images: true,
-                    shop: true,
+                    Shop: true,
                 }
             }),
             prisma.products.count({
@@ -195,7 +195,7 @@ export const getSellerEvents =async (req: any, res: Response, next: NextFunction
                 orderBy: { createdAt: 'desc' },
                 include: {
                     images: true,
-                    shop: true,
+                    Shop: true,
                 }
             }),
             prisma.products.count({
