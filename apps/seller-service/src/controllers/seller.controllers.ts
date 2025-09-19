@@ -134,8 +134,8 @@ export const getSellerInfo =async (req: Request, res: Response, next: NextFuncti
         const shop = await prisma.shops.findUnique({
             where: { id: req.params.id },
         });
-        const followersCount = await prisma.followers.count({
-            where: { shopsId: shop?.id }
+        const followersCount = await prisma.shopFollowers.count({
+            where: { shopId: shop?.id }
         });
         res.status(200).json({
             success: true,
@@ -223,10 +223,10 @@ export const followShop =async (req: any, res: Response, next: NextFunction) => 
         if (!shopId) {
             return next(new ValidationError("shopId is required"));
         }
-        const existingFollow = await prisma.followers.findFirst({
+        const existingFollow = await prisma.shopFollowers.findFirst({
             where: {
                 userId: req.user?.id,
-                shopsId: shopId
+                shopId: shopId
             }    
         });
         if (existingFollow) {
@@ -235,10 +235,10 @@ export const followShop =async (req: any, res: Response, next: NextFunction) => 
                 message: "You are already following this shop",
             });
         }
-        const follow = await prisma.followers.create({
+        const follow = await prisma.shopFollowers.create({
             data: {
                 userId: req.user?.id,
-                shopsId: shopId
+                shopId: shopId
             }
         });
         res.status(201).json({
@@ -257,10 +257,10 @@ export const unfollowShop =async (req: any, res: Response, next: NextFunction) =
         if (!shopId) {
             return next(new ValidationError("shopId is required"));
         }
-        const existingFollow = await prisma.followers.findFirst({
+        const existingFollow = await prisma.shopFollowers.findFirst({
             where: {
                 userId: req.user?.id,
-                shopsId: shopId
+                shopId: shopId
             }    
         });
         if (!existingFollow) {
@@ -269,7 +269,7 @@ export const unfollowShop =async (req: any, res: Response, next: NextFunction) =
                 message: "You are not following this shop",
             });
         }
-        await prisma.followers.delete({
+        await prisma.shopFollowers.delete({
             where: {
                 id: existingFollow.id
             }
@@ -289,10 +289,10 @@ export const isFollowing =async (req: any, res: Response, next: NextFunction) =>
         if (!shopId) {
             return next(new ValidationError("shopId is required"));
         }
-        const isFollowing = await prisma.followers.findFirst({
+        const isFollowing = await prisma.shopFollowers.findFirst({
             where: {
                 userId: req.user?.id,
-                shopsId: shopId
+                shopId: shopId
             }
         });
         res.status(200).json({

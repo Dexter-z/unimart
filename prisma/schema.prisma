@@ -106,15 +106,6 @@ model sellers {
   deletedAt       DateTime?
 }
 
-model followers {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String    @db.ObjectId
-  shopsId   String    @db.ObjectId
-  user      users     @relation(fields: [userId], references: [id])
-  shops     shops?    @relation(fields: [shopsId], references: [id])
-  @@unique([userId, shopsId])
-}
-
 model site_config {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   categories    String[]
