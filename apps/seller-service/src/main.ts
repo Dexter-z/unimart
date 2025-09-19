@@ -3,6 +3,7 @@ import cors from "cors"
 import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import cookieParser from 'cookie-parser';
 import router from './routes/seller.route';
+import './jobs/seller-cron.job';
 
 
 const app = express();

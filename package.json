@@ -41,6 +41,7 @@
     "kafkajs": "^2.2.4",
     "lucide-react": "^0.511.0",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "next": "~15.2.4",
     "node-cron": "^4.2.0",
     "nodemailer": "^7.0.3",
@@ -56,6 +57,7 @@
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "ua-parser-js": "^2.0.4",
+    "uuid": "^13.0.0",
     "ws": "^8.18.3",
     "zustand": "^5.0.6"
   },
@@ -85,6 +87,7 @@
     "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^2.0.0",
     "@types/node": "~18.16.9",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "19.0.0",

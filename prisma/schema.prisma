@@ -85,6 +85,8 @@ model shops {
   orders       orders[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+  isDeleted     Boolean       @default(false)
+  deletedAt     DateTime?
 }
 
 model sellers {
@@ -100,6 +102,17 @@ model sellers {
   orders       orders[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  isDeleted       Boolean    @default(false)
+  deletedAt       DateTime?
+}
+
+model followers {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  shopsId   String    @db.ObjectId
+  user      users     @relation(fields: [userId], references: [id])
+  shops     shops?    @relation(fields: [shopsId], references: [id])
+  @@unique([userId, shopsId])
 }
 
 model site_config {
