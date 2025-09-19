@@ -202,19 +202,8 @@ const SellerProfile = ({
                     <HeaderSkeleton />
                 ) : (
                 <>
-                <div className="relative h-40 sm:h-56 md:h-64 w-full rounded-2xl overflow-hidden border border-[#232326] bg-[#18181b]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {shop?.coverBanner ? (
-                        <img src={shop.coverBanner} alt="Shop cover" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full bg-[linear-gradient(135deg,#232326,transparent)]" />
-                    )}
-                    {/* overlay for readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] via-transparent to-transparent" />
-                </div>
-
                 {/* Avatar & Info */}
-                <div className="flex flex-col sm:flex-row gap-4 sm:items-end -mt-8 sm:-mt-10 px-2 sm:px-4">
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-end px-2 sm:px-4">
                     <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#ff8800] border-4 border-[#18181b] overflow-hidden flex items-center justify-center shadow-[0_0_0_3px_#232326]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {shop?.avatar ? (
