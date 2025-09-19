@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import { sendKafkaEvent } from '@/actions/track-user';
 import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck } from 'lucide-react';
+import ProductCard from '@/components/product-card';
 
 const SellerProfile = ({
     shop,
@@ -148,29 +149,7 @@ const SellerProfile = ({
         </button>
     );
 
-    const ProductCard = ({ p }: { p: any }) => {
-        const image = p?.images?.[0]?.url || p?.image || shop?.avatar || '/placeholder.png';
-        const title = p?.title || p?.name || 'Product';
-        const price = p?.salePrice ?? p?.price ?? 0;
-        const regular = p?.regularPrice ?? undefined;
-        return (
-            <div className="group bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl overflow-hidden hover:border-[#ff8800] transition-colors">
-                <div className="aspect-square w-full bg-[#1d1d21] overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
-                </div>
-                <div className="p-4">
-                    <div className="text-white font-semibold truncate group-hover:text-[#ff8800] transition-colors" title={title}>{title}</div>
-                    <div className="mt-1 flex items-center gap-2">
-                        <div className="text-[#ff8800] font-bold">${price}</div>
-                        {regular && (
-                            <div className="text-gray-400 line-through text-sm">${regular}</div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
+    // rendering handled by shared ProductCard component
 
     const ProductCardSkeleton = () => (
         <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl overflow-hidden animate-pulse">
@@ -296,7 +275,7 @@ const SellerProfile = ({
                                 {Array.isArray(products) && products.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                         {products.map((p: any) => (
-                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} p={p} />
+                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={false} />
                                         ))}
                                     </div>
                                 ) : (
@@ -320,7 +299,7 @@ const SellerProfile = ({
                                 {Array.isArray(events) && events.length > 0 ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {events.map((p: any) => (
-                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} p={p} />
+                                            <ProductCard key={p?.id || p?._id || p?.slug || Math.random()} product={p} isEvent={true} />
                                         ))}
                                     </div>
                                 ) : (
