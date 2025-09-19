@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { shops } from '@prisma/client';
 import useUser from '@/hooks/useUser';
 import useLocationTracking from '@/hooks/useLocationTracking';
@@ -17,9 +17,9 @@ const SellerProfile = ({
     followersCount: number;
 }) => {
     const TABS = ["Products", "Offers", "Reviews"];
-    const [activeTab, setActiveTab] = React.useState('Products');
-    const [followers, setFollowers] = React.useState(followersCount);
-    const [isFollowing, setIsFollowing] = React.useState(false);
+    const [activeTab, setActiveTab] = useState('Products');
+    const [followers, setFollowers] = useState(followersCount);
+    const [isFollowing, setIsFollowing] = useState(false);
 
     const { user } = useUser();
     const location = useLocationTracking();
