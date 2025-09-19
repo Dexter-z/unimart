@@ -1,4 +1,4 @@
-nx g @nx/express:app logger-service --directory=apps/logger-service --e2eTestRunner=none
+nx g @nx/express:app seller-service --directory=apps/seller-service --e2eTestRunner=none
 
 nx g @nx/next:app apps/admin-ui
 
