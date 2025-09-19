@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link';
 import { shops } from '@prisma/client';
 import useUser from '@/hooks/useUser';
 import useLocationTracking from '@/hooks/useLocationTracking';
 import useDeviceTracking from '@/hooks/useDeviceTracking';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import { sendKafkaEvent } from '@/actions/track-user';
 import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck, Share2, MessageSquare } from 'lucide-react';
@@ -31,7 +31,7 @@ const SellerProfile = ({
     const deviceInfo = useDeviceTracking();
     const queryClient = useQueryClient();
 
-    const { data: products, isLoading } = useQuery({
+    const { data: products, isLoading, isFetching: isFetchingProducts } = useQuery({
         queryKey: ['seller-products', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-products/${shop.id}?page=1&limit=10`);
@@ -40,6 +40,7 @@ const SellerProfile = ({
             if (raw && Array.isArray(raw.docs)) return raw.docs;
             return [] as any[];
         },
+        placeholderData: keepPreviousData,
         staleTime: 1000 * 60 * 5, // 5 minutes
     })
 
@@ -64,7 +65,7 @@ const SellerProfile = ({
         fetchFollowStatus();
     }, [shop?.id]);
 
-    const { data: events, isLoading: isEventsLoading } = useQuery({
+    const { data: events, isLoading: isEventsLoading, isFetching: isFetchingEvents } = useQuery({
         queryKey: ['seller-events', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-events/${shop.id}?page=1&limit=10`)
@@ -73,8 +74,28 @@ const SellerProfile = ({
             if (raw && Array.isArray(raw.docs)) return raw.docs;
             return [] as any[];
         },
+        placeholderData: keepPreviousData,
         staleTime: 1000 * 60 * 5, // 5 minutes
     })
+
+    // Prefetch events shortly after mount to smooth tab switch
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (!shop?.id) return;
+            queryClient.prefetchQuery({
+                queryKey: ['seller-events', shop.id],
+                queryFn: async () => {
+                    const res = await axiosInstance.get(`/seller/api/get-seller-events/${shop.id}?page=1&limit=10`)
+                    const raw = res.data?.products;
+                    if (Array.isArray(raw)) return raw;
+                    if (raw && Array.isArray(raw.docs)) return raw.docs;
+                    return [] as any[];
+                },
+                staleTime: 1000 * 60 * 5,
+            })
+        }, 600);
+        return () => clearTimeout(t);
+    }, [shop?.id, queryClient]);
 
     const toggleFollowMutation = useMutation({
         mutationFn: async () => {
@@ -132,25 +153,66 @@ const SellerProfile = ({
         icon,
         label,
         value,
+        isLoading: statLoading,
+        isRefreshing,
     }: {
         icon: React.ReactNode;
         label: string;
         value: React.ReactNode;
+        isLoading?: boolean;
+        isRefreshing?: boolean;
     }) => (
         <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl px-4 py-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#18181b] border border-[#232326] flex items-center justify-center text-[#ff8800]">
                 {icon}
             </div>
             <div className="leading-tight">
-                <div className="text-xs text-gray-400">{label}</div>
-                <div className="text-lg font-semibold text-gray-200">{value}</div>
+                <div className="text-xs text-gray-400 flex items-center gap-2">
+                    <span>{label}</span>
+                    {isRefreshing ? <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#ff8800]/80 animate-pulse" aria-hidden /> : null}
+                </div>
+                {statLoading ? (
+                    <div className="h-5 w-16 bg-[#2b2b30] rounded animate-pulse" aria-label="loading" />
+                ) : (
+                    <div className="text-lg font-semibold text-gray-200" aria-live="polite">{value}</div>
+                )}
             </div>
         </div>
     );
 
+    const [isTabPending, startTabTransition] = useTransition();
+
     const TabButton = ({ name }: { name: string }) => (
         <button
-            onClick={() => setActiveTab(name)}
+            onClick={() => startTabTransition(() => setActiveTab(name))}
+            onMouseEnter={() => {
+                if (!shop?.id) return;
+                if (name === 'Offers') {
+                    queryClient.prefetchQuery({
+                        queryKey: ['seller-events', shop.id],
+                        queryFn: async () => {
+                            const res = await axiosInstance.get(`/seller/api/get-seller-events/${shop.id}?page=1&limit=10`)
+                            const raw = res.data?.products;
+                            if (Array.isArray(raw)) return raw;
+                            if (raw && Array.isArray(raw.docs)) return raw.docs;
+                            return [] as any[];
+                        },
+                        staleTime: 1000 * 60 * 5,
+                    })
+                } else if (name === 'Products') {
+                    queryClient.prefetchQuery({
+                        queryKey: ['seller-products', shop.id],
+                        queryFn: async () => {
+                            const res = await axiosInstance.get(`/seller/api/get-seller-products/${shop.id}?page=1&limit=10`);
+                            const raw = res.data?.products;
+                            if (Array.isArray(raw)) return raw;
+                            if (raw && Array.isArray(raw.docs)) return raw.docs;
+                            return [] as any[];
+                        },
+                        staleTime: 1000 * 60 * 5,
+                    })
+                }
+            }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === name
                     ? 'bg-[#ff8800] text-[#18181b] shadow-sm'
@@ -233,8 +295,8 @@ const SellerProfile = ({
                         </div>
                         <div className="flex items-center sm:justify-end gap-3 sm:gap-4">
                             <div className="hidden sm:grid grid-cols-3 gap-3">
-                                <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} />
-                                <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} />
+                                <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} isRefreshing={toggleFollowMutation.isPending} />
+                                <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} isLoading={isLoading && !Array.isArray(products)} isRefreshing={isFetchingProducts} />
                                 <StatCard icon={<StarIcon className="w-5 h-5" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
                             </div>
                             <button
@@ -278,8 +340,8 @@ const SellerProfile = ({
 
             {/* Stats (mobile) */}
             <div className="sm:hidden grid grid-cols-3 gap-3">
-                <StatCard icon={<Users className="w-4 h-4" />} label="Followers" value={numberFmt(followers)} />
-                <StatCard icon={<PackageIcon className="w-4 h-4" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} />
+                <StatCard icon={<Users className="w-4 h-4" />} label="Followers" value={numberFmt(followers)} isRefreshing={toggleFollowMutation.isPending} />
+                <StatCard icon={<PackageIcon className="w-4 h-4" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} isLoading={isLoading && !Array.isArray(products)} isRefreshing={isFetchingProducts} />
                 <StatCard icon={<StarIcon className="w-4 h-4" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
             </div>
 
@@ -294,7 +356,7 @@ const SellerProfile = ({
                 </div>
 
                 {/* Content */}
-                <div className="mt-4">
+                <div className="mt-4" aria-busy={isTabPending}>
                     {activeTab === 'Products' && (
                         <div>
                             {isLoading ? (
@@ -309,7 +371,14 @@ const SellerProfile = ({
                                         <>
                                             <div className="flex items-center justify-between mb-3">
                                                 <h3 className="text-gray-200 font-semibold">Products</h3>
-                                                <span className="text-sm text-gray-400">{numberFmt(products.length)} items</span>
+                                                <span className="text-sm text-gray-400 flex items-center gap-2">
+                                                    {isLoading && !Array.isArray(products) ? (
+                                                        <span className="inline-block h-4 w-10 bg-[#2b2b30] rounded animate-pulse" />
+                                                    ) : (
+                                                        <>{numberFmt(products.length)} items</>
+                                                    )}
+                                                    {isFetchingProducts ? <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#ff8800]/80 animate-pulse" aria-hidden /> : null}
+                                                </span>
                                             </div>
                                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                                 {products.map((p: any) => (
@@ -339,7 +408,14 @@ const SellerProfile = ({
                                         <>
                                             <div className="flex items-center justify-between mb-3">
                                                 <h3 className="text-gray-200 font-semibold">Offers</h3>
-                                                <span className="text-sm text-gray-400">{numberFmt(events.length)} items</span>
+                                                <span className="text-sm text-gray-400 flex items-center gap-2">
+                                                    {isEventsLoading && !Array.isArray(events) ? (
+                                                        <span className="inline-block h-4 w-10 bg-[#2b2b30] rounded animate-pulse" />
+                                                    ) : (
+                                                        <>{numberFmt(events.length)} items</>
+                                                    )}
+                                                    {isFetchingEvents ? <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#ff8800]/80 animate-pulse" aria-hidden /> : null}
+                                                </span>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {events.map((p: any) => (
