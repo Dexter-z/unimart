@@ -11,6 +11,8 @@ import axiosInstance from '@/utils/axiosInstance';
 import { sendKafkaEvent } from '@/actions/track-user';
 import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck, Share2, MessageSquare } from 'lucide-react';
 import ProductCard from '@/components/product-card';
+import { useRouter } from 'next/navigation';
+import { isProtected } from '@/utils/protected';
 
 const SellerProfile = ({
     shop,
@@ -20,16 +22,39 @@ const SellerProfile = ({
     followersCount: number;
 }) => {
     console.log("Number of followers: ", followersCount)
+    console.log("Shop details: ", shop)
     const TABS = ["Products", "Offers", "Reviews"];
     const [activeTab, setActiveTab] = useState('Products');
     const [followers, setFollowers] = useState(followersCount);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowStatusLoading, setIsFollowStatusLoading] = useState(true);
+    const [isPending, setIsPending] = useState(false);
 
     const { user } = useUser();
     const location = useLocationTracking();
     const deviceInfo = useDeviceTracking();
     const queryClient = useQueryClient();
+
+    const router = useRouter()
+
+    const handleChatClick = async () => {
+        if (isPending) {
+            return
+        }
+
+        setIsPending(true)
+        try {
+            const res = await axiosInstance.post("/chatting/api/create-user-conversationGroup",
+                { sellerId: shop?.sellerId },
+                isProtected
+            )
+            router.push(`/profile?tab=inbox&conversationId=${res.data.conversation.id}`)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setIsPending(false)
+        }
+    };
 
     const { data: products, isLoading, isFetching: isFetchingProducts } = useQuery({
         queryKey: ['seller-products', shop.id],
@@ -110,7 +135,7 @@ const SellerProfile = ({
             }
         },
         onSuccess: () => {
-            if(isFollowing){
+            if (isFollowing) {
                 setFollowers(followers - 1)
             } else {
                 setFollowers(followers + 1)
@@ -127,8 +152,8 @@ const SellerProfile = ({
     })
 
     useEffect(() => {
-        if(!isLoading){
-            if(!location || !deviceInfo || !user?.id){
+        if (!isLoading) {
+            if (!location || !deviceInfo || !user?.id) {
                 return;
             }
 
@@ -213,11 +238,10 @@ const SellerProfile = ({
                     })
                 }
             }}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === name
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeTab === name
                     ? 'bg-[#ff8800] text-[#18181b] shadow-sm'
                     : 'text-gray-300 hover:text-gray-200'
-            }`}
+                }`}
         >
             {name}
         </button>
@@ -268,73 +292,72 @@ const SellerProfile = ({
                 {isProfileLoading ? (
                     <HeaderSkeleton />
                 ) : (
-                <>
-                {/* Avatar & Info */}
-                <div className="flex flex-col sm:flex-row gap-4 sm:items-end px-2 sm:px-4">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#ff8800] border-4 border-[#18181b] overflow-hidden flex items-center justify-center shadow-[0_0_0_3px_#232326]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {shop?.avatar ? (
-                            <img src={shop.avatar} alt={shop.name} className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-[#18181b] font-bold text-3xl">{shop?.name?.[0] || '?'}</span>
-                        )}
-                    </div>
-
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-200">{shop?.name}</h1>
-                            <p className="text-gray-400 mt-1">{shop?.bio || 'No bio provided.'}</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                {shop?.category && (
-                                    <span className="px-3 py-1 rounded-full text-xs bg-[#232326] text-gray-300 border border-[#232326]">{shop.category}</span>
+                    <>
+                        {/* Avatar & Info */}
+                        <div className="flex flex-col sm:flex-row gap-4 sm:items-end px-2 sm:px-4">
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#ff8800] border-4 border-[#18181b] overflow-hidden flex items-center justify-center shadow-[0_0_0_3px_#232326]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                {shop?.avatar ? (
+                                    <img src={shop.avatar} alt={shop.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-[#18181b] font-bold text-3xl">{shop?.name?.[0] || '?'}</span>
                                 )}
-                                {Array.isArray(shop?.socialLinks) && shop.socialLinks.slice(0, 3).map((_, idx) => (
-                                    <span key={idx} className="px-3 py-1 rounded-full text-xs bg-[#232326] text-gray-300 border border-[#232326]">Social {idx + 1}</span>
-                                ))}
+                            </div>
+
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-200">{shop?.name}</h1>
+                                    <p className="text-gray-400 mt-1">{shop?.bio || 'No bio provided.'}</p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {shop?.category && (
+                                            <span className="px-3 py-1 rounded-full text-xs bg-[#232326] text-gray-300 border border-[#232326]">{shop.category}</span>
+                                        )}
+                                        {Array.isArray(shop?.socialLinks) && shop.socialLinks.slice(0, 3).map((_, idx) => (
+                                            <span key={idx} className="px-3 py-1 rounded-full text-xs bg-[#232326] text-gray-300 border border-[#232326]">Social {idx + 1}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex items-center sm:justify-end gap-3 sm:gap-4">
+                                    <div className="hidden sm:grid grid-cols-3 gap-3">
+                                        <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} isRefreshing={toggleFollowMutation.isPending} />
+                                        <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} isLoading={isLoading && !Array.isArray(products)} isRefreshing={isFetchingProducts} />
+                                        <StatCard icon={<StarIcon className="w-5 h-5" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
+                                    </div>
+                                    <button
+                                        onClick={onShare}
+                                        className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
+                                        aria-live="polite"
+                                        title={copied ? 'Link copied!' : 'Copy profile link'}
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                        {copied ? 'Copied' : 'Share'}
+                                    </button>
+                                    <Link
+                                        href={`/profile?tab=inbox&shopId=${shop?.id}`}
+                                        className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                        Message
+                                    </Link>
+                                    {isFollowStatusLoading ? (
+                                        <div className="h-10 w-28 rounded-xl bg-[#232326] border border-[#232326] animate-pulse" />
+                                    ) : (
+                                        <button
+                                            onClick={() => toggleFollowMutation.mutate()}
+                                            disabled={toggleFollowMutation.isPending}
+                                            className={`px-5 py-2 rounded-xl font-semibold inline-flex items-center gap-2 transition-colors ${isFollowing
+                                                    ? 'bg-[#232326] text-gray-200 hover:bg-[#2b2b30]'
+                                                    : 'bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]'
+                                                } ${toggleFollowMutation.isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                        >
+                                            {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                                            {isFollowing ? 'Following' : 'Follow'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center sm:justify-end gap-3 sm:gap-4">
-                            <div className="hidden sm:grid grid-cols-3 gap-3">
-                                <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} isRefreshing={toggleFollowMutation.isPending} />
-                                <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} isLoading={isLoading && !Array.isArray(products)} isRefreshing={isFetchingProducts} />
-                                <StatCard icon={<StarIcon className="w-5 h-5" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
-                            </div>
-                            <button
-                                onClick={onShare}
-                                className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
-                                aria-live="polite"
-                                title={copied ? 'Link copied!' : 'Copy profile link'}
-                            >
-                                <Share2 className="w-4 h-4" />
-                                {copied ? 'Copied' : 'Share'}
-                            </button>
-                            <Link
-                                href={`/profile?tab=inbox&shopId=${shop?.id}`}
-                                className={`px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-2 bg-[#232326] text-gray-200 hover:bg-[#2b2b30] border border-[#232326] hover:border-[#ff8800] transition-colors`}
-                            >
-                                <MessageSquare className="w-4 h-4" />
-                                Message
-                            </Link>
-                            {isFollowStatusLoading ? (
-                                <div className="h-10 w-28 rounded-xl bg-[#232326] border border-[#232326] animate-pulse" />
-                            ) : (
-                                <button
-                                    onClick={() => toggleFollowMutation.mutate()}
-                                    disabled={toggleFollowMutation.isPending}
-                                    className={`px-5 py-2 rounded-xl font-semibold inline-flex items-center gap-2 transition-colors ${
-                                        isFollowing
-                                            ? 'bg-[#232326] text-gray-200 hover:bg-[#2b2b30]'
-                                            : 'bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]'
-                                    } ${toggleFollowMutation.isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                >
-                                    {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                                    {isFollowing ? 'Following' : 'Follow'}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                </>
+                    </>
                 )}
             </div>
 
