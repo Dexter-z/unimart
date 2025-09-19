@@ -24,6 +24,7 @@ const SellerProfile = ({
     const [activeTab, setActiveTab] = useState('Products');
     const [followers, setFollowers] = useState(followersCount);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [isFollowStatusLoading, setIsFollowStatusLoading] = useState(true);
 
     const { user } = useUser();
     const location = useLocationTracking();
@@ -45,14 +46,18 @@ const SellerProfile = ({
     useEffect(() => {
         const fetchFollowStatus = async () => {
             if (!shop?.id) {
+                setIsFollowStatusLoading(false);
                 return;
             }
 
             try {
+                setIsFollowStatusLoading(true);
                 const res = await axiosInstance.get(`/seller/api/is-following/${shop?.id}`);
                 setIsFollowing(res.data.isFollowing != null);
             } catch (error) {
                 console.log("Failed to fetch follow status", error);
+            } finally {
+                setIsFollowStatusLoading(false);
             }
         }
 
@@ -248,18 +253,22 @@ const SellerProfile = ({
                                 <MessageSquare className="w-4 h-4" />
                                 Message
                             </Link>
-                            <button
-                                onClick={() => toggleFollowMutation.mutate()}
-                                disabled={toggleFollowMutation.isPending}
-                                className={`px-5 py-2 rounded-xl font-semibold inline-flex items-center gap-2 transition-colors ${
-                                    isFollowing
-                                        ? 'bg-[#232326] text-gray-200 hover:bg-[#2b2b30]'
-                                        : 'bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]'
-                                } ${toggleFollowMutation.isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
-                            >
-                                {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                                {isFollowing ? 'Following' : 'Follow'}
-                            </button>
+                            {isFollowStatusLoading ? (
+                                <div className="h-10 w-28 rounded-xl bg-[#232326] border border-[#232326] animate-pulse" />
+                            ) : (
+                                <button
+                                    onClick={() => toggleFollowMutation.mutate()}
+                                    disabled={toggleFollowMutation.isPending}
+                                    className={`px-5 py-2 rounded-xl font-semibold inline-flex items-center gap-2 transition-colors ${
+                                        isFollowing
+                                            ? 'bg-[#232326] text-gray-200 hover:bg-[#2b2b30]'
+                                            : 'bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]'
+                                    } ${toggleFollowMutation.isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                >
+                                    {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                                    {isFollowing ? 'Following' : 'Follow'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
