@@ -8,6 +8,7 @@ import useDeviceTracking from '@/hooks/useDeviceTracking';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '@/utils/axiosInstance';
 import { sendKafkaEvent } from '@/actions/track-user';
+import { Users, Package as PackageIcon, Star as StarIcon, UserPlus, UserCheck } from 'lucide-react';
 
 const SellerProfile = ({
     shop,
@@ -16,6 +17,7 @@ const SellerProfile = ({
     shop: shops;
     followersCount: number;
 }) => {
+    console.log("Number of followers: ", followersCount)
     const TABS = ["Products", "Offers", "Reviews"];
     const [activeTab, setActiveTab] = useState('Products');
     const [followers, setFollowers] = useState(followersCount);
@@ -27,7 +29,7 @@ const SellerProfile = ({
     const queryClient = useQueryClient();
 
     const { data: products, isLoading } = useQuery({
-        queryKey: ['seller-products'],
+        queryKey: ['seller-products', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-products/${shop.id}?page=1&limit=10`);
             return res.data.products
@@ -53,7 +55,7 @@ const SellerProfile = ({
     }, [shop?.id]);
 
     const { data: events, isLoading: isEventsLoading } = useQuery({
-        queryKey: ['seller-events'],
+        queryKey: ['seller-events', shop.id],
         queryFn: async () => {
             const res = await axiosInstance.get(`/seller/api/get-seller-events/${shop.id}?page=1&limit=10`)
             return res.data.products;
@@ -108,20 +110,38 @@ const SellerProfile = ({
     }, [location, deviceInfo, isLoading])
 
     // UI helpers
-    const Stat = ({ label, value }: { label: string; value: React.ReactNode }) => (
-        <div className="flex flex-col">
-            <span className="text-sm text-gray-400">{label}</span>
-            <span className="text-lg font-semibold text-white">{value}</span>
+    const numberFmt = (n: number | undefined | null) => {
+        if (typeof n !== 'number') return 0;
+        try { return n.toLocaleString(); } catch { return n; }
+    };
+
+    const StatCard = ({
+        icon,
+        label,
+        value,
+    }: {
+        icon: React.ReactNode;
+        label: string;
+        value: React.ReactNode;
+    }) => (
+        <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl px-4 py-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#18181b] border border-[#232326] flex items-center justify-center text-[#ff8800]">
+                {icon}
+            </div>
+            <div className="leading-tight">
+                <div className="text-xs text-gray-400">{label}</div>
+                <div className="text-lg font-semibold text-white">{value}</div>
+            </div>
         </div>
     );
 
     const TabButton = ({ name }: { name: string }) => (
         <button
             onClick={() => setActiveTab(name)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === name
-                    ? 'bg-[#ff8800] text-[#18181b]'
-                    : 'bg-[#232326] text-gray-300 hover:bg-[#2b2b30]'
+                    ? 'bg-[#ff8800] text-[#18181b] shadow-sm'
+                    : 'text-gray-300 hover:text-white'
             }`}
         >
             {name}
@@ -134,13 +154,13 @@ const SellerProfile = ({
         const price = p?.salePrice ?? p?.price ?? 0;
         const regular = p?.regularPrice ?? undefined;
         return (
-            <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl overflow-hidden hover:border-[#ff8800] transition-colors">
+            <div className="group bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl overflow-hidden hover:border-[#ff8800] transition-colors">
                 <div className="aspect-square w-full bg-[#1d1d21] overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={image} alt={title} className="w-full h-full object-cover" />
+                    <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
                 </div>
                 <div className="p-4">
-                    <div className="text-white font-semibold truncate" title={title}>{title}</div>
+                    <div className="text-white font-semibold truncate group-hover:text-[#ff8800] transition-colors" title={title}>{title}</div>
                     <div className="mt-1 flex items-center gap-2">
                         <div className="text-[#ff8800] font-bold">${price}</div>
                         {regular && (
@@ -185,18 +205,20 @@ const SellerProfile = ({
                     <HeaderSkeleton />
                 ) : (
                 <>
-                <div className="h-40 sm:h-56 md:h-64 w-full rounded-2xl overflow-hidden border border-[#232326] bg-[#18181b]">
+                <div className="relative h-40 sm:h-56 md:h-64 w-full rounded-2xl overflow-hidden border border-[#232326] bg-[#18181b]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {shop?.coverBanner ? (
                         <img src={shop.coverBanner} alt="Shop cover" className="w-full h-full object-cover" />
                     ) : (
                         <div className="w-full h-full bg-[linear-gradient(135deg,#232326,transparent)]" />
                     )}
+                    {/* overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] via-transparent to-transparent" />
                 </div>
 
                 {/* Avatar & Info */}
                 <div className="flex flex-col sm:flex-row gap-4 sm:items-end -mt-8 sm:-mt-10 px-2 sm:px-4">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#ff8800] border-4 border-[#18181b] overflow-hidden flex items-center justify-center">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#ff8800] border-4 border-[#18181b] overflow-hidden flex items-center justify-center shadow-[0_0_0_3px_#232326]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {shop?.avatar ? (
                             <img src={shop.avatar} alt={shop.name} className="w-full h-full object-cover" />
@@ -219,20 +241,21 @@ const SellerProfile = ({
                             </div>
                         </div>
                         <div className="flex items-center sm:justify-end gap-4">
-                            <div className="hidden sm:flex items-center gap-6">
-                                <Stat label="Followers" value={followers} />
-                                <Stat label="Products" value={Array.isArray(products) ? products.length : 0} />
-                                <Stat label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
+                            <div className="hidden sm:grid grid-cols-3 gap-3">
+                                <StatCard icon={<Users className="w-5 h-5" />} label="Followers" value={numberFmt(followers)} />
+                                <StatCard icon={<PackageIcon className="w-5 h-5" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} />
+                                <StatCard icon={<StarIcon className="w-5 h-5" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
                             </div>
                             <button
                                 onClick={() => toggleFollowMutation.mutate()}
                                 disabled={toggleFollowMutation.isPending}
-                                className={`px-5 py-2 rounded-xl font-semibold transition-colors ${
+                                className={`px-5 py-2 rounded-xl font-semibold inline-flex items-center gap-2 transition-colors ${
                                     isFollowing
                                         ? 'bg-[#232326] text-gray-200 hover:bg-[#2b2b30]'
                                         : 'bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]'
                                 } ${toggleFollowMutation.isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
                             >
+                                {isFollowing ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
                                 {isFollowing ? 'Following' : 'Follow'}
                             </button>
                         </div>
@@ -243,17 +266,19 @@ const SellerProfile = ({
             </div>
 
             {/* Stats (mobile) */}
-            <div className="sm:hidden grid grid-cols-3 gap-4">
-                <Stat label="Followers" value={followers} />
-                <Stat label="Products" value={Array.isArray(products) ? products.length : 0} />
-                <Stat label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
+            <div className="sm:hidden grid grid-cols-3 gap-3">
+                <StatCard icon={<Users className="w-4 h-4" />} label="Followers" value={numberFmt(followers)} />
+                <StatCard icon={<PackageIcon className="w-4 h-4" />} label="Products" value={numberFmt(Array.isArray(products) ? products.length : 0)} />
+                <StatCard icon={<StarIcon className="w-4 h-4" />} label="Rating" value={(shop as any)?.ratings ?? '5.0'} />
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                {TABS.map((t) => (
-                    <TabButton key={t} name={t} />
-                ))}
+            <div className="w-full overflow-x-auto no-scrollbar">
+                <div className="inline-flex items-center gap-1 bg-[#232326] border border-[#232326] rounded-xl p-1">
+                    {TABS.map((t) => (
+                        <TabButton key={t} name={t} />
+                    ))}
+                </div>
             </div>
 
             {/* Content */}
