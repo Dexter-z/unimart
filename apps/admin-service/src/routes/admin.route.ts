@@ -1,7 +1,7 @@
 import express, { Router } from "express";
-import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, getCategories, addCategory, addSubCategory, deleteCategory, deleteSubCategory, uploadLogo, uploadBanner } from "../controllers/admin.controller";
+import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, getCategories, addCategory, addSubCategory, deleteCategory, deleteSubCategory, uploadLogo, uploadBanner, getAllNotifications, getAllUsersNotifications } from "../controllers/admin.controller";
 
-import { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
+import isAuthenticated, { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
 
 const router:Router = express.Router();
 
@@ -12,6 +12,10 @@ router.put("/add-new-admin",isAdminAuthenticated, addNewAdmin)
 router.get("/get-all-sellers",isAdminAuthenticated, getAllSellers)
 router.get("/get-all-users",isAdminAuthenticated, getAllUsers)
 router.get("/get-all-customizations",isAdminAuthenticated, getAllCustomizations)
+
+
+router.get('/get-all-notifications', isAdminAuthenticated, getAllNotifications);
+router.get('/get-user-notifications', isAuthenticated, getAllUsersNotifications);
 
 // --- Customization routes ---
 router.get("/get-categories", isAdminAuthenticated, getCategories);
