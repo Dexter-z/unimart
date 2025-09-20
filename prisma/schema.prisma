@@ -233,15 +233,17 @@ model admins {
 }
 
 model notifications {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  title           String   
-  message         String   
-  creatorId       String   @db.ObjectId
-  receiverId      String   @db.ObjectId
-  redirect_link   String   
-  isRead          Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  title String
+  message String
+  status String @default("Unread")
+  creatorId String @db.ObjectId  
+  receiverId String    
+  redirect_link String?
+  //read Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  //@@map("notifications")
 }
 
 model address {

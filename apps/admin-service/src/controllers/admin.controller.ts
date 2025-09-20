@@ -398,9 +398,8 @@ export const uploadBanner = async (req: Request, res: Response, next: NextFuncti
 
 export const getAllNotifications = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const adminId = req.admin.id;
         const notifications = await prisma.notifications.findMany({
-            where: { receiverId : adminId },
+            where: { receiverId : "admin" },
             orderBy: { createdAt: 'desc' }
         });
 

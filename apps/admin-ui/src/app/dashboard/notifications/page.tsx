@@ -10,8 +10,12 @@ export default function NotificationsPage() {
     queryKey: ['notifications'],
     queryFn: async () => {
       const res = await axiosInstance.get('/admin/api/get-all-notifications');
-      return res.data.notifications;
-    }
+      const raw = res.data?.notifications;
+      if (Array.isArray(raw)) return raw;
+      if (raw && Array.isArray(raw.docs)) return raw.docs;
+      return [] as any[];
+    },
+    placeholderData: []
   })
 
   // Local UI state
