@@ -41,6 +41,7 @@ import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookie";
 import { imagekit } from "@packages/libs/imagekit";
 import Stripe from "stripe"
+import { sendLogs } from "@packages/utils/logs/send-logs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2025-05-28.basil"
@@ -240,6 +241,11 @@ export const refreshUserToken = async (req: Request, res: Response, next: NextFu
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
     try {
         const user = req.user; // User is set by isAuthenticated middleware
+        await sendLogs({
+            type: "success",
+            message: `User data retrieved ${user?.email}`,
+            source: "auth-service",
+        })
         res.status(201).json({
             success: true,
             user,
