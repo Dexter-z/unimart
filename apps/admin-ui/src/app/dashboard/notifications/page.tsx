@@ -91,7 +91,7 @@ export default function NotificationsPage() {
     setPendingMap((m) => ({ ...m, [notificationId]: true }));
     const prev = readMap[notificationId] ?? false;
     // Optimistic update
-    setReadMap((m) => ({ ...m, [notificationId]: true }));
+    setReadMap((m) => ({ ...m, [notificationId]: true })); 
     try {
       await axiosInstance.post('/admin/api/mark-admin-notification-as-read', { notificationId });
       console.log('[Notifications] Marked as read on server:', notificationId);
