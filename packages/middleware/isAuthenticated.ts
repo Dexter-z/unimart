@@ -34,7 +34,8 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
             });
             req.seller = account
         } else if(decoded.role === "admin"){
-            account = await prisma.admins.findUnique({ where: { id: decoded.id } })
+            // Align admin lookup with isAdminAuthenticated: admins are stored in `users` with role === 'admin'
+            account = await prisma.users.findUnique({ where: { id: decoded.id } })
             req.admin = account;
         }
 

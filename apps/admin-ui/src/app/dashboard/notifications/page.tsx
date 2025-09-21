@@ -86,23 +86,24 @@ export default function NotificationsPage() {
     return out;
   }, [notifications, filter, readMap, hiddenMap]);
 
-  const markAsRead = async (id: string) => {
-    if (pendingMap[id]) return;
-    setPendingMap((m) => ({ ...m, [id]: true }));
-    const prev = readMap[id] ?? false;
+  const markAsRead = async (notificationId: string) => {
+    if (pendingMap[notificationId]) return;
+    setPendingMap((m) => ({ ...m, [notificationId]: true }));
+    const prev = readMap[notificationId] ?? false;
     // Optimistic update
-    setReadMap((m) => ({ ...m, [id]: true }));
+    setReadMap((m) => ({ ...m, [notificationId]: true }));
     try {
-      await axiosInstance.post('/seller/api/mark-notification-as-read', { notificationId: id });
-      console.log('[Notifications] Marked as read on server:', id);
+      await axiosInstance.post('/seller/api/mark-notification-as-read', { notificationId });
+      console.log('[Notifications] Marked as read on server:', notificationId);
     } catch (err) {
       console.error('[Notifications] Failed to mark as read:', err);
       // Revert on error
-      setReadMap((m) => ({ ...m, [id]: prev }));
+      setReadMap((m) => ({ ...m, [notificationId]: prev }));
     } finally {
-      setPendingMap((m) => ({ ...m, [id]: false }));
+      setPendingMap((m) => ({ ...m, [notificationId]: false }));
     }
   };
+  
   const markAsUnread = (id: string) => setReadMap((m) => ({ ...m, [id]: false }));
   const removeOne = (id: string) => setHiddenMap((m) => ({ ...m, [id]: true }));
   const clearAll = () => {
