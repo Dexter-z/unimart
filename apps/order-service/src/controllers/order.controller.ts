@@ -512,9 +512,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
             // Send email notifications to all active admins (once per payment)
             try {
-                const activeAdmins = await prisma.admins.findMany({
+                const activeAdmins = await prisma.users.findMany({
                     where: {
-                        isActive: true
+                        role: "admin"
                     },
                     select: {
                         id: true,
