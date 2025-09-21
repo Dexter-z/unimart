@@ -41,6 +41,8 @@ export default function NotificationsPage() {
 
   // Generate stable ids for local state mapping
   const getId = (n: any, idx: number) => String(n?.id ?? n?._id ?? n?.uuid ?? idx);
+  // Prefer real server id for API calls
+  const getServerId = (n: any) => String(n?.id ?? n?._id ?? "");
   const getType = (n: any): 'info' | 'success' | 'warning' | 'error' => {
     const t = String(n?.type ?? n?.level ?? 'info').toLowerCase();
     if (t.includes('success')) return 'success';
@@ -52,6 +54,7 @@ export default function NotificationsPage() {
   const getMessage = (n: any) => n?.message ?? n?.body ?? n?.content ?? '';
   const getTime = (n: any) => n?.createdAt ?? n?.timestamp ?? n?.time ?? Date.now();
   const getSource = (n: any) => n?.source ?? n?.origin ?? undefined;
+  const getRedirectLink = (n: any) => n?.redirect_link ?? n?.redirectLink ?? n?.url ?? undefined;
 
   const counts = React.useMemo(() => {
     const base = { all: 0, unread: 0, info: 0, success: 0, warning: 0, error: 0 } as Record<string, number>;
@@ -85,26 +88,85 @@ export default function NotificationsPage() {
     }
     return out;
   }, [notifications, filter, readMap, hiddenMap]);
-
-  const markAsRead = async (notificationId: string) => {
-    if (pendingMap[notificationId]) return;
-    setPendingMap((m) => ({ ...m, [notificationId]: true }));
-    const prev = readMap[notificationId] ?? false;
+  const markAsRead = async (uiId: string, notificationId: string) => {
+    if (!notificationId) {
+      console.warn('[Notifications] Missing server notification id, skipping mark-as-read');
+      return;
+    }
+    if (pendingMap[uiId]) return;
+    setPendingMap((m) => ({ ...m, [uiId]: true }));
+    const prev = readMap[uiId] ?? false;
     // Optimistic update
-    setReadMap((m) => ({ ...m, [notificationId]: true })); 
+    setReadMap((m) => ({ ...m, [uiId]: true })); 
     try {
       await axiosInstance.post('/admin/api/mark-admin-notification-as-read', { notificationId });
       console.log('[Notifications] Marked as read on server:', notificationId);
     } catch (err) {
       console.error('[Notifications] Failed to mark as read:', err);
       // Revert on error
-      setReadMap((m) => ({ ...m, [notificationId]: prev }));
+      setReadMap((m) => ({ ...m, [uiId]: prev }));
     } finally {
-      setPendingMap((m) => ({ ...m, [notificationId]: false }));
+      setPendingMap((m) => ({ ...m, [uiId]: false }));
     }
   };
 
-  const markAsUnread = (id: string) => setReadMap((m) => ({ ...m, [id]: false }));
+  const markAsUnread = async (uiId: string, notificationId: string) => {
+    if (!notificationId) {
+      console.warn('[Notifications] Missing server notification id, skipping mark-as-unread');
+      return;
+    }
+    if (pendingMap[uiId]) return;
+    setPendingMap((m) => ({ ...m, [uiId]: true }));
+    const prev = readMap[uiId] ?? false;
+    // Optimistic update
+    setReadMap((m) => ({ ...m, [uiId]: false }));
+    try {
+      await axiosInstance.post('/admin/api/mark-admin-notification-as-unread', { notificationId });
+      console.log('[Notifications] Marked as unread on server:', notificationId);
+    } catch (err) {
+      console.error('[Notifications] Failed to mark as unread:', err);
+      // Revert on error
+      setReadMap((m) => ({ ...m, [uiId]: prev }));
+    } finally {
+      setPendingMap((m) => ({ ...m, [uiId]: false }));
+    }
+  };
+
+  // Best-effort mark-as-read before navigation to avoid losing the update on page unload
+  const markReadKeepalive = (notificationId: string) => {
+    try {
+      const base = (process.env.NEXT_PUBLIC_SERVER_URI || '').replace(/\/$/, '');
+      if (!base) return;
+      const url = `${base}/admin/api/mark-admin-notification-as-read`;
+      // Use fetch with keepalive to allow the request to outlive the page
+      fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId }),
+        keepalive: true as any,
+      }).catch(() => {});
+    } catch {}
+  };
+
+  const onOpenNotification = (item: any, uiId: string, isRead: boolean) => {
+    const serverId = getServerId(item);
+    const link = String(getRedirectLink(item) || '').trim();
+    if (!isRead && serverId) {
+      // Optimistically set to read and fire-and-forget keepalive
+      setReadMap((m) => ({ ...m, [uiId]: true }));
+      markReadKeepalive(serverId);
+    }
+    if (link) {
+      try {
+        // Basic normalization: allow absolute or root-relative links
+        const href = /^(https?:)?\//.test(link) ? link : `/${link.replace(/^\//, '')}`;
+        window.location.assign(href);
+      } catch (e) {
+        console.error('[Notifications] Invalid redirect link:', link, e);
+      }
+    }
+  };
   const removeOne = (id: string) => setHiddenMap((m) => ({ ...m, [id]: true }));
   const clearAll = () => {
     const next: Record<string, boolean> = {};
@@ -139,7 +201,7 @@ export default function NotificationsPage() {
   const Row = ({ item, id, type, isRead }: { item: any; id: string; type: ReturnType<typeof getType>; isRead: boolean }) => (
     <div className="bg-gradient-to-b from-[#232326] to-[#18181b] border border-[#232326] rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onOpenNotification(item, id, isRead)}>
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className={`px-2 py-0.5 rounded-md text-xs font-semibold ${
               type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-700/40'
@@ -156,11 +218,11 @@ export default function NotificationsPage() {
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           {isRead ? (
-            <button onClick={() => markAsUnread(id)} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Mark unread</button>
+            <button onClick={(e) => { e.stopPropagation(); markAsUnread(id, getServerId(item)); }} disabled={pendingMap[id]} aria-busy={pendingMap[id]} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">{pendingMap[id] ? 'Marking…' : 'Mark unread'}</button>
           ) : (
-            <button onClick={() => markAsRead(id)} disabled={pendingMap[id]} aria-busy={pendingMap[id]} className={`px-3 py-1 rounded-lg text-sm bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239] ${pendingMap[id] ? 'opacity-60 cursor-not-allowed' : ''}`}>{pendingMap[id] ? 'Marking…' : 'Mark read'}</button>
+            <button onClick={(e) => { e.stopPropagation(); markAsRead(id, getServerId(item)); }} disabled={pendingMap[id]} aria-busy={pendingMap[id]} className={`px-3 py-1 rounded-lg text-sm bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239] ${pendingMap[id] ? 'opacity-60 cursor-not-allowed' : ''}`}>{pendingMap[id] ? 'Marking…' : 'Mark read'}</button>
           )}
-          <button onClick={() => removeOne(id)} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Remove</button>
+          <button onClick={(e) => { e.stopPropagation(); removeOne(id); }} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Remove</button>
         </div>
       </div>
     </div>

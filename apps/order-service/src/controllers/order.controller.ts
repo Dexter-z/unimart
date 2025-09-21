@@ -41,7 +41,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,
     }
 )
 
-const urlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localhost:3000"
+const urlHead = process.env.NODE_ENV === "production" ? "admin.unimart.com" : "localhost:3002"
+const sellerUrlHead = process.env.NODE_ENV === "production" ? "seller.unimart.com" : "localhost:3001"
+const buyerUrlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localhost:3000"
 
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
@@ -299,6 +301,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
             }, {})
 
             let totalDiscountAmount = 0; // Track total discount across all shops
+            const createdOrderIds: string[] = []; // Track created order ids for links
 
             for (const shopId in shopGrouped) {
                 const orderItems = shopGrouped[shopId];
@@ -356,7 +359,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                 console.log("Discount amount to save:", appliedDiscountAmount > 0 ? appliedDiscountAmount : null);
                 console.log("===========================");
                 
-                await prisma.orders.create({
+                const order = await prisma.orders.create({
                     data: {
                         userId,
                         sellerId: shop.sellerId,
@@ -377,6 +380,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         }
                     }
                 })
+
+                // Remember created order id for later emails/notifications outside this loop
+                createdOrderIds.push(order.id);
 
                 //Update Product Analytics
                 for (const item of orderItems) {
@@ -472,8 +478,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                                     shopName: shop.name,
                                     orderItems: shopItems,
                                     totalAmount: shopTotal,
-                                    manageOrderUrl: `https://${urlHead}/seller/orders/${sessionId}`,
-                                    dashboardUrl: `https://${urlHead}/seller/dashboard`,
+                                    manageOrderUrl: `https://${sellerUrlHead}/seller/orders/${order.id}`,
+                                    dashboardUrl: `https://${sellerUrlHead}/seller/dashboard`,
                                 }
                             )
                         } catch (emailError) {
@@ -490,7 +496,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             message: `You have received a new order for ${productTitle}.`,
                             creatorId: userId,
                             receiverId: shop.sellerId,
-                            redirect_link: `https://${urlHead}/order/${sessionId}`,
+                            redirect_link: `https://${sellerUrlHead}/order/${order.id}`,
                         }
                     })
                 }
@@ -498,6 +504,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
             // Send email notification to user (once per payment)
             const finalTotalAmount = totalAmount - totalDiscountAmount;
+            const firstOrderId = createdOrderIds[0];
             await sendEmail(
                 email,
                 "Your Order has been placed",
@@ -506,7 +513,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     name,
                     cart,
                     totalAmount: finalTotalAmount,
-                    trackingUrl: `https://${urlHead}/order/${sessionId}`,
+                    trackingUrl: firstOrderId
+                        ? `https://${buyerUrlHead}/order/${firstOrderId}`
+                        : `https://${buyerUrlHead}/orders`,
                 }
             )
 
@@ -551,8 +560,10 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                                 sellerName: sellerShops[0]?.sellers?.name || "Unknown Seller",
                                 orderItems: cart,
                                 totalAmount: finalTotalAmount,
-                                adminOrderUrl: `https://${urlHead}/admin/orders/${sessionId}`,
-                                adminDashboardUrl: `https://${urlHead}/admin/dashboard`,
+                                adminOrderUrl: firstOrderId
+                                    ? `https://${urlHead}/order/${firstOrderId}`
+                                    : `https://${urlHead}/dashboard/orders`,
+                                adminDashboardUrl: `https://${urlHead}/dashboard`,
                             }
                         )
                     } catch (emailError) {
@@ -571,7 +582,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         message: `A new order has been placed by ${name}.`,
                         creatorId: userId,
                         receiverId: "admin", // Assuming admin ID is "admin"
-                        redirect_link: `https://${urlHead}/order/${sessionId}`,
+                        redirect_link: firstOrderId
+                            ? `https://${urlHead}/order/${firstOrderId}`
+                            : `https://${urlHead}/dashboard/orders`,
                     }
                 })
             } catch (notificationError) {
