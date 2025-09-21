@@ -6,16 +6,28 @@ import React from "react";
 
 
 export default function NotificationsPage() {
-  const {data, isLoading} = useQuery({
+  const { data, isLoading } = useQuery<any[]>({
     queryKey: ['notifications'],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       const res = await axiosInstance.get('/admin/api/get-all-notifications');
-      const raw = res.data?.notifications;
-      if (Array.isArray(raw)) return raw;
-      if (raw && Array.isArray(raw.docs)) return raw.docs;
+      console.log('[Notifications] API response:', res?.status, res?.data);
+      const payload = res?.data;
+      // Handle various shapes: {notifications: [...]}, {data: [...]}, [...], or paginated .docs
+      let list: any = undefined;
+      if (Array.isArray(payload?.notifications)) list = payload.notifications;
+      else if (Array.isArray(payload?.data)) list = payload.data;
+      else if (Array.isArray(payload)) list = payload;
+      else if (payload?.notifications?.docs && Array.isArray(payload.notifications.docs)) list = payload.notifications.docs;
+      else if (payload?.data?.docs && Array.isArray(payload.data.docs)) list = payload.data.docs;
+
+      if (Array.isArray(list)) {
+        console.log('[Notifications] Normalized list length:', list.length);
+        return list;
+      }
+      console.warn('[Notifications] Unexpected response shape, defaulting to []');
       return [] as any[];
     },
-    placeholderData: []
+    placeholderData: [] as any[],
   })
 
   // Local UI state
@@ -47,7 +59,9 @@ export default function NotificationsPage() {
       const id = getId(n, i);
       if (hiddenMap[id]) continue;
       base.all++;
-      const isRead = !!readMap[id] || !!n?.read;
+      const status = String(n?.status ?? '').toLowerCase();
+      const serverIsRead = typeof n?.read === 'boolean' ? n.read : (status ? status !== 'unread' : false);
+      const isRead = (readMap[id] ?? serverIsRead) as boolean;
       if (!isRead) base.unread++;
       base[getType(n)]++;
     }
@@ -61,7 +75,9 @@ export default function NotificationsPage() {
       const id = getId(n, i);
       if (hiddenMap[id]) continue;
       const type = getType(n);
-      const isRead = !!readMap[id] || !!n?.read;
+      const status = String(n?.status ?? '').toLowerCase();
+      const serverIsRead = typeof n?.read === 'boolean' ? n.read : (status ? status !== 'unread' : false);
+      const isRead = (readMap[id] ?? serverIsRead) as boolean;
       if (filter === 'all' || (filter === 'unread' && !isRead) || filter === type) {
         out.push({ n, id, type, isRead, idx: i });
       }
