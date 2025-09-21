@@ -6,7 +6,7 @@ import React from "react";
 
 
 export default function NotificationsPage() {
-  const { data, isLoading } = useQuery<any[]>({
+  const { data, isLoading, isPlaceholderData } = useQuery<any[]>({
     queryKey: ['notifications'],
     queryFn: async (): Promise<any[]> => {
       const res = await axiosInstance.get('/admin/api/get-all-notifications');
@@ -260,7 +260,7 @@ export default function NotificationsPage() {
 
       {/* List */}
       <div className="space-y-3">
-        {isLoading ? (
+        {(isLoading || isPlaceholderData) ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} />))}
           </div>
