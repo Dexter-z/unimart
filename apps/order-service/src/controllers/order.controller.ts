@@ -44,6 +44,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!,
 const urlHead = process.env.NODE_ENV === "production" ? "admin.unimart.com" : "localhost:3002"
 const sellerUrlHead = process.env.NODE_ENV === "production" ? "seller.unimart.com" : "localhost:3001"
 const buyerUrlHead = process.env.NODE_ENV === "production" ? "unimart.com" : "localhost:3000"
+const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
 
 //Create payment intent
 export const createPaymentIntent = async (req: any, res: Response, next: NextFunction) => {
@@ -478,8 +479,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                                     shopName: shop.name,
                                     orderItems: shopItems,
                                     totalAmount: shopTotal,
-                                    manageOrderUrl: `https://${sellerUrlHead}/order/${order.id}`,
-                                    dashboardUrl: `https://${sellerUrlHead}/dashboard/orders`,
+                                    manageOrderUrl: `${protocol}://${sellerUrlHead}/order/${order.id}`,
+                                    dashboardUrl: `${protocol}://${sellerUrlHead}/dashboard/orders`,
                                 }
                             )
                         } catch (emailError) {
@@ -496,7 +497,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                             message: `You have received a new order for ${productTitle}.`,
                             creatorId: userId,
                             receiverId: shop.sellerId,
-                            redirect_link: `https://${sellerUrlHead}/order/${order.id}`,
+                            redirect_link: `${protocol}://${sellerUrlHead}/order/${order.id}`,
                         }
                     })
                 }
@@ -514,8 +515,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     cart,
                     totalAmount: finalTotalAmount,
                     trackingUrl: firstOrderId
-                        ? `https://${buyerUrlHead}/profile?tab=orders`
-                        : `https://${buyerUrlHead}/profile?tab=orders`,
+                        ? `${protocol}://${buyerUrlHead}/profile?tab=orders`
+                        : `${protocol}://${buyerUrlHead}/profile?tab=orders`,
                 }
             )
 
@@ -561,9 +562,9 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                                 orderItems: cart,
                                 totalAmount: finalTotalAmount,
                                 adminOrderUrl: firstOrderId
-                                    ? `https://${urlHead}/order/${firstOrderId}`
-                                    : `https://${urlHead}/dashboard/orders`,
-                                adminDashboardUrl: `https://${urlHead}/dashboard`,
+                                    ? `${protocol}://${urlHead}/order/${firstOrderId}`
+                                    : `${protocol}://${urlHead}/dashboard/orders`,
+                                adminDashboardUrl: `${protocol}://${urlHead}/dashboard`,
                             }
                         )
                     } catch (emailError) {
@@ -583,8 +584,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                         creatorId: userId,
                         receiverId: "admin", // Assuming admin ID is "admin"
                         redirect_link: firstOrderId
-                            ? `https://${urlHead}/order/${firstOrderId}`
-                            : `https://${urlHead}/dashboard/orders`,
+                            ? `${protocol}://${urlHead}/order/${firstOrderId}`
+                            : `${protocol}://${urlHead}/dashboard/orders`,
                     }
                 })
             } catch (notificationError) {
