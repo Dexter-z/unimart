@@ -435,6 +435,29 @@ export const markAdminNotificationAsRead = async (req: any, res: Response, next:
     }
 };
 
+export const markAdminNotificationAsUnread = async (req: any, res: Response, next: NextFunction) => {
+    try {   
+        const { notificationId } = req.body;
+        
+        if(!notificationId) {
+            return next(new ValidationError("Notification id is required!"));
+        }
+
+        const notification = await prisma.notifications.update({
+            where: {
+                id: notificationId
+            },
+            data: {
+                status: "Unread"
+            },
+        });
+
+        res.status(200).json({ success: true, notification });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getAllUsersNotifications = async (req: any, res: Response, next: NextFunction) => {
     try {
         const notifications = await prisma.notifications.findMany({
