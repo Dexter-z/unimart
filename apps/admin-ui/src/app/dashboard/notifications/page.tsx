@@ -34,6 +34,7 @@ export default function NotificationsPage() {
   const [filter, setFilter] = React.useState<'all' | 'unread' | 'info' | 'success' | 'warning' | 'error'>('all');
   const [readMap, setReadMap] = React.useState<Record<string, boolean>>({});
   const [hiddenMap, setHiddenMap] = React.useState<Record<string, boolean>>({});
+  const [pendingMap, setPendingMap] = React.useState<Record<string, boolean>>({});
 
   // Normalize notifications
   const notifications: any[] = Array.isArray(data) ? data : [];
@@ -85,7 +86,23 @@ export default function NotificationsPage() {
     return out;
   }, [notifications, filter, readMap, hiddenMap]);
 
-  const markAsRead = (id: string) => setReadMap((m) => ({ ...m, [id]: true }));
+  const markAsRead = async (id: string) => {
+    if (pendingMap[id]) return;
+    setPendingMap((m) => ({ ...m, [id]: true }));
+    const prev = readMap[id] ?? false;
+    // Optimistic update
+    setReadMap((m) => ({ ...m, [id]: true }));
+    try {
+      await axiosInstance.post('/seller/api/mark-notification-as-read', { notificationId: id });
+      console.log('[Notifications] Marked as read on server:', id);
+    } catch (err) {
+      console.error('[Notifications] Failed to mark as read:', err);
+      // Revert on error
+      setReadMap((m) => ({ ...m, [id]: prev }));
+    } finally {
+      setPendingMap((m) => ({ ...m, [id]: false }));
+    }
+  };
   const markAsUnread = (id: string) => setReadMap((m) => ({ ...m, [id]: false }));
   const removeOne = (id: string) => setHiddenMap((m) => ({ ...m, [id]: true }));
   const clearAll = () => {
@@ -140,7 +157,7 @@ export default function NotificationsPage() {
           {isRead ? (
             <button onClick={() => markAsUnread(id)} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Mark unread</button>
           ) : (
-            <button onClick={() => markAsRead(id)} className="px-3 py-1 rounded-lg text-sm bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239]">Mark read</button>
+            <button onClick={() => markAsRead(id)} disabled={pendingMap[id]} aria-busy={pendingMap[id]} className={`px-3 py-1 rounded-lg text-sm bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239] ${pendingMap[id] ? 'opacity-60 cursor-not-allowed' : ''}`}>{pendingMap[id] ? 'Marking…' : 'Mark read'}</button>
           )}
           <button onClick={() => removeOne(id)} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Remove</button>
         </div>
