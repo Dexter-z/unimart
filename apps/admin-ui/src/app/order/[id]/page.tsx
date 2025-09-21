@@ -65,6 +65,20 @@ const Page = () => {
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
+    // Safely extract first image URL from a variety of shapes used in the codebase
+    const getFirstImageUrl = (images?: any[]): string | null => {
+        if (!images || images.length === 0) return null;
+        const first = images[0];
+        if (!first) return null;
+        if (typeof first === 'string') return first;
+        if (typeof first === 'object') {
+            // handle common shapes: { url }, { src }, direct file path in known keys
+            if (first.url && typeof first.url === 'string') return first.url;
+            if (first.src && typeof first.src === 'string') return first.src;
+        }
+        return null;
+    }
+
     const fetchOrder = async () => {
         try {
             const res = await axiosInstance.get(`/order/api/get-admin-order-details/${orderId}`)
@@ -185,8 +199,22 @@ const Page = () => {
                                 {order.items.map((item, index) => (
                                     <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-800 last:border-b-0">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center">
-                                                <Package className="h-8 w-8 text-gray-400" />
+                                            <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden">
+                                                {(() => {
+                                                    const imgUrl = getFirstImageUrl(item.product?.images);
+                                                    return imgUrl ? (
+                                                        // Using native img for simplicity across domains
+                                                        <img
+                                                            src={imgUrl}
+                                                            alt={item.product?.title || 'Product image'}
+                                                            className="w-full h-full object-cover"
+                                                            loading="lazy"
+                                                            referrerPolicy="no-referrer"
+                                                        />
+                                                    ) : (
+                                                        <Package className="h-8 w-8 text-gray-400" />
+                                                    );
+                                                })()}
                                             </div>
                                             <div>
                                                 <h3 className="text-white font-medium">
