@@ -478,8 +478,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                                     shopName: shop.name,
                                     orderItems: shopItems,
                                     totalAmount: shopTotal,
-                                    manageOrderUrl: `https://${sellerUrlHead}/seller/orders/${order.id}`,
-                                    dashboardUrl: `https://${sellerUrlHead}/seller/dashboard`,
+                                    manageOrderUrl: `https://${sellerUrlHead}/order/${order.id}`,
+                                    dashboardUrl: `https://${sellerUrlHead}/dashboard/orders`,
                                 }
                             )
                         } catch (emailError) {
@@ -514,8 +514,8 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
                     cart,
                     totalAmount: finalTotalAmount,
                     trackingUrl: firstOrderId
-                        ? `https://${buyerUrlHead}/order/${firstOrderId}`
-                        : `https://${buyerUrlHead}/orders`,
+                        ? `https://${buyerUrlHead}/profile?tab=orders`
+                        : `https://${buyerUrlHead}/profile?tab=orders`,
                 }
             )
 
