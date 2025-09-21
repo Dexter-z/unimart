@@ -93,7 +93,7 @@ export default function NotificationsPage() {
     // Optimistic update
     setReadMap((m) => ({ ...m, [notificationId]: true }));
     try {
-      await axiosInstance.post('/seller/api/mark-notification-as-read', { notificationId });
+      await axiosInstance.post('/admin/api/mark-admin-notification-as-read', { notificationId });
       console.log('[Notifications] Marked as read on server:', notificationId);
     } catch (err) {
       console.error('[Notifications] Failed to mark as read:', err);
@@ -103,7 +103,7 @@ export default function NotificationsPage() {
       setPendingMap((m) => ({ ...m, [notificationId]: false }));
     }
   };
-  
+
   const markAsUnread = (id: string) => setReadMap((m) => ({ ...m, [id]: false }));
   const removeOne = (id: string) => setHiddenMap((m) => ({ ...m, [id]: true }));
   const clearAll = () => {

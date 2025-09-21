@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, getCategories, addCategory, addSubCategory, deleteCategory, deleteSubCategory, uploadLogo, uploadBanner, getAllNotifications, getAllUsersNotifications } from "../controllers/admin.controller";
+import { addNewAdmin, getAllAdmins, getAllCustomizations, getAllEvents, getAllProducts, getAllSellers, getAllUsers, getCategories, addCategory, addSubCategory, deleteCategory, deleteSubCategory, uploadLogo, uploadBanner, getAllNotifications, getAllUsersNotifications, markAdminNotificationAsRead } from "../controllers/admin.controller";
 
 import isAuthenticated, { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
 
@@ -15,6 +15,7 @@ router.get("/get-all-customizations",isAdminAuthenticated, getAllCustomizations)
 
 
 router.get('/get-all-notifications', isAdminAuthenticated, getAllNotifications);
+router.post("/mark-admin-notification-as-read", isAdminAuthenticated, markAdminNotificationAsRead);
 router.get('/get-user-notifications', isAuthenticated, getAllUsersNotifications);
 
 // --- Customization routes ---
