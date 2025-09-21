@@ -31,11 +31,10 @@ export default function NotificationsPage() {
   })
 
   // Local UI state
-  const [filter, setFilter] = React.useState<'all' | 'unread' | 'info' | 'success' | 'warning' | 'error'>('all');
+  const [filter, setFilter] = React.useState<'all' | 'unread' | 'info' | 'success' | 'warning' | 'error'>('unread');
   const [readMap, setReadMap] = React.useState<Record<string, boolean>>({});
-  const [hiddenMap, setHiddenMap] = React.useState<Record<string, boolean>>({});
   const [pendingMap, setPendingMap] = React.useState<Record<string, boolean>>({});
-
+ 
   // Normalize notifications
   const notifications: any[] = Array.isArray(data) ? data : [];
 
@@ -60,8 +59,7 @@ export default function NotificationsPage() {
     const base = { all: 0, unread: 0, info: 0, success: 0, warning: 0, error: 0 } as Record<string, number>;
     for (let i = 0; i < notifications.length; i++) {
       const n = notifications[i];
-      const id = getId(n, i);
-      if (hiddenMap[id]) continue;
+  const id = getId(n, i);
       base.all++;
       const status = String(n?.status ?? '').toLowerCase();
       const serverIsRead = typeof n?.read === 'boolean' ? n.read : (status ? status !== 'unread' : false);
@@ -70,14 +68,13 @@ export default function NotificationsPage() {
       base[getType(n)]++;
     }
     return base;
-  }, [notifications, readMap, hiddenMap]);
+  }, [notifications, readMap]);
 
   const filtered = React.useMemo(() => {
     const out: any[] = [];
     for (let i = 0; i < notifications.length; i++) {
       const n = notifications[i];
-      const id = getId(n, i);
-      if (hiddenMap[id]) continue;
+  const id = getId(n, i);
       const type = getType(n);
       const status = String(n?.status ?? '').toLowerCase();
       const serverIsRead = typeof n?.read === 'boolean' ? n.read : (status ? status !== 'unread' : false);
@@ -87,7 +84,7 @@ export default function NotificationsPage() {
       }
     }
     return out;
-  }, [notifications, filter, readMap, hiddenMap]);
+  }, [notifications, filter, readMap]);
   const markAsRead = async (uiId: string, notificationId: string) => {
     if (!notificationId) {
       console.warn('[Notifications] Missing server notification id, skipping mark-as-read');
@@ -167,13 +164,8 @@ export default function NotificationsPage() {
       }
     }
   };
-  const removeOne = (id: string) => setHiddenMap((m) => ({ ...m, [id]: true }));
-  const clearAll = () => {
-    const next: Record<string, boolean> = {};
-    for (let i = 0; i < notifications.length; i++) next[getId(notifications[i], i)] = true;
-    setHiddenMap(next);
-  };
-
+  // remove/clear disabled: notifications are not deleted/hidden
+ 
   const Chip = ({ label, value }: { label: string; value: typeof filter }) => (
     <button
       onClick={() => setFilter(value)}
@@ -222,7 +214,7 @@ export default function NotificationsPage() {
           ) : (
             <button onClick={(e) => { e.stopPropagation(); markAsRead(id, getServerId(item)); }} disabled={pendingMap[id]} aria-busy={pendingMap[id]} className={`px-3 py-1 rounded-lg text-sm bg-[#ff8800] text-[#18181b] hover:bg-[#ffa239] ${pendingMap[id] ? 'opacity-60 cursor-not-allowed' : ''}`}>{pendingMap[id] ? 'Marking…' : 'Mark read'}</button>
           )}
-          <button onClick={(e) => { e.stopPropagation(); removeOne(id); }} className="px-3 py-1 rounded-lg text-sm bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326]">Remove</button>
+            {/* Actions area intentionally left empty (no bulk remove) */}
         </div>
       </div>
     </div>
@@ -236,14 +228,7 @@ export default function NotificationsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-200">Notifications</h1>
           <p className="text-sm text-gray-400 mt-1">Review, filter, and manage your latest notifications.</p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={clearAll}
-            className="px-3 sm:px-4 py-2 rounded-xl font-semibold bg-[#18181b] text-gray-200 hover:bg-[#232326] border border-[#232326] hover:border-[#ff8800]"
-          >
-            Clear all
-          </button>
-        </div>
+        {/* No bulk actions */}
       </div>
 
       {/* Filters */}
