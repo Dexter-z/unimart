@@ -325,25 +325,29 @@ export const sellerNotifications =async (req: any, res: Response, next: NextFunc
     }
 }
 
-export const markNotificationAsRead =async (req: any, res: Response, next: NextFunction) => {
-    try {
-        const {notificationId} = req.body;
-        if (!notificationId) {
-            return next(new ValidationError("Notification ID is required"));
+//Mark notifications as read
+export const markNotificationAsRead = async (req: any, res: Response, next: NextFunction) => {
+    try {   
+        const { notificationId } = req.body;
+        
+        if(!notificationId) {
+            return next(new ValidationError("Notification id is required!"));
         }
+
         const notification = await prisma.notifications.update({
-            where: { id: notificationId },
-            data: { isRead: true },
+            where: {
+                id: notificationId
+            },
+            data: {
+                status: "Read"
+            },
         });
-        res.status(200).json({
-            success: true,
-            message: "Notification marked as read",
-            notification
-        });
+
+        res.status(200).json({ success: true, notification });
     } catch (error) {
-        return next(error);
+        next(error);
     }
-}
+};
 
 const updateShopImage = async (req: any, res: Response, next: NextFunction, imageType: 'avatar' | 'coverBanner') => {
     try {
