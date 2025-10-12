@@ -8,10 +8,13 @@ import HeaderBottom from './header-bottom';
 import useUser from '@/hooks/useUser';
 import axiosInstance from '@/utils/axiosInstance';
 import { useStore } from '@/store';
+import useLayout from '@/hooks/useLayout';
 
 const Header = () => {
     const router = useRouter()
     const { user, isLoading } = useUser()
+    //const { layout } = useLayout();
+    //For a dynamic logo, you can use layout?.logo
 
     const [searchQuery, setSearchQuery] = useState("")
     const [suggestions, setSuggestions] = useState<any[]>([])
