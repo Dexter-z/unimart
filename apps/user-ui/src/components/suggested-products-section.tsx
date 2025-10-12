@@ -14,8 +14,8 @@ const SuggestedProductsSection = () => {
       return res.data.products;
 
       //To use recommendation service
-      //const res = await axiosInstance.get("/recommendation/api/get-recommendation-products");
-      //return res.data.recommendations;
+      // const res = await axiosInstance.get("/recommendation/api/get-recommendation-products");
+      // return res.data.recommendations;
     },
     staleTime: 1000 * 60 * 2,
   });
