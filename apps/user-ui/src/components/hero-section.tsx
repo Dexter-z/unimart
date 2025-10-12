@@ -3,9 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import useUser from '@/hooks/useUser';
+import useLayout from '@/hooks/useLayout';
 
 const HeroSection = () => {
   const { user, isLoading } = useUser();
+  //const { layout } = useLayout();
+  //For a dynamic logo, you can use layout?.banner
   return (
     <section className="w-full bg-[#18181b] py-10 md:py-20 flex items-center justify-center">
       <div className="w-[95%] md:w-[80%] mx-auto flex flex-col md:flex-row items-center gap-10 md:gap-20">
