@@ -171,7 +171,7 @@ model userAnalytics {
   lastVisited     DateTime @default(now())
   actions         Json[]   @default([])
   recommendations Json?
-  lastTrained     DateTime @default(now())
+  lastTrained     DateTime? @default(now())
   country         String?
   city            String?
   device          String?
