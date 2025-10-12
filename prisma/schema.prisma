@@ -85,25 +85,25 @@ model shops {
   orders       orders[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
-  isDeleted     Boolean       @default(false)
-  deletedAt     DateTime?
+  isDeleted    Boolean         @default(false)
+  deletedAt    DateTime?
 }
 
 model sellers {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
   name         String
-  email        String   @unique
+  email        String    @unique
   phone_number String
   country      String
   password     String
-  banned       Boolean  @default(false)
+  banned       Boolean   @default(false)
   stripeId     String?
   shop         shops?
   orders       orders[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  isDeleted       Boolean    @default(false)
-  deletedAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
 }
 
 model site_config {
@@ -166,17 +166,17 @@ model products {
 }
 
 model userAnalytics {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @unique @db.ObjectId
-  lastVisited   DateTime @default(now())
-  actions       Json[]   @default([])
-  recommendations String[] @default([])
-  lastTrained   DateTime?
-  country       String?
-  city          String?
-  device        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  lastVisited     DateTime @default(now())
+  actions         Json[]   @default([])
+  recommendations Json?
+  lastTrained     DateTime @default(now())
+  country         String?
+  city            String?
+  device          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model productAnalytics {
@@ -235,16 +235,16 @@ model admins {
 }
 
 model notifications {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
-  message String
-  status String @default("Unread")
-  creatorId String @db.ObjectId  
-  receiverId String    
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  message       String
+  status        String   @default("Unread")
+  creatorId     String   @db.ObjectId
+  receiverId    String
   redirect_link String?
   //read Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   //@@map("notifications")
 }
 
@@ -284,26 +284,26 @@ model conversationGroup {
 }
 
 model participant {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId String @db.ObjectId
-  userId String? @db.ObjectId
-  sellerId String? @db.ObjectId
-  lastSeenAt DateTime?
-  isOnline Boolean @default(false)
-  unreadCount Int @default(0)
-  muted Boolean @default(false)
-  joinedAt DateTime @default(now())
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String    @db.ObjectId
+  userId         String?   @db.ObjectId
+  sellerId       String?   @db.ObjectId
+  lastSeenAt     DateTime?
+  isOnline       Boolean   @default(false)
+  unreadCount    Int       @default(0)
+  muted          Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
 }
 
 model message {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  conversationId String @db.ObjectId
-  senderId String @db.ObjectId
-  senderType String // 'user' or 'seller'
-  content String?
-  attachments String[]
-  status String @default("sent") // 'sent', 'delivered', 'read'
-  createdAt DateTime @default(now())
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String   @db.ObjectId
+  senderId       String   @db.ObjectId
+  senderType     String // 'user' or 'seller'
+  content        String?
+  attachments    String[]
+  status         String   @default("sent") // 'sent', 'delivered', 'read'
+  createdAt      DateTime @default(now())
 
   @@unique([conversationId, senderId, content, createdAt])
 }
