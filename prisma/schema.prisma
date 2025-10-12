@@ -184,7 +184,7 @@ model productAnalytics {
   productId    String   @unique @db.ObjectId
   shopId       String?  @db.ObjectId
   views        Int      @default(0)
-  cartAdds     Int      @default(0)
+    lastTrained     DateTime?
   wishlistAdds Int      @default(0)
   purchases    Int      @default(0)
   lastViewedAt DateTime @default(now())
