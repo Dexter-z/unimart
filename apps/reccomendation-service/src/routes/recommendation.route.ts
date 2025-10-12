@@ -1,9 +1,10 @@
 import express, { Router } from "express";
 
-import { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
+import isAuthenticated, { isAdminAuthenticated } from "@packages/middleware/isAuthenticated";
+import { getRecommendedProducts } from "../controllers/recommendation.controller";
 
 const router:Router = express.Router();
 
-
+router.get("/get-recommendation-products", isAuthenticated, getRecommendedProducts)
 
 export default router;
