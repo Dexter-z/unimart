@@ -4,6 +4,7 @@ import axiosInstance from '@/utils/axiosInstance'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { ArrowLeft, Package, User, MapPin, Calendar, DollarSign, Loader2, ShoppingBag } from 'lucide-react'
+import Image from 'next/image'
 
 const statuses = [
     "pending",
@@ -69,6 +70,12 @@ const Page = () => {
     const fetchOrder = async () => {
         try {
             const res = await axiosInstance.get(`/order/api/get-order-details/${orderId}`)
+            // Debug: Log the full API response and the order payload to inspect image shapes
+            console.groupCollapsed('[Order Debug] API response')
+            console.log('Raw response data:', res.data)
+            console.log('Order from API:', res.data?.order)
+            console.groupEnd()
+
             setOrder(res.data.order)
         } catch (error) {
             setLoading(false)
@@ -125,6 +132,28 @@ const Page = () => {
             fetchOrder()
         }
     }, [orderId])
+
+    // Debug: Log the order whenever it changes, focusing on item/product images
+    useEffect(() => {
+        if (!order) return
+        try {
+            console.groupCollapsed('[Order Debug] Normalized order state')
+            console.log('Order:', order)
+            const itemImages = order.items.map((item) => ({
+                itemId: item.id,
+                productId: item.productId,
+                productTitle: item.product?.title,
+                images: item.product?.images,
+                imageTypes: Array.isArray(item.product?.images)
+                    ? item.product?.images.map((img: any) => (typeof img))
+                    : typeof item.product?.images,
+            }))
+            console.table(itemImages)
+            console.groupEnd()
+        } catch (err) {
+            console.warn('[Order Debug] Failed to log order images', err)
+        }
+    }, [order])
 
     if (loading) {
         return (
@@ -202,9 +231,30 @@ const Page = () => {
                                 {order.items.map((item, index) => (
                                     <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-800 last:border-b-0">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center">
-                                                <Package className="h-8 w-8 text-gray-400" />
-                                            </div>
+                                            {(() => {
+                                                const images: any[] | undefined = Array.isArray(item.product?.images)
+                                                    ? item.product?.images
+                                                    : undefined
+                                                const first = images && images.length > 0 ? images[0] : undefined
+                                                const imageUrl: string | undefined = first
+                                                    ? (typeof first === 'string' ? first : first?.url)
+                                                    : undefined
+                                                return imageUrl ? (
+                                                    <div className="w-16 h-16 bg-gray-900 rounded-lg overflow-hidden">
+                                                        <Image
+                                                            src={imageUrl}
+                                                            alt={item.product?.title || 'Product image'}
+                                                            width={64}
+                                                            height={64}
+                                                            className="w-16 h-16 object-cover"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center">
+                                                        <Package className="h-8 w-8 text-gray-400" />
+                                                    </div>
+                                                )
+                                            })()}
                                             <div>
                                                 <h3 className="text-white font-medium">
                                                     {item.product?.title || `Product #${item.productId.slice(-6)}`}
