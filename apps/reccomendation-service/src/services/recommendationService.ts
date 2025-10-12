@@ -27,15 +27,14 @@ async function fetchUserActivity(userId: string): Promise<UserAction[]> {
 }
 
 export const recommendProducts = async (userId: string, allProducts: any): Promise<string[]> => {
-    const userActions: UserAction[] = await fetchUserActivity(userId);
 
+    const userActions: UserAction[] = await fetchUserActivity(userId);
     if (userActions.length === 0) {
         return [];
     }
 
     const processedData = preProcessData(userActions, allProducts);
-
-    if (!processedData || processedData.interactions === 0 || processedData.products) {
+    if (!processedData || !processedData.interactions || processedData.interactions.length === 0) {
         return [];
     }
 
