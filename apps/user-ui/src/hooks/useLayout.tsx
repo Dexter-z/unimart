@@ -2,7 +2,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchLayout = async () => {
-    const response = await axiosInstance.get("/user/api/get-layouts");
+    const response = await axiosInstance.get("/api/get-layouts");
     return response.data.layout;
 }
 
