@@ -123,15 +123,13 @@ export const recommendProducts = async (userId: string, allProducts: any): Promi
     const predictions = model.predict([tf.tensor1d([userMap[userId] ?? 0], 'int32'), productTensorAll]) as tf.Tensor;
     const scores = (await predictions.array()) as number[];
 
-    // Only return product IDs sorted by score
-    const recommendedProductIds: string[] = Object.keys(productMap)
+    const recommendProducts: RecommendedProducts[] = Object.keys(productMap)
         .map((productId, index) => ({
             productId,
             score: scores[index] ?? 0,
         }))
         .sort((a, b) => b.score - a.score)
-        .slice(0, 10)
-        .map(item => item.productId);
+        .slice(0, 10);
 
-    return recommendedProductIds;
+    return recommendProducts.map(item => item.productId);
 }
