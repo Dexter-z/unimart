@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction,  Response } from "express";
 import { recommendProducts } from "../services/recommendationService";
 import prisma from "@packages/libs/prisma";
 
