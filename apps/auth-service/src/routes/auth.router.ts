@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginAdmin, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, updateUserPassword, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp, refreshAdminToken } from "../controller/auth.controller";
+import { addUserAddress, createShop, createStripeConnectLink, deleteShopImage, deleteUserAddress, getSeller, getUser, getUserAddresses, loginAdmin, loginSeller, loginUser, logoutSeller, logoutUser, refreshSellerToken, refreshUserToken, registerSeller, resetUserPassword, updateShop, updateUserAddress, updateUserPassword, uploadShopImage, userForgotPassword, userRegistration, verifySeller, verifyUser, verifyUserForgotPasswordOtp, refreshAdminToken, getLayoutData } from "../controller/auth.controller";
 import isAuthenticated, { isUserAuthenticated, isSellerAuthenticated } from "@packages/middleware/isAuthenticated";
 
 const router:Router = express.Router();
@@ -35,6 +35,8 @@ router.delete("/delete-address/:addressId", isUserAuthenticated, deleteUserAddre
 
 router.post("/login-admin", loginAdmin);
 router.post("/refresh-token-admin", refreshAdminToken);
+
+router.get("/get-layouts", getLayoutData);
 
 
 export default router;
