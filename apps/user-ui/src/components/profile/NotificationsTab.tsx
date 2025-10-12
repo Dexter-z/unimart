@@ -4,7 +4,7 @@ import React from 'react'
 
 const NotificationsTab = () => {
   const { data, isLoading, isPlaceholderData } = useQuery<any[]>({
-    queryKey: ['notifications'],
+    queryKey: ['notifications'], 
     queryFn: async (): Promise<any[]> => {
       const res = await axiosInstance.get('/admin/api/get-user-notifications');
       console.log('[Seller Notifications] API response:', res?.status, res?.data);
