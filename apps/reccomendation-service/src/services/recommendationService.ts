@@ -2,7 +2,7 @@ import * as tf from "@tensorflow/tfjs-node"
 import { getUserActivity } from "./fetch-user-activity"
 import { preProcessData } from "../utils/preProcessData";
 
-const EMBEDDING_DIM = 1; // Example dimension, adjust based on your model
+const EMBEDDING_DIM = 50; // Number of actions to use to train the model also change in recommendation controller
 
 interface UserAction {
     userId: string;
