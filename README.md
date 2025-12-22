@@ -1,82 +1,111 @@
-# 
+# Multi-Tenant E-Commerce Platform with Recommendation System
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A production-grade, multi-tenant e-commerce platform built as a full business MVP.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+This project demonstrates how I design and implement real-world backend systems for startups, including microservices, multi-tenant data separation, caching, and a practical recommendation system.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Although the product was not launched commercially, the system was built end-to-end to reflect production-level architecture and complexity.
 
-## Finish your CI setup
+---
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/Skd5BKSDxD)
+## Features
 
+### Multi-Tenant Architecture
+- Supports multiple independent sellers on a single platform
+- Seller-specific products, orders, and dashboards
+- Role-based access control (admin, seller, customer)
+- Clean separation of tenant data
 
-## Run tasks
+### Backend Services
+- Microservices-based architecture
+- REST APIs built with Node.js and Express
+- MongoDB for core data storage
+- Redis for caching and performance optimization
+- Secure authentication and authorization
+- Centralized error handling and request validation
+- Environment-based configuration
 
-To run the dev server for your app, use:
+### Frontend Applications
+- Customer-facing application built with Next.js
+- Admin panel for platform management and oversight
+- Seller dashboard for product and order management
+- Modern UI built with shadcn/ui
 
-```sh
-npx nx serve auth-service
-```
+### Recommendation System
+- Implemented using TensorFlow
+- Generates personalized product recommendations
+- Integrated directly into the platform’s data flow
+- Demonstrates applied machine-learning in a real product context
 
-To create a production bundle:
+### Media Handling
+- ImageKit integration for image upload, optimization, and delivery
 
-```sh
-npx nx build auth-service
-```
+---
 
-To see all available targets to run for a project, run:
+## Tech Stack
 
-```sh
-npx nx show project auth-service
-```
+Backend
+- Node.js
+- Express.js
+- MongoDB
+- Redis
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Frontend
+- Next.js
+- shadcn/ui
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Machine Learning
+- TensorFlow (recommendation engine)
 
-## Add new projects
+Infrastructure & Tools
+- ImageKit
+- RESTful API architecture
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+---
 
-Use the plugin's generator to create new projects.
+## Architecture Overview
 
-To generate a new application, use:
+The system is composed of multiple services, each responsible for a specific domain (users, products, orders, recommendations).
 
-```sh
-npx nx g @nx/node:app demo
-```
+This architecture enables:
+- Independent service scaling
+- Easier maintenance and iteration
+- Clear separation of concerns
+- SaaS-style multi-tenant patterns commonly used in startups
 
-To generate a new library, use:
+---
 
-```sh
-npx nx g @nx/node:lib mylib
-```
+## Use Cases
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+- SaaS-style e-commerce platforms
+- Marketplaces with multiple sellers
+- Startup MVPs requiring scalable backend design
+- Applications requiring basic recommendation systems
+- Reference implementation for microservices and ML integration
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
+## Project Status
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+This project is no longer under active development.
 
-## Install Nx Console
+It was built as a full MVP and business experiment and is kept public as a reference for architecture, backend design, and real-world system complexity.
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+---
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## About Me
 
-## Useful links
+I’m a freelance backend developer specializing in:
+- MVP backends
+- REST APIs
+- Multi-tenant systems
+- Microservices
+- Bug fixes and performance optimization
 
-Learn more:
+Most of my recent work has been with startup teams on private repositories and production applications.
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## License
+
+This project is licensed under the Apache License 2.0.
