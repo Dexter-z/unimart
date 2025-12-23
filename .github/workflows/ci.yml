@@ -22,7 +22,7 @@ jobs:
       # Use Node 18 LTS (safe for legacy deps)
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       # Yarn is required by postinstall-postinstall
