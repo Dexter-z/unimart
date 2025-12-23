@@ -11,8 +11,9 @@ find . -type f \( -name "*.ts" -o -name "*.tsx" \) ! -path "./node_modules/*" | 
 To generate prisma
 npx prisma db push
 
-TO RUN THE CONSUMER
-node apps/kafka-service/dist/main.js
+Dont think i need this
+{TO RUN THE CONSUMER
+node apps/kafka-service/dist/main.js}
 
 TO RUN KAFKA LOCALLY
 OPEN TWO COMMAND PROMPT TERMINALS

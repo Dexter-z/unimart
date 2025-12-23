@@ -94,6 +94,22 @@
 ### 4. File Structure for Render
 Each service might need a Dockerfile or specific build configuration.
 
+### 5. Kafka Service (Not Supported on Render)
+
+Render does not support running Kafka or Zookeeper as background services. You cannot start Kafka using terminal commands or background processes on Render like you do locally.
+
+**For production deployments:**
+- Use a managed Kafka provider (such as Confluent Cloud, Aiven, Upstash, or Redpanda Cloud).
+- Update your environment variables (e.g., `KAFKA_BROKER`, `KAFKA_API_KEY`, `KAFKA_API_SECRET`) to use the managed provider's connection details.
+
+**For development/testing:**
+- You can continue running Kafka locally on your machine using your current method (multiple terminals for Zookeeper and Kafka server).
+- Services deployed on Render will not be able to connect to your local Kafka unless you expose it securely to the internet (not recommended for production).
+
+**Summary:**
+- Do not attempt to run Kafka or Zookeeper on Render.
+- Always use a managed Kafka service for production deployments on Render.
+
 ## Cost Estimation (Render Free Tier)
 - PostgreSQL: Free tier available
 - Redis: Free tier available  
