@@ -4,7 +4,6 @@
   "license": "MIT",
   "scripts": {
     "dev": "npx nx run-many --target=serve --all --maxParallel=100",
-    "postinstall": "patch-package",
     "dev:with-kafka": "concurrently \"npx nx run-many --target=serve --all\" \"npm run kafka:start\"",
     "kafka:start": "npx nx build kafka-service && node apps/kafka-service/dist/main.js",
     "auth-docs": "node apps/auth-service/src/swagger.js",
