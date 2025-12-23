@@ -31,7 +31,7 @@ jobs:
 
       # Avoid npm ci (breaks patch-package)
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: SKIP_POSTINSTALL=true npm install --legacy-peer-deps
 
       - uses: nrwl/nx-set-shas@v4
 
