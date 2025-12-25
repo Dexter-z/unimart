@@ -142,4 +142,16 @@ process.on('SIGINT', async () => {
 // console.log('- KAFKA_API_KEY:', process.env.KAFKA_API_KEY ? `✅ Set (${process.env.KAFKA_API_KEY})` : '❌ Missing');
 // console.log('- KAFKA_API_SECRET:', process.env.KAFKA_API_SECRET ? `✅ Set (${process.env.KAFKA_API_SECRET?.substring(0,10)}...)` : '❌ Missing');
 // console.log('- DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Missing');
+// Start Kafka consumer
 consumeKafkaMessages().catch(console.error);
+
+// Minimal HTTP server for Render web service
+import http from "http";
+const port = process.env.PORT || 8080;
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Kafka service is running.');
+});
+server.listen(port, () => {
+  console.log(`Kafka service HTTP server listening on port ${port}`);
+});
