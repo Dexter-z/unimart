@@ -12,10 +12,9 @@ const app = express();
 
 app.use(cors({
   origin: [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://192.168.250.215:3000"
+        process.env.USER_UI_URL,
+        process.env.SELLER_UI_URL,
+        process.env.ADMIN_UI_URL
     ],
   allowedHeaders: ["Authorization", "Content-Type"],
   credentials: true
@@ -43,15 +42,15 @@ app.get('/gateway-health', (req, res) => {
   res.send({ message: 'Welcome to api-gateway!' });
 });
 
-app.use("/recommendation", proxy("http://localhost:6008"))
-app.use("/logger", proxy("http://localhost:6007"))
-app.use("/chatting", proxy("http://localhost:6006"))
+app.use("/recommendation", proxy(process.env.RECOMMENDATION_SERVICE_URL))
+app.use("/logger", proxy(process.env.LOGGER_SERVICE_URL))
+app.use("/chatting", proxy(process.env.CHATTING_SERVICE_URL))
 
-app.use("/admin", proxy("http://localhost:6005"))
-app.use("/order", proxy("http://localhost:6004"))
-app.use("/seller", proxy("http://localhost:6003"))
-app.use("/product", proxy("http://localhost:6002"))
-app.use("/", proxy("http://localhost:6001"))
+app.use("/admin", proxy(process.env.ADMIN_SERVICE_URL))
+app.use("/order", proxy(process.env.ORDER_SERVICE_URL))
+app.use("/seller", proxy(process.env.SELLER_SERVICE_URL))
+app.use("/product", proxy(process.env.PRODUCT_SERVICE_URL))
+app.use("/", proxy(process.env.AUTH_SERVICE_URL))
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
