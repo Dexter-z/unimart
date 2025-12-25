@@ -60,13 +60,19 @@
 
 ### 4. Frontend Applications
 
+
 #### User UI (Next.js)
-- New → Static Site
-- Build command: `cd apps/user-ui && npm install && npm run build`
-- Publish directory: `apps/user-ui/.next`
+- New → Web Service
+- Build command: `npm install && npx nx build user-ui`
+- Start command: `cd apps/user-ui && npm run start`
 - Environment variables:
   - NEXT_PUBLIC_API_URL=<api-gateway-url>
   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<stripe-publishable>
+  - (add any other required NEXT_PUBLIC_ variables)
+
+**Notes:**
+- Do not set a publish directory for a web service.
+- This setup supports dynamic routes, API routes, and SSR.
 
 #### Seller UI (Next.js) 
 - New → Static Site
