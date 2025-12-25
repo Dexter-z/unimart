@@ -30,7 +30,7 @@
 
 #### Auth Service  
 - New → Web Service
-- Build command: `npx nx build auth-service`
+- Build command: `npm install && npx nx build auth-service`
 - Start command: `node apps/auth-service/dist/main.js`
 - Environment variables:
   - DATABASE_URL=<postgres-connection-string>
@@ -40,7 +40,7 @@
 
 #### Order Service
 - New → Web Service  
-- Build command: `npx nx build order-service`
+- Build command: `npm install && npx nx build order-service`
 - Start command: `node apps/order-service/dist/main.js`
 - Environment variables:
   - DATABASE_URL=<postgres-connection-string>
@@ -50,7 +50,7 @@
 
 #### Product Service
 - New → Web Service
-- Build command: `npx nx build product-service` 
+- Build command: `npm install && npx nx build product-service` 
 - Start command: `node apps/product-service/dist/main.js`
 - Environment variables:
   - DATABASE_URL=<postgres-connection-string>
