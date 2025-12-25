@@ -2,8 +2,7 @@
   "name": "@./user-ui",
   "version": "0.0.1",
   "scripts": {
-    "build": "next build",
-    "export": "next export"
+    "build": "next build"
   },
   "private": true,
   
