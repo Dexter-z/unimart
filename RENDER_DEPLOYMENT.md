@@ -63,7 +63,7 @@
 #### User UI (Next.js)
 - New → Static Site
 - Build command: `cd apps/user-ui && npm run build`
-- Publish directory: `apps/user-ui/out` or `apps/user-ui/.next`
+- Publish directory: `apps/user-ui/.next`
 - Environment variables:
   - NEXT_PUBLIC_API_URL=<api-gateway-url>
   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<stripe-publishable>
@@ -71,7 +71,15 @@
 #### Seller UI (Next.js) 
 - New → Static Site
 - Build command: `cd apps/seller-ui && npm run build`
-- Publish directory: `apps/seller-ui/out` or `apps/seller-ui/.next`
+- Publish directory: `apps/seller-ui/.next`
+- Environment variables:
+  - NEXT_PUBLIC_API_URL=<api-gateway-url>
+  - NEXT_PUBLIC_USER_UI_LINK=<user-ui-url>
+
+#### Admin UI (Next.js) 
+- New → Static Site
+- Build command: `cd apps/admin-ui && npm run build`
+- Publish directory: `apps/admin-ui/.next`
 - Environment variables:
   - NEXT_PUBLIC_API_URL=<api-gateway-url>
   - NEXT_PUBLIC_USER_UI_LINK=<user-ui-url>
