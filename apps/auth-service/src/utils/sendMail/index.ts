@@ -1,6 +1,11 @@
 import nodemailer from "nodemailer"
 import ejs from "ejs"
 import path from "path"
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const orgName = "Unimart";
 
 // const transporter = nodemailer.createTransport({
 //     host: process.env.SMTP_HOST,
@@ -23,7 +28,7 @@ const transporter = nodemailer.createTransport({
 })
 
 //Render ejs email template
-const renderEmailTemplate = async(templateName:string, data:Record<string, any>): Promise<string> => {
+const renderEmailTemplate = async (templateName: string, data: Record<string, any>): Promise<string> => {
     const templatePath = path.join(
         process.cwd(),
         "apps",
@@ -32,22 +37,24 @@ const renderEmailTemplate = async(templateName:string, data:Record<string, any>)
         "utils",
         "email-templates",
         `${templateName}.ejs`
-    ) 
+    )
 
     return ejs.renderFile(templatePath, data)
 }
 
 //Send an email usingnodemailer
-export const sendEmail = async(to:string, subject:string, templateName:string, data:Record<string, any>) => {
+export const sendEmail = async (to: string, subject: string, templateName: string, data: Record<string, any>) => {
     try {
         const html = await renderEmailTemplate(templateName, data)
-        await transporter.sendMail({
-            from: `<${process.env.SMTP_USER}`,
+        const result = await resend.emails.send({
+            from: `"${orgName}" <${process.env.SMTP_USER}>`,
             to,
             subject,
             html,
-        })
-        return true;
+        });
+        console.log('[Email] Email sent successfully:', result.data?.id);
+
+        return result;
     } catch (error) {
         console.log("Error sending email", error)
         return false
