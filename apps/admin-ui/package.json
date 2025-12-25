@@ -2,7 +2,7 @@
   "name": "@./admin-ui",
   "scripts": {
     "build": "next build",
-    "export": "next export"
+    "start": "next start"
   },
   "version": "0.0.1",
   "private": true,
