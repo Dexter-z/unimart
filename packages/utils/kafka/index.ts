@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 // // Suppress partitioner warning
-// process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
+process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
 // // Load environment variables if not already loaded
 // if (!process.env.KAFKA_API_KEY || !process.env.KAFKA_API_SECRET) {
 //   try {
