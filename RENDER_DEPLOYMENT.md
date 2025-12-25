@@ -21,7 +21,7 @@
 #### API Gateway
 - New → Web Service
 - Connect your GitHub repo
-- Build command: `npx nx build api-gateway`
+- Build command: `npm install && npx nx build api-gateway`
 - Start command: `node apps/api-gateway/dist/main.js`
 - Environment variables:
   - DATABASE_URL=<postgres-connection-string>
