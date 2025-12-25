@@ -52,3 +52,4 @@ out
 # Environment Variables
 .env
 .env.render
+ca.pem
