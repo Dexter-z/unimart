@@ -4,6 +4,14 @@ import { updateUserAnalytics } from "./services/analytics.service";
 // console.log('📚 Imports loaded successfully');
 // console.log('⚙️ Creating consumer...');
 
+// Log Kafka environment variables for debugging
+console.log('--- Kafka ENV DEBUG ---');
+console.log('KAFKA_BROKER:', process.env.KAFKA_BROKER);
+console.log('KAFKA_USERNAME:', process.env.KAFKA_USERNAME);
+console.log('KAFKA_PASSWORD:', process.env.KAFKA_PASSWORD ? '***' : undefined);
+console.log('KAFKA_SSL_CA_PATH:', process.env.KAFKA_SSL_CA_PATH);
+console.log('-----------------------');
+
 const consumer = kafka.consumer({ 
   groupId: 'user-events-group'
 });
