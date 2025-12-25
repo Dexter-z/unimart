@@ -36,6 +36,15 @@ process.env.KAFKAJS_NO_PARTITIONER_WARNING = '1';
 
 
 
+
+// Log Kafka environment variables for debugging
+console.log('--- Kafka ENV DEBUG ---');
+console.log('KAFKA_BROKER:', process.env.KAFKA_BROKER);
+console.log('KAFKA_USERNAME:', process.env.KAFKA_USERNAME);
+console.log('KAFKA_PASSWORD:', process.env.KAFKA_PASSWORD ? '***' : undefined);
+console.log('KAFKA_SSL_CA_PATH:', process.env.KAFKA_SSL_CA_PATH);
+console.log('-----------------------');
+
 // Load CA certificate
 const caPath = process.env.KAFKA_SSL_CA_PATH || 'ca.pem';
 const ca = [fs.readFileSync(path.resolve(caPath), 'utf-8')];
