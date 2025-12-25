@@ -40,9 +40,10 @@ app.use("/api", router)
 app.use(errorMiddleware)
 
 const port = process.env.PORT || 6001
+const host = process.env.AUTH_URL || "http://localhost"
 const server = app.listen(port, () => {
-    console.log(`Auth service is running at http://localhost:${port}/api`)
-    console.log(`Swagger Docs is available at http://localhost:${port}/docs`)
+    console.log(`Auth service is running at ${host}:${port}/api`)
+    console.log(`Swagger Docs is available at ${host}:${port}/docs`)
 })
 
 server.on("error", (err) => {
