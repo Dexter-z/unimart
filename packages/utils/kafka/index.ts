@@ -80,7 +80,24 @@ try {
 
 // Load CA certificate
 const caPath = process.env.KAFKA_SSL_CA_PATH || 'ca.pem';
-const ca = [fs.readFileSync(path.resolve(caPath), 'utf-8')];
+const resolvedCaPath = path.resolve(caPath);
+console.log('KAFKA_SSL_CA_PATH (resolved):', resolvedCaPath);
+try {
+  const exists = fs.existsSync(resolvedCaPath);
+  console.log('CA file exists:', exists);
+  if (!exists) {
+    console.error(`CA file not found at ${resolvedCaPath}. Ensure KAFKA_SSL_CA_PATH points to the mounted secret file.`);
+    throw new Error('CA file not found');
+  }
+
+  const caContent = fs.readFileSync(resolvedCaPath, 'utf-8');
+  console.log('CA file length:', caContent.length);
+  console.log('CA startsWith BEGIN CERTIFICATE:', caContent.trim().startsWith('-----BEGIN CERTIFICATE-----'));
+  var ca = [caContent];
+} catch (err:any) {
+  console.error('❌ Error loading CA file:', err?.message || err);
+  throw err;
+}
 
 export const kafka = new Kafka({
   clientId: 'kafka-service',
