@@ -104,7 +104,7 @@ export const kafka = new Kafka({
   brokers, // validated host:port strings
   ssl: {
     ca,
-    rejectUnauthorized: true,
+    rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
   },
   sasl: {
     mechanism: 'plain', // Aiven uses PLAIN
