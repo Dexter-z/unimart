@@ -47,6 +47,12 @@ console.log('-----------------------');
 
 // Validate and normalize brokers
 let rawBroker = process.env.KAFKA_BROKER || '';
+// Use different broker port for client cert auth if specified
+if (fs.existsSync(path.resolve(process.env.KAFKA_CLIENT_CERT_PATH || 'service.cert')) && 
+    process.env.KAFKA_BROKER_CLIENT_CERT) {
+  rawBroker = process.env.KAFKA_BROKER_CLIENT_CERT;
+  console.log('Using client cert broker port');
+}
 // Remove surrounding quotes if someone set the var as "host:port" or 'host:port'
 rawBroker = rawBroker.replace(/^["']+|["']+$/g, '');
 let brokers: string[] = [];
@@ -79,44 +85,67 @@ try {
 }
 
 // Load CA certificate
-// Use embedded CA or fallback to file
-const EMBEDDED_CA = process.env.KAFKA_CA_CERT; // optional: set full cert as env var
+// Load certificate files
+const caPath = process.env.KAFKA_SSL_CA_PATH || 'ca.pem';
+const clientCertPath = process.env.KAFKA_CLIENT_CERT_PATH || 'service.cert';
+const clientKeyPath = process.env.KAFKA_CLIENT_KEY_PATH || 'service.key';
+
+const resolvedCaPath = path.resolve(caPath);
+const resolvedCertPath = path.resolve(clientCertPath);
+const resolvedKeyPath = path.resolve(clientKeyPath);
+
+console.log('KAFKA_SSL_CA_PATH (resolved):', resolvedCaPath);
+console.log('KAFKA_CLIENT_CERT_PATH (resolved):', resolvedCertPath);
+console.log('KAFKA_CLIENT_KEY_PATH (resolved):', resolvedKeyPath);
+
 let ca: string[] = [];
+let clientCert: string[] | undefined;
+let clientKey: string[] | undefined;
 
-if (EMBEDDED_CA) {
-  console.log('Using embedded CA from KAFKA_CA_CERT env var');
-  ca = [EMBEDDED_CA];
-} else {
-  const caPath = process.env.KAFKA_SSL_CA_PATH || 'ca.pem';
-  const resolvedCaPath = path.resolve(caPath);
-  console.log('KAFKA_SSL_CA_PATH (resolved):', resolvedCaPath);
-  try {
-    const exists = fs.existsSync(resolvedCaPath);
-    console.log('CA file exists:', exists);
-    if (!exists) {
-      console.error(`CA file not found at ${resolvedCaPath}. Ensure KAFKA_SSL_CA_PATH points to the mounted secret file.`);
-      throw new Error('CA file not found');
-    }
-
+// Load CA certificate
+try {
+  const caExists = fs.existsSync(resolvedCaPath);
+  console.log('CA file exists:', caExists);
+  if (caExists) {
     const caContent = fs.readFileSync(resolvedCaPath, 'utf-8');
     console.log('CA file length:', caContent.length);
-    console.log('CA startsWith BEGIN CERTIFICATE:', caContent.trim().startsWith('-----BEGIN CERTIFICATE-----'));
     ca = [caContent];
-  } catch (err:any) {
-    console.error('❌ Error loading CA file:', err?.message || err);
-    throw err;
+  }
+} catch (err: any) {
+  console.error('❌ Error loading CA file:', err?.message || err);
+}
+
+// Load client certificate and key (for client cert auth)
+const useClientCerts = fs.existsSync(resolvedCertPath) && fs.existsSync(resolvedKeyPath);
+console.log('Using client certificate auth:', useClientCerts);
+
+if (useClientCerts) {
+  try {
+    const certContent = fs.readFileSync(resolvedCertPath, 'utf-8');
+    const keyContent = fs.readFileSync(resolvedKeyPath, 'utf-8');
+    console.log('Client cert length:', certContent.length);
+    console.log('Client key length:', keyContent.length);
+    clientCert = [certContent];
+    clientKey = [keyContent];
+  } catch (err: any) {
+    console.error('❌ Error loading client cert/key:', err?.message || err);
   }
 }
 
 export const kafka = new Kafka({
   clientId: 'kafka-service',
   brokers, // validated host:port strings
-  ssl: {
+  ssl: useClientCerts ? {
     ca,
-    rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
+    cert: clientCert,
+    key: clientKey,
+    rejectUnauthorized: true,
+  } : {
+    ca: ca.length > 0 ? ca : undefined,
+    rejectUnauthorized: false, // Disabled for SASL - CA chain issue
   },
-  sasl: {
-    mechanism: 'plain', // Aiven uses PLAIN
+  sasl: useClientCerts ? undefined : {
+    mechanism: 'plain',
     username: process.env.KAFKA_USERNAME as string,
     password: process.env.KAFKA_PASSWORD as string,
   },
