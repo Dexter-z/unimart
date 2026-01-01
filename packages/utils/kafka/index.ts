@@ -46,7 +46,9 @@ console.log('KAFKA_SSL_CA_PATH:', process.env.KAFKA_SSL_CA_PATH);
 console.log('-----------------------');
 
 // Validate and normalize brokers
-const rawBroker = process.env.KAFKA_BROKER || '';
+let rawBroker = process.env.KAFKA_BROKER || '';
+// Remove surrounding quotes if someone set the var as "host:port" or 'host:port'
+rawBroker = rawBroker.replace(/^["']+|["']+$/g, '');
 let brokers: string[] = [];
 try {
   // show hidden characters length to help debug CR/LF issues
@@ -58,11 +60,13 @@ try {
     .map(b => {
       // Keep original for error messages
       const original = b;
+      // strip quotes from each segment
+      b = b.replace(/^["']+|["']+$/g, '');
       const parts = b.split(':');
       if (parts.length !== 2) throw new Error(`Invalid broker format (expected host:port): "${original}"`);
-      const host = parts[0].trim();
+      const host = parts[0].trim().replace(/^["']+|["']+$/g, '');
       // remove any non-digit characters from port string (helps with hidden chars)
-      const portStr = parts[1].replace(/[^0-9]/g, '');
+      const portStr = parts[1].trim().replace(/^["']+|["']+$/g, '').replace(/[^0-9]/g, '');
       const port = Number(portStr);
       if (Number.isNaN(port) || port < 0 || port > 65535) throw new Error(`Invalid port for broker "${original}": ${parts[1]}`);
       return `${host}:${port}`;
